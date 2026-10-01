@@ -1,0 +1,159 @@
+schema_version: "1.0"
+run_id: t-w04-be7c324c
+verdict: READY
+source:
+  baseline:
+    - path: docs/PRD.md
+      fingerprint: 5d8c45fd91830695e3f8f90fb49be3f9d8be64e0ca0256d382a31d0af4a4ae0a
+    - path: docs/TECH_STACK.md
+      fingerprint: 9cba18e5f7490fe1c39a658ed3485d17fe782060c588b429d6db923c23d55fbe
+  decision_records:
+    path: docs/decisions
+    fingerprint: 343f661197a778ad3c4d5f2c8371031c3c1c45337ac2f1b8f5d59641e812e38f
+  work_items_artifact: docs/work-items.yaml
+  work_items_fingerprint: ebee465f2c44d004670b24d015ae6db179184b81e010b4d61a9c3bc09627b678
+  normalized_artifact: .spec-gate/runs/t-w04-be7c324c/normalized-tasks.yaml
+source_tasks:
+  - task_id: W04
+    title: SwiftData 스키마 V1과 저장소 열기
+    route: GHERKIN
+    acceptance_refs:
+      - A18
+accepted_specifications:
+  - task_id: W04
+    route: GHERKIN
+    path: .spec-gate/runs/t-w04-be7c324c/specs/revision-1/task-W04.feature
+test_obligations:
+  - obligation_id: W04-records-survive-reopen
+    task_id: W04
+    kind: scenario
+    description: Project·Revision·ResourceReference·Checkpoint가 저장소 재오픈 후 같은 Domain 값으로 읽히고 스냅샷이 디코딩된다
+    source: .spec-gate/runs/t-w04-be7c324c/specs/revision-1/task-W04.feature#저장한 레코드는 저장소를 닫았다 다시 열어도 같은 값으로 읽힌다
+  - obligation_id: W04-revision-summaries-without-decoding
+    task_id: W04
+    kind: scenario
+    description: revision 목록 정보는 순번 순서로 읽히고 손상된 스냅샷은 그 revision을 디코딩할 때만 오류가 난다
+    source: .spec-gate/runs/t-w04-be7c324c/specs/revision-1/task-W04.feature#revision 목록 정보는 스냅샷을 디코딩하지 않고 읽는다
+  - obligation_id: W04-revision-cause-preserved
+    task_id: W04
+    kind: scenario
+    description: revision 원인 13종과 복원 출처 revision이 재오픈 후 그대로다(0005)
+    source: .spec-gate/runs/t-w04-be7c324c/specs/revision-1/task-W04.feature#revision 원인과 복원 출처를 그대로 보존한다
+  - obligation_id: W04-project-archive-and-origin-preserved
+    task_id: W04
+    kind: scenario
+    description: Project의 보관 시각과 출처(복제·가져오기, 원본 Project·revision)가 재오픈 후 그대로다(0005)
+    source: .spec-gate/runs/t-w04-be7c324c/specs/revision-1/task-W04.feature#프로젝트의 보관 시각과 출처를 그대로 보존한다
+  - obligation_id: W04-checkpoints-and-attachments-preserved
+    task_id: W04
+    kind: scenario
+    description: 한 revision의 여러 체크포인트와 순서 있는 첨부 참조, 빈 메모가 재오픈 후 그대로다
+    source: .spec-gate/runs/t-w04-be7c324c/specs/revision-1/task-W04.feature#한 revision에 체크포인트 여러 개와 첨부 참조를 저장한다
+  - obligation_id: W04-reference-update-leaves-revisions
+    task_id: W04
+    kind: scenario
+    description: ResourceReference의 북마크·마지막 해석 경로 갱신은 최초 경로와 revision 스냅샷 바이트를 바꾸지 않는다(불변식 8, 0003)
+    source: .spec-gate/runs/t-w04-be7c324c/specs/revision-1/task-W04.feature#연결 참조의 북마크와 해석 경로를 갱신해도 revision 스냅샷은 바뀌지 않는다
+  - obligation_id: W04-revision-bytes-stable
+    task_id: W04
+    kind: scenario
+    description: 저장된 revision 스냅샷 바이트는 읽기와 다른 저장 뒤에도 그대로다(불변식 4)
+    source: .spec-gate/runs/t-w04-be7c324c/specs/revision-1/task-W04.feature#저장된 revision 스냅샷 바이트는 읽고 다시 저장해도 바뀌지 않는다
+  - obligation_id: W04-revision-list-by-project-sequence
+    task_id: W04
+    kind: scenario
+    description: revision 목록은 해당 프로젝트 것만, 삽입 순서·기록 시각과 상관없이 순번 순서다(PRD §6-D)
+    source: .spec-gate/runs/t-w04-be7c324c/specs/revision-1/task-W04.feature#revision 목록은 프로젝트별로 순번 순서다
+  - obligation_id: W04-revision-columns-from-snapshot
+    task_id: W04
+    kind: scenario
+    description: revision의 프로젝트 이름 열과 스냅샷 schema version은 저장하는 스냅샷에서 만들어 스냅샷과 어긋나지 않는다(0007)
+    source: .spec-gate/runs/t-w04-be7c324c/specs/revision-1/task-W04.feature#revision의 프로젝트 이름과 스냅샷 schema version은 저장하는 스냅샷에서 만든다
+  - obligation_id: W04-provenance-shape-enforced
+    task_id: W04
+    kind: scenario
+    description: 복원 출처는 restored 원인에만 있고 출처는 종류·원본 Project·원본 revision을 모두 가진다. 어긴 저장 레코드와 알 수 없는 값은 손상 레코드 오류다(0005)
+    source: .spec-gate/runs/t-w04-be7c324c/specs/revision-1/task-W04.feature#0005 형태 규칙을 어긴 저장 레코드는 손상 레코드로 읽는다
+  - obligation_id: W04-existing-records-not-overwritten
+    task_id: W04
+    kind: scenario
+    description: 같은 UUID의 revision·Project·참조·체크포인트, 같은 프로젝트의 같은 순번 추가는 거부되고 기존 레코드 값과 스냅샷 바이트, 레코드 수는 그대로다(불변식 4)
+    source: .spec-gate/runs/t-w04-be7c324c/specs/revision-1/task-W04.feature#이미 있는 레코드는 덮어쓰지 않는다
+  - obligation_id: W04-same-sequence-other-project-allowed
+    task_id: W04
+    kind: scenario
+    description: 순번은 프로젝트별이라 다른 프로젝트의 같은 순번은 허용한다
+    source: .spec-gate/runs/t-w04-be7c324c/specs/revision-1/task-W04.feature#다른 Project의 같은 순번은 허용한다
+  - obligation_id: W04-open-creates-missing-store
+    task_id: W04
+    kind: scenario
+    description: 저장소 파일이 없으면 빈 저장소를 만든다
+    source: .spec-gate/runs/t-w04-be7c324c/specs/revision-1/task-W04.feature#저장소 파일이 없으면 새 저장소를 만든다
+  - obligation_id: W04-open-creates-directory
+    task_id: W04
+    kind: scenario
+    description: 저장소 디렉토리가 없으면 만든다
+    source: .spec-gate/runs/t-w04-be7c324c/specs/revision-1/task-W04.feature#저장소 디렉토리가 없으면 만들고 연다
+  - obligation_id: W04-open-failure-preserves-store
+    task_id: W04
+    kind: scenario
+    description: 손상(damaged)·앱보다 새로운 스키마(incompatible)·읽기 권한 없음(accessDenied) 저장소는 원인 범주와 위치가 담긴 오류로 실패하고, -wal·-shm을 포함한 기존 파일 묶음의 바이트를 바꾸거나 지우지 않는다(PRD §7)
+    source: .spec-gate/runs/t-w04-be7c324c/specs/revision-1/task-W04.feature#기존 저장소를 열 수 없으면 원인 범주가 담긴 오류를 돌려주고 파일을 바꾸지 않는다
+  - obligation_id: W04-default-store-location
+    task_id: W04
+    kind: scenario
+    description: 기본 저장소 위치는 앱 컨테이너 Application Support 아래 앱 전용 디렉토리다
+    source: .spec-gate/runs/t-w04-be7c324c/specs/revision-1/task-W04.feature#기본 저장소 위치는 앱의 Application Support 아래다
+  - obligation_id: W04-migration-preserves-v1-data
+    task_id: W04
+    kind: scenario
+    description: Revision 선택 필드 하나를 더한 테스트 전용 V2와 경량 V1→V2 단계를 운영 열기 경로에 넣어 열면 V1 데이터가 모두 유지되고 새 필드는 비어 있다
+    source: .spec-gate/runs/t-w04-be7c324c/specs/revision-1/task-W04.feature#스키마 V1에서 만든 데이터는 다음 스키마 버전으로 이전한 뒤에도 유지된다
+    acceptance_refs:
+      - A18
+  - obligation_id: W04-schema-v1-declared
+    task_id: W04
+    kind: scenario
+    description: 앱의 VersionedSchema V1(1.0.0)은 정확히 다섯 모델이고 Node 모델이 없으며, 이전 계획은 V1 하나로 시작한다(0007)
+    source: .spec-gate/runs/t-w04-be7c324c/specs/revision-1/task-W04.feature#앱의 스키마 버전 목록은 V1에서 시작하고 이전 계획이 그 목록을 따른다
+    acceptance_refs:
+      - A18
+  - obligation_id: W04-swiftdata-confined
+    task_id: W04
+    kind: structure-check
+    description: SwiftData import는 Persistence·App 폴더에만 있다(검사 스크립트와 그 자체 테스트)
+    source: .spec-gate/runs/t-w04-be7c324c/specs/revision-1/task-W04.feature#저장소 모델 프레임워크는 Persistence와 앱 조립 계층에서만 쓴다
+acceptance_coverage:
+  A18:
+    - W04-migration-preserves-v1-data
+    - W04-schema-v1-declared
+decision_log: null
+critic_report: .spec-gate/runs/t-w04-be7c324c/critic-pass-2.yaml
+non_blocking_notes:
+  - finding_id: F-W04-12
+    task_id: W04
+    note: incompatible은 원인을 직접 확인해서 붙는 범주가 아니라 나머지 모든 실패를 받는 범주다. 그래서 파일 머리는 정상인데 내부가 손상된 저장소, 디스크 I/O 실패, 잠금 경합도 "앱이 모르는 스키마"로 분류된다. 저자가 밝힌 대로 범주는 복구 선택지 문구를 고르는 근거다. 이렇게 잘못 분류되면 사용자는 손상된 데이터를 두고 "앱을 업데이트하라"는 안내를 받게 된다. 시나리오 세 개는 모두 통과하겠지만, 분류의 의미는 테스트로 고정되지 않는다.
+  - finding_id: F-W04-13
+    task_id: W04
+    note: '"파일 없음 → 새로 만듦"과 "파일 있음·열기 실패 → 오류" 사이의 경계 두 가지가 정해져 있지 않다. 첫째, 본 파일이 0바이트로 남은 경우다(예: 첫 생성 중 중단). 파일 머리 검사로는 damaged가 되지만, SQLite는 이 파일을 빈 DB로 열 수 있다. 둘째, 본 파일은 없는데 같은 이름의 -wal·-shm이 남은 경우다. 이를 "파일 없음"으로 보고 새 저장소를 만들면, 남은 -wal을 덮어쓰거나 지울 수 있다. 어느 쪽으로 구현해도 지금 시나리오는 통과한다.'
+  - finding_id: F-W04-14
+    task_id: W04
+    note: '"열기 전에 있던" 파일 묶음을 비교한다고 적은 점은 나아졌다. 하지만 비어 있지 않은 -wal이 반드시 있는 예시는 없다. damaged 예시는 임의 바이트로 채운 본 파일만 만들 가능성이 크다. incompatible 예시는 V2로 저장하고 닫는 동안 WAL이 체크포인트되어 -wal이 비거나 아예 없을 수 있다. 그러면 F-W04-3이 겨냥한 위험, 즉 실패한 열기가 -wal을 지워 최근 트랜잭션을 잃는 경우를 여전히 잡지 못한다.'
+  - finding_id: F-W04-15
+    task_id: W04
+    note: 저장 어댑터가 참조 무결성을 검사하는지 정해져 있지 않다. 검사 대상은 없는 Project를 가리키는 revision, 없는 revision을 가리키는 체크포인트, 다른 Project의 revision이나 없는 revision을 가리키는 Project.currentRevisionID다. 순번 시나리오는 Q를 만들지 않고 Q의 revision을 추가하므로, 검사하지 않는 구현을 전제로 읽힌다. 반면 덮어쓰기 거부 시나리오는 어댑터가 삽입 전에 검사한다고 정한다. 이 경계가 비어 있으면 W05·W22·W25가 어댑터에 기대할 수 있는 보장이 불분명하다.
+  - finding_id: F-W04-16
+    task_id: W04
+    note: F-W04-5에서 요청한 규칙 시나리오는 들어왔지만 두 군데가 남았다. 첫째, Then 문장 끝부분의 주어가 섞여 있다. "schema version이 프로젝트 이름과 같다"로 읽힌다. 의도는 "디코딩한 스냅샷의 프로젝트 이름도 '서비스 B'다"로 보인다. 둘째, 첫 시나리오 표는 여전히 프로젝트 이름과 스냅샷을 서로 다른 입력으로 적고, schema version 열은 적지 않는다. 그래서 revision을 추가하는 API가 이름을 따로 받아도 되는 것처럼 읽힌다.
+  - finding_id: F-W04-17
+    task_id: W04
+    note: 덮어쓰기 거부는 시나리오로 고정됐다. 하지만 어댑터가 Revision과 Checkpoint를 수정하거나 삭제하는 연산을 제공하지 않는다는 점은 assumption에도 구조 검사에도 없다. 어댑터에서 수정이 허용되는 것은 ResourceReference의 북마크·해석 경로, 그리고 W05 커밋과 W10 보관에 필요한 Project 열뿐이어야 한다. 이 범위를 적지 않으면 이후 항목이 편의상 revision 수정 연산을 추가해도 어느 게이트도 잡지 못한다.
+  - finding_id: F-W04-18
+    task_id: W04
+    note: 이전 패스의 지적이 해소됐는지 확인했다. F-W04-1(major)은 해소됐다. 같은 UUID의 revision·Project·참조·체크포인트와 같은 프로젝트의 같은 순번을 거부하고, 레코드 수와 기존 값, 스냅샷 바이트를 단언하는 Outline이 들어왔다. 다른 프로젝트의 같은 순번 허용도 있다. F-W04-2는 해소됐다. V2에 선택 필드를 더하고, 경량 단계를 두고, 운영 열기 경로에 계획을 주입하고, 새 필드가 비어 있음을 단언하며, incompatible을 더 새로운 V2 저장소로 재현한다. F-W04-6(구조로 보장하고, 어긴 저장 레코드는 손상으로 읽음)과 F-W04-7(프로젝트 필터, 삽입 순서와 기록 시각 역전, 정확히 다섯 모델과 Node 없음)도 해소됐다. F-W04-3, F-W04-5는 일부만 해소됐고 F-W04-14, F-W04-16으로 이어진다. 원인 범주가 들어와 F-W04-4의 W04 쪽 요청도 해소됐다. 원인 13종은 W03 ConfigurationEdit의 9개 case 이름(Fianchetto/Domain/ConfigurationEditor.swift)과 0005에 맞는다.
+  - finding_id: F-W04-19
+    task_id: W04
+    note: PRD §7이 요구하는 저장소 열기 실패 복구 선택지 화면은 아직 어느 작업 항목에도 없다. 저자는 이 run의 fingerprint를 지키려고 게이트가 끝난 뒤 W07에 추가하겠다고 적었다. 이 처리는 타당하다. 다만 이것은 caller가 이행해야 할 후속 의무다. W07 details에 범주별 복구 선택지(내보내기 기반 복원 안내, 앱 업데이트 안내, 권한 확인)를 넣을 때 F-W04-12에서 고른 범주 정의를 따라야 한다.
+  - finding_id: F-W04-20
+    task_id: W04
+    note: Services는 SwiftData를 import할 수 없다. 그래서 불변식 5의 한 저장 단위 커밋(revision 추가와 currentRevisionID 이동)과 순번 연속성(누락 방지)은 W05가 Persistence 어댑터의 원자적 연산으로 정해야 한다. W04 어댑터는 같은 순번만 거부하고 순번 사이가 비는지는 검사하지 않는다. 이 배분은 일관되지만, W05 명세가 이를 전제로 삼아야 한다.
