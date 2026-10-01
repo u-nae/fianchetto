@@ -22,7 +22,17 @@
 - 표준 `.xcodeproj` + `xcodebuild`. 외부 패키지 0개로 시작한다.
 - Swift 6 language mode, strict concurrency complete. 경고를 방치하지 않는다.
 - deployment target macOS 15.0, arm64. 개발 기기(macOS 27)에서의 통과를 macOS 15 통과로 보고하지 않는다.
-- 빌드·테스트 명령은 저장소 생성 후 이 절에 실제 scheme 이름으로 고정한다.
+- 프로젝트 `Fianchetto.xcodeproj`, 공유 scheme `Fianchetto`(target: `Fianchetto`, `FianchettoTests`, `FianchettoUITests`).
+  소스 폴더는 폴더 동기화 그룹이라 파일 추가 시 pbxproj를 고치지 않는다.
+
+```sh
+scripts/verify.sh                    # 전체 검증: 구조·빌드 설정·Debug test(UI 포함)·Release build·entitlement·경고 0개
+SKIP_UI_TESTS=1 scripts/verify.sh    # UI 테스트 제외
+xcodebuild -project Fianchetto.xcodeproj -scheme Fianchetto -destination 'platform=macOS,arch=arm64' \
+  -derivedDataPath build/DerivedData test -skip-testing:FianchettoUITests   # 단위 테스트만
+```
+
+- 보고할 때 빌드 성공·테스트 통과·macOS 15 실기 실행을 구분한다. `verify.sh` 통과는 macOS 15 실기 검증이 아니다.
 
 ## 구조와 의존 방향
 

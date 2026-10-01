@@ -16,7 +16,7 @@ items:
       xcodebuild build와 test가 경고 0개로 통과하는지 확인한다. 빌드 설정(SWIFT_VERSION, 동시성 검사,
       MACOSX_DEPLOYMENT_TARGET, ARCHS)과 entitlement plist를 검사한다. 앱이 실행되어 빈 창을 띄우는지
       launch check. macOS 15 실기 검증은 W27에서 별도로 보고한다.
-    status: pending
+    status: done
     priority: high
     dependencies: []
     source_refs:
