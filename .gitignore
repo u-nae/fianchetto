@@ -1,0 +1,18 @@
+# macOS
+.DS_Store
+
+# Xcode
+xcuserdata/
+*.xcuserstate
+DerivedData/
+build/
+*.xcresult
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# Spec gate intermediate artifacts (keep tdd-handoff.yaml, accepted specs, questions, decision logs)
+.spec-gate/runs/*/normalized-tasks.yaml
+.spec-gate/runs/*/author-manifest-*.yaml
+.spec-gate/runs/*/critic-pass-*.yaml

@@ -1,0 +1,7 @@
+schema_version: "1.0"
+baseline:
+  - docs/PRD.md
+  - docs/TECH_STACK.md
+decision_records: docs/decisions
+work_items: docs/work-items.yaml
+run_root: .spec-gate/runs
