@@ -1,0 +1,106 @@
+#!/usr/bin/env bash
+# 검사 스크립트 자체의 동작을 임시 fixture로 검증한다. 만든 파일은 끝에 지운다.
+set -euo pipefail
+
+SCRIPTS="$(cd "$(dirname "$0")/.." && pwd)"
+workdir=$(mktemp -d)
+trap 'rm -rf "$workdir"' EXIT
+
+passed=0
+failed=0
+expect() { # expect <설명> <기대 종료 코드 0|nonzero> <명령...>
+  local description="$1" expected="$2"
+  shift 2
+  local status=0
+  "$@" >/dev/null 2>&1 || status=$?
+  if [[ "$expected" == 0 && $status -eq 0 ]] || [[ "$expected" == nonzero && $status -ne 0 ]]; then
+    passed=$((passed + 1))
+  else
+    echo "FAIL: $description (종료 코드 $status)" >&2
+    failed=$((failed + 1))
+  fi
+}
+
+make_tree() { # make_tree <루트>
+  mkdir -p "$1"/{App,Features,Services,Domain,Persistence,Platform}
+  printf '{ "sourceLanguage" : "ko", "strings" : {}, "version" : "1.0" }\n' >"$1/Localizable.xcstrings"
+}
+
+# check-structure.sh
+valid="$workdir/valid"
+make_tree "$valid"
+printf 'import Foundation\n\nstruct Snapshot {}\n' >"$valid/Domain/Snapshot.swift"
+expect "구조가 맞으면 통과한다" 0 "$SCRIPTS/check-structure.sh" "$valid"
+
+missing="$workdir/missing"
+make_tree "$missing"
+rmdir "$missing/Persistence"
+expect "폴더 하나가 없으면 실패한다" nonzero "$SCRIPTS/check-structure.sh" "$missing"
+
+index=0
+for statement in 'import SwiftUI' '@preconcurrency import SwiftData' 'import struct AppKit.NSRect' '  import OSLog'; do
+  index=$((index + 1))
+  bad="$workdir/bad-$index"
+  make_tree "$bad"
+  printf 'import Foundation\n%s\n' "$statement" >"$bad/Domain/Rule.swift"
+  expect "Domain의 '$statement' 는 실패한다" nonzero "$SCRIPTS/check-structure.sh" "$bad"
+done
+
+nested="$workdir/nested"
+make_tree "$nested"
+mkdir -p "$nested/Domain/Tree"
+printf 'import SwiftUI\n' >"$nested/Domain/Tree/Rule.swift"
+expect "Domain 하위 폴더의 금지 import도 실패한다" nonzero "$SCRIPTS/check-structure.sh" "$nested"
+
+outside="$workdir/outside"
+make_tree "$outside"
+printf 'import SwiftUI\n' >"$outside/Features/View.swift"
+expect "Domain 밖의 SwiftUI import는 허용한다" 0 "$SCRIPTS/check-structure.sh" "$outside"
+
+nocatalog="$workdir/nocatalog"
+make_tree "$nocatalog"
+rm "$nocatalog/Localizable.xcstrings"
+expect "String Catalog가 없으면 실패한다" nonzero "$SCRIPTS/check-structure.sh" "$nocatalog"
+
+english="$workdir/english"
+make_tree "$english"
+printf '{ "sourceLanguage" : "en", "strings" : {}, "version" : "1.0" }\n' >"$english/Localizable.xcstrings"
+expect "String Catalog 원본 언어가 ko가 아니면 실패한다" nonzero "$SCRIPTS/check-structure.sh" "$english"
+
+broken="$workdir/broken"
+make_tree "$broken"
+printf '{ "sourceLanguage" : ' >"$broken/Localizable.xcstrings"
+expect "String Catalog가 손상되면 실패한다" nonzero "$SCRIPTS/check-structure.sh" "$broken"
+
+# check-entitlements.sh: 임시 실행 파일을 ad-hoc 서명해 entitlement 조합을 검사한다.
+sign() { # sign <이름> <entitlement 키...>  → 서명된 실행 파일 경로 출력
+  local name="$1"
+  shift
+  local binary="$workdir/$name" plist="$workdir/$name.entitlements"
+  cp /usr/bin/true "$binary"
+  {
+    echo '<?xml version="1.0" encoding="UTF-8"?>'
+    echo '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">'
+    echo '<plist version="1.0"><dict>'
+    for key in "$@"; do echo "<key>$key</key><true/>"; done
+    echo '</dict></plist>'
+  } >"$plist"
+  codesign --force --sign - --entitlements "$plist" "$binary" >/dev/null 2>&1
+  echo "$binary"
+}
+
+base=(com.apple.security.app-sandbox com.apple.security.files.user-selected.read-write com.apple.security.files.bookmarks.app-scope)
+expect "필수 entitlement만 있으면 통과한다" 0 "$SCRIPTS/check-entitlements.sh" "$(sign ok "${base[@]}")"
+expect "Debug 디버거 권한은 허용한다" 0 "$SCRIPTS/check-entitlements.sh" "$(sign debug "${base[@]}" com.apple.security.get-task-allow)"
+expect "read-only가 함께 있으면 실패한다" nonzero "$SCRIPTS/check-entitlements.sh" \
+  "$(sign readonly "${base[@]}" com.apple.security.files.user-selected.read-only)"
+expect "네트워크 권한이 있으면 실패한다" nonzero "$SCRIPTS/check-entitlements.sh" \
+  "$(sign network "${base[@]}" com.apple.security.network.client)"
+expect "북마크 권한이 없으면 실패한다" nonzero "$SCRIPTS/check-entitlements.sh" \
+  "$(sign nobookmark com.apple.security.app-sandbox com.apple.security.files.user-selected.read-write)"
+expect "sandbox가 없으면 실패한다" nonzero "$SCRIPTS/check-entitlements.sh" \
+  "$(sign nosandbox com.apple.security.files.user-selected.read-write com.apple.security.files.bookmarks.app-scope)"
+expect "경로가 없으면 실패한다" nonzero "$SCRIPTS/check-entitlements.sh" "$workdir/does-not-exist"
+
+echo "check-scripts-test: $passed passed, $failed failed"
+((failed == 0))

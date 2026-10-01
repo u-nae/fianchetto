@@ -4,7 +4,7 @@
 Board 위의 **Bishop**은 비숍의 긴 대각선처럼 디스크의 먼 위치까지 닿는 연결이고, 앱은 Board 구성의 변화와
 작업 체크포인트를 기억합니다.
 
-> 상태: 구현 전. 기준 문서와 개발 절차를 준비한 단계입니다.
+> 상태: 구현 초기. 앱 프로젝트와 빌드·검증 기반(W01)까지 만들었습니다.
 
 ## 문서
 
@@ -21,4 +21,4 @@ Board 위의 **Bishop**은 비숍의 긴 대각선처럼 디스크의 먼 위치
 작업 항목마다 명세 게이트(`fianchetto-spec-gate`)를 통과한 뒤, 인계된 test obligation 기준으로 TDD를 진행합니다.
 
 - 기술: Swift 6, SwiftUI, SwiftData, App Sandbox. 최소 macOS 15, arm64. 외부 패키지 없음.
-- 빌드: Xcode 표준 프로젝트, `xcodebuild`.
+- 빌드: Xcode 표준 프로젝트, `xcodebuild`. 전체 검증은 `scripts/verify.sh`.

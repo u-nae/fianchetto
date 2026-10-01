@@ -1,2 +1,587 @@
 schema_version: "1.0"
-items: []
+# 구현 순서는 PRD §10 단계 1~5를 따르고 dependencies로 표현한다.
+# 기능 항목(W07 이후)은 Service + 화면 상태 + View/메뉴 명령을 함께 포함한다.
+items:
+  # ── 단계 1: 데이터와 파일 접근 기반 ─────────────────────────────
+  - id: W01
+    title: 앱 프로젝트와 빌드·샌드박스 기반 만들기
+    description: 표준 .xcodeproj 앱 target과 테스트 target을 만들고 빌드 기준을 고정한다.
+    details: >-
+      macOS App 템플릿, Swift 6 language mode, strict concurrency complete, deployment target macOS 15.0,
+      arm64, 외부 패키지 0개. App Sandbox entitlement는 user-selected read-write와 app-scoped bookmarks(0001).
+      CLAUDE.md 구조의 폴더(App/Features/Services/Domain/Persistence/Platform), Swift Testing 단위 테스트
+      target, XCUITest target, String Catalog, OSLog 서브시스템 정의. 실제 scheme 이름으로 CLAUDE.md의
+      빌드·테스트 명령을 고정한다. 기능 코드는 넣지 않는다.
+    test_strategy: >-
+      xcodebuild build와 test가 경고 0개로 통과하는지 확인한다. 빌드 설정(SWIFT_VERSION, 동시성 검사,
+      MACOSX_DEPLOYMENT_TARGET, ARCHS)과 entitlement plist를 검사한다. 앱이 실행되어 빈 창을 띄우는지
+      launch check. macOS 15 실기 검증은 W27에서 별도로 보고한다.
+    status: done
+    priority: high
+    dependencies: []
+    source_refs:
+      - docs/TECH_STACK.md#확정-기술스택
+      - docs/TECH_STACK.md#현재-로컬-도구-기준
+      - docs/TECH_STACK.md#구조와-경량화-원칙
+      - docs/PRD.md#단계-1-데이터와-파일-접근-기반
+      - docs/decisions/0001-sandbox-file-access.md
+    acceptance_refs: [A18]
+    subtasks: []
+
+  - id: W02
+    title: 구성 스냅샷 값 타입과 트리 규칙
+    description: Revision에 저장할 불변 구성 스냅샷과 트리 유효성 규칙을 순수 Swift로 정의한다.
+    details: >-
+      Domain 값 타입: 프로젝트 이름과 Node 목록(UUID, 종류 group/file/folder/webLink, 표시 이름, 부모 ID,
+      정렬 순서, referenceID·recordedPath·대상 종류(file/folder), url(webLink)). Codable JSON schema
+      version 1(0002, 0003). 검증 규칙: 순환 없음, 부모 하나, 연결 폴더·파일·웹 링크는 부모가 될 수 없음,
+      빈 이름 거부·앞뒤 공백 정리, 같은 부모 아래 같은 이름 허용, webLink는 HTTP/HTTPS 절대 URL,
+      종류별 필드 일관성. Foundation만 import한다.
+    test_strategy: >-
+      Swift Testing 단위 테스트: JSON 왕복 동일성, schema version 기록, 각 위반 규칙의 거부와 경계값
+      (공백만 있는 이름, 자기 자신을 부모로, 깊은 자손 순환, 빈 트리, http 외 scheme).
+    status: pending
+    priority: high
+    dependencies: [W01]
+    source_refs:
+      - docs/PRD.md#5-핵심-개념과-데이터-규칙
+      - docs/PRD.md#불변식
+      - docs/TECH_STACK.md#주요-개념
+      - docs/TECH_STACK.md#저장-방식
+      - docs/decisions/0002-web-links-are-nodes.md
+      - docs/decisions/0003-snapshot-records-paths.md
+    acceptance_refs: [A14]
+    subtasks: []
+
+  - id: W03
+    title: 구성 편집 연산과 무변경 판정
+    description: 확정된 사용자 작업 하나를 스냅샷에서 새 스냅샷으로 바꾸는 순수 연산과 무변경 판정을 만든다.
+    details: >-
+      연산: 프로젝트 이름 변경, 그룹 추가, 연결 항목 여러 개 일괄 추가, 웹 링크 추가, 표시 이름 변경,
+      URL 변경, 부모 이동, 형제 순서 변경, Node와 자손 제거, 대상 교체(새 referenceID·recordedPath).
+      모든 연산은 Node UUID를 유지하고 이름·경로가 같아도 병합하지 않는다. 결과가 입력과 같으면
+      "변경 없음"을 반환해 revision을 만들지 않게 한다. 유효하지 않은 입력은 오류로 거부한다(W02 규칙).
+      UUID 생성은 주입한다. 대상 동일성 판정 함수(0004: fileResourceIdentifier+volumeIdentifier,
+      같음/다름/판정 불가)도 이 항목에 순수 함수로 둔다.
+    test_strategy: >-
+      Swift Testing: 연산별 결과 스냅샷, UUID 유지, 대상 교체 시 새 referenceID와 원래 스냅샷 불변,
+      같은 값 확정·같은 위치 이동의 무변경 판정, 순환 이동 거부, 동일성 판정 세 경우.
+    status: pending
+    priority: high
+    dependencies: [W02]
+    source_refs:
+      - docs/PRD.md#불변식
+      - docs/PRD.md#7-기록-정책과-저장-안정성
+      - docs/PRD.md#b-backend-대상-교체
+      - docs/decisions/0004-same-target-identity.md
+    acceptance_refs: [A03, A04]
+    subtasks: []
+
+  - id: W04
+    title: SwiftData 스키마 V1과 저장소 열기
+    description: 영구 저장 모델 V1과 마이그레이션 계획을 만들고, 저장소를 열 수 없을 때 안전하게 실패한다.
+    details: >-
+      @Model: Project(id, name, createdAt, currentRevisionID, archivedAt?, origin?), ResourceReference(id,
+      최초 경로, 대상 종류, 북마크 데이터, 마지막 해석 경로), Revision(projectID, sequence, recordedAt,
+      cause, restoredFromRevisionID?, 구성 JSON, JSON schema version), Checkpoint(revisionID, 제목,
+      진행 메모, 다음 할 일, 첨부 참조)(0005). VersionedSchema V1 + SchemaMigrationPlan. 경계에서
+      Domain 값 타입으로 변환하고 @Model은 Persistence 밖으로 내보내지 않는다. 저장소 열기 실패 시
+      오류를 반환하고 빈 저장소로 교체하지 않는다. 저장소 위치는 Application Support.
+    test_strategy: >-
+      임시 디렉토리 ModelContainer로 저장·재오픈 후 값 보존, Domain 변환 왕복, 손상·접근 불가 저장소
+      열기 실패가 오류로 드러나고 기존 파일이 남는지 확인. 스키마 이전은 테스트 전용 V2 스키마로
+      V1 데이터가 유지되는지 검증한다.
+    status: pending
+    priority: high
+    dependencies: [W02]
+    source_refs:
+      - docs/TECH_STACK.md#주요-개념
+      - docs/TECH_STACK.md#확정-기술스택
+      - docs/TECH_STACK.md#저장-위치와-내보내기
+      - docs/PRD.md#7-기록-정책과-저장-안정성
+      - docs/decisions/0005-provenance-and-archive-fields.md
+    acceptance_refs: [A18]
+    subtasks: []
+
+  - id: W05
+    title: 구성 변경 커밋 서비스와 Board 만들기
+    description: 현재 구성과 revision을 한 저장 단위로 커밋하는 서비스를 만들고 첫 사용처로 Board 생성을 제공한다.
+    details: >-
+      서비스는 W03 연산 결과를 받아 현재 구성 갱신과 revision 추가(프로젝트별 증가 순번, 절대 시각,
+      cause)를 한 번에 저장한다. 실패 시 이전 성공 구성으로 되돌리고 성공 전에는 완료를 알리지 않는다.
+      같은 프로젝트의 인접 요청은 직렬화해 순번 중복·누락을 막는다. 무변경 결과는 저장하지 않는다.
+      보관된 프로젝트의 편집을 거부한다(0005). Board 만들기는 빈 초기 구성의 첫 revision을 기록하고
+      실제 디렉토리를 만들지 않는다. 시간·UUID는 주입한다. 저장 실패 지점은 주입 가능하게 둔다.
+    test_strategy: >-
+      실제 in-memory/임시 디렉토리 SwiftData로: 생성 후 첫 revision 순번 1, 주입 실패 시 현재 구성·
+      revision 모두 이전 상태, 동시 요청 직렬화 후 순번 연속, 무변경 시 revision 수 불변, 보관 프로젝트
+      편집 거부, 생성 과정에서 파일 시스템에 디렉토리가 생기지 않음.
+    status: pending
+    priority: high
+    dependencies: [W03, W04]
+    source_refs:
+      - docs/PRD.md#7-기록-정책과-저장-안정성
+      - docs/PRD.md#a-프로젝트와-연결-만들기
+      - docs/TECH_STACK.md#저장-방식
+      - docs/decisions/0005-provenance-and-archive-fields.md
+    acceptance_refs: [A01, A13]
+    subtasks: []
+
+  - id: W06
+    title: 읽기 전용 보안 범위 북마크 어댑터
+    description: 사용자가 고른 파일·폴더의 읽기 전용 북마크를 만들고 재실행 후 해석해 접근한다.
+    details: >-
+      Platform 어댑터: NSOpenPanel 선택 결과에서 .withSecurityScope + .securityScopeAllowOnlyReadAccess
+      북마크 생성(0001), 해석, stale 시 갱신(구성 이력과 분리, ResourceReference만 갱신),
+      start/stopAccessingSecurityScopedResource 대응, fileResourceIdentifier·volumeIdentifier 조회(0004),
+      접근 결과를 원인별로 반환. 파일 I/O는 MainActor 밖에서 한다. 원본을 쓰지 않는다.
+    test_strategy: >-
+      테스트마다 임시 디렉토리를 만들어 북마크 생성·해석·이동 후 해석·삭제 후 실패 원인을 검증한다.
+      읽기 전용 옵션 사용을 검증한다. 실제 sandbox 재실행 접근은 W27에서 Release 앱으로 확인한다.
+    status: pending
+    priority: high
+    dependencies: [W01]
+    source_refs:
+      - docs/TECH_STACK.md#파일-접근과-권한
+      - docs/PRD.md#단계-1-데이터와-파일-접근-기반
+      - docs/decisions/0001-sandbox-file-access.md
+      - docs/decisions/0004-same-target-identity.md
+    acceptance_refs: [A02]
+    subtasks: []
+
+  - id: W07
+    title: 기본 창과 Board 탐색
+    description: Board 목록, 현재 구성 트리, 상세 영역을 가진 기본 창과 메뉴 명령을 만든다.
+    details: >-
+      NavigationSplitView(왼쪽 Board 목록·Board 만들기·보관된 Board 접근, 중앙 현재 구성 트리,
+      Inspector 상세). 첫 실행 빈 목록과 "Board 만들기" 동작. 재실행 시 마지막 Board로 돌아가되 현재
+      구성으로 진입(@AppStorage). Commands와 키보드 접근, 접근성 레이블, 문자열은 String Catalog
+      (0006 용어). 화면 상태는 @Observable @MainActor. 이후 기능 항목이 이 창에 동작을 추가한다.
+    test_strategy: >-
+      화면 상태 단위 테스트(선택·마지막 Board 복원·빈 상태). XCUITest 핵심 흐름: 첫 실행에서 Board를
+      만들고 트리에 표시되는지, 메뉴·키보드로 같은 동작이 가능한지.
+    status: pending
+    priority: high
+    dependencies: [W05]
+    source_refs:
+      - docs/PRD.md#기본-창
+      - docs/PRD.md#ui-언어와-전달
+      - docs/TECH_STACK.md#ui-구성
+      - docs/decisions/0006-board-and-bishop-terms.md
+    acceptance_refs: [A01]
+    subtasks: []
+
+  - id: W08
+    title: 로컬 파일·폴더를 Bishop으로 연결하기
+    description: 파일 선택이나 Finder 드롭으로 여러 파일·폴더를 한 작업으로 Board에 연결한다.
+    details: >-
+      선택한 대상마다 ResourceReference와 file/folder Node를 만들고 초기 표시 이름은 대상 이름. 여러 개
+      추가와 한 번의 드롭은 revision 하나. 일부 북마크 생성 실패 시 전체 추가를 취소하고 재시도 가능하게
+      한다. 선택 취소는 revision을 만들지 않는다. 외부 파일을 그룹에 드롭하면 연결 추가, 연결 폴더 위
+      드롭은 거부. 원본을 이동·복사하지 않는다. 메뉴 "Bishop 추가".
+    test_strategy: >-
+      서비스 테스트(임시 디렉토리 + 실제 SwiftData): 여러 대상 추가 시 revision 1개와 recordedPath 기록,
+      한 개 북마크 실패 주입 시 Node·revision·reference 모두 미생성, 취소 시 무변경, 원본 파일 상태
+      불변. 드롭 대상 판정은 단위 테스트.
+    status: pending
+    priority: high
+    dependencies: [W06, W07]
+    source_refs:
+      - docs/PRD.md#a-프로젝트와-연결-만들기
+      - docs/PRD.md#c-배치와-제거
+      - docs/TECH_STACK.md#파일-접근과-권한
+    acceptance_refs: [A02]
+    subtasks: []
+
+  - id: W09
+    title: 연결 대상 변경
+    description: Bishop의 이름·ID·배치를 유지하면서 실제 대상을 다른 파일·폴더로 바꾼다.
+    details: >-
+      다른 대상을 고르면 기존·새 경로를 보여 주고 확정 시 새 ResourceReference와 대상 교체 revision 하나를
+      기록한다. 취소·같은 대상 재선택은 revision을 만들지 않는다. 동일성은 0004 판정을 쓰고 판정 불가면
+      확정 전에 교체로 기록된다고 알린다. 이전 reference는 과거 revision이 참조하는 동안 보존한다.
+    test_strategy: >-
+      서비스 테스트: 교체 후 Node UUID·이름·부모·순서 유지, 새 referenceID, 이전 revision 스냅샷은
+      기존 referenceID·recordedPath 유지, 같은 대상 재선택 무변경, 판정 불가 경로의 사용자 고지 상태.
+    status: pending
+    priority: high
+    dependencies: [W08]
+    source_refs:
+      - docs/PRD.md#b-backend-대상-교체
+      - docs/PRD.md#불변식
+      - docs/decisions/0004-same-target-identity.md
+    acceptance_refs: [A03]
+    subtasks: []
+
+  # ── 단계 2: 구성 관리 ───────────────────────────────────────────
+  - id: W10
+    title: Board 이름 변경·보관·보관 해제
+    description: Board 이름을 바꾸면 revision을 남기고, 보관·보관 해제는 구성 이력 없이 편집 가능 여부만 바꾼다.
+    details: >-
+      이름 변경은 구성 변경(revision). 보관은 archivedAt만 바꾸고 revision을 만들지 않는다(0005).
+      보관된 Board는 편집을 막고 조회·내보내기·새 Board 만들기는 허용한다. 영구 삭제는 제공하지 않는다.
+      정책 모호성: 보관된 Board에서 체크포인트 저장을 허용할지 PRD가 정하지 않았다(§6-C는 "편집"만
+      막음). 게이트가 권장안과 함께 질문한다.
+    test_strategy: >-
+      서비스 테스트: 이름 변경 revision 1개, 같은 이름·공백만 변경 무변경, 보관·해제 시 revision 수 불변,
+      보관 중 구성 편집 거부, 보관 중 조회 가능.
+    status: pending
+    priority: medium
+    dependencies: [W07]
+    source_refs:
+      - docs/PRD.md#첫-버전-필수
+      - docs/PRD.md#c-배치와-제거
+      - docs/decisions/0005-provenance-and-archive-fields.md
+    acceptance_refs: [A04]
+    subtasks: []
+
+  - id: W11
+    title: 그룹과 웹 링크 만들기, 이름·URL 편집
+    description: 중첩 가상 그룹과 웹 링크를 만들고 Node 표시 이름과 웹 링크 URL을 편집한다.
+    details: >-
+      그룹은 실제 경로가 없고 디렉토리를 만들지 않는다. 웹 링크는 이름과 HTTP/HTTPS URL, 프리뷰를
+      가져오지 않는다(0002). 이름 편집 확정·URL 변경마다 revision 하나, 입력 중간 상태·같은 값 확정·
+      유효하지 않은 입력은 기록하지 않는다. 웹 링크 열기는 기본 브라우저(W14).
+    test_strategy: >-
+      서비스 테스트: 중첩 그룹 생성 revision, 웹 링크 URL 검증 거부 시 무변경, 이름 변경 후 과거
+      revision 표시 이름 불변, 같은 값 확정 무변경. XCUITest: 그룹 만들고 이름 변경.
+    status: pending
+    priority: high
+    dependencies: [W07]
+    source_refs:
+      - docs/PRD.md#a-프로젝트와-연결-만들기
+      - docs/PRD.md#7-기록-정책과-저장-안정성
+      - docs/decisions/0002-web-links-are-nodes.md
+    acceptance_refs: [A01, A04]
+    subtasks: []
+
+  - id: W12
+    title: 그룹 이동과 형제 순서 변경
+    description: 앱 내부 드래그·메뉴로 Node를 다른 그룹으로 옮기거나 형제 순서를 바꾼다.
+    details: >-
+      논리적 배치만 바꾸고 실제 파일을 이동하지 않는다. 자신이나 자손 안으로 그룹 이동, 연결 폴더 안으로
+      이동을 거부한다. 드롭 완료 하나가 revision 하나, 드래그 중간 상태는 기록하지 않는다. 같은 위치
+      드롭은 무변경. 키보드·메뉴로도 이동할 수 있어야 한다.
+    test_strategy: >-
+      서비스 테스트: 이동·순서 변경 revision과 과거 배치 불변, 순환 이동 거부 시 구성·revision 불변,
+      같은 위치 무변경, 원본 파일 경로 불변.
+    status: pending
+    priority: high
+    dependencies: [W11]
+    source_refs:
+      - docs/PRD.md#c-배치와-제거
+      - docs/PRD.md#불변식
+      - docs/TECH_STACK.md#파일-접근과-권한
+    acceptance_refs: [A04, A14]
+    subtasks: []
+
+  - id: W13
+    title: Bishop·그룹 제거
+    description: 현재 구성에서 Node를 제거하고, 그룹 제거는 포함 항목 수를 보여 확인받는다.
+    details: >-
+      "Bishop 제거"·그룹 제거는 현재 구성에서만 Node를 없애고 디스크 대상을 삭제하지 않는다. 그룹과
+      자손 제거는 revision 하나. 확인 취소는 무변경. 과거 revision에는 제거된 항목이 남는다. 화면에
+      "파일 삭제" 문구를 쓰지 않는다.
+    test_strategy: >-
+      서비스 테스트: 자손 수 계산, 그룹 제거 revision 1개, 이전 revision에 항목 유지, 취소 무변경,
+      임시 디렉토리 원본 파일 존재 유지. 문자열 카탈로그에 금지 문구가 없는지 검사.
+    status: pending
+    priority: high
+    dependencies: [W11]
+    source_refs:
+      - docs/PRD.md#c-배치와-제거
+      - docs/PRD.md#7-기록-정책과-저장-안정성
+    acceptance_refs: [A14]
+    subtasks: []
+
+  - id: W14
+    title: 현재 대상 열기와 Finder에서 보기
+    description: Bishop의 현재 대상을 기본 앱으로 열거나 Finder에서 보여 주고, 웹 링크를 브라우저로 연다.
+    details: >-
+      NSWorkspace.open과 activateFileViewerSelecting을 Platform 어댑터로 감싼다. 열기 전 북마크 해석과
+      접근 범위 대응. 열기는 revision을 만들지 않는다. 열기 실패는 W15 상태로 이어진다.
+    test_strategy: >-
+      어댑터를 주입한 서비스 테스트로 올바른 해석 URL 전달과 revision 수 불변을 검증한다. 실제 Finder·
+      기본 앱 동작은 W27 실제 환경 검증으로 보고한다.
+    status: pending
+    priority: high
+    dependencies: [W08, W11]
+    source_refs:
+      - docs/PRD.md#첫-버전-필수
+      - docs/TECH_STACK.md#ui-구성
+    acceptance_refs: [A02]
+    subtasks: []
+
+  - id: W15
+    title: 연결 상태 표시와 재연결
+    description: 연결 대상의 상태를 구분해 표시하고 같은 대상의 접근 복구 또는 다른 대상 선택을 제공한다.
+    details: >-
+      상태: 정상, 권한 필요, 대상 없음, 볼륨 연결 필요, 확인 실패. 근거가 부족하면 확인 실패.
+      선택·열기·명시적 새로고침 때만 확인하고 상시 감시하지 않는다. 오류 항목은 트리에 남기고
+      "다시 선택"·"상태 새로고침" 제공. 같은 대상 권한 복구·stale 북마크 갱신은 revision을 만들지
+      않고, 다른 대상이면 W09 교체로 처리. 상태는 색상만으로 구분하지 않는다.
+    test_strategy: >-
+      상태 분류는 입력(해석 결과·오류)을 받는 순수 함수 단위 테스트. 서비스 테스트: 임시 디렉토리 대상
+      삭제 후 Node·이력 유지와 "대상 없음", 같은 대상 재선택 시 revision 불변, 다른 대상은 새 reference.
+      볼륨 분리는 W27 실제 환경 검증.
+    status: pending
+    priority: high
+    dependencies: [W06, W09]
+    source_refs:
+      - docs/PRD.md#h-연결-오류와-재연결
+      - docs/TECH_STACK.md#파일-접근과-권한
+      - docs/PRD.md#경량화
+    acceptance_refs: [A12]
+    subtasks: []
+
+  # ── 단계 3: 이력 ────────────────────────────────────────────────
+  - id: W16
+    title: 두 구성의 차이 계산
+    description: Node UUID 기준으로 두 스냅샷의 변화를 분류하는 순수 함수를 만든다.
+    details: >-
+      분류: 추가, 제거, 표시 이름 변경, 부모 이동, 순서 변경, 대상 교체, URL 변경(0002), 프로젝트 이름
+      변경. 한 Node의 여러 변화를 함께 보고하고 변경 전·후 이름·그룹 위치·대상 경로를 제공한다. 직접 부모가
+      그대로인 자손은 이동으로 세지 않는다. 앞쪽 삽입으로 인덱스만 밀린 형제는 재정렬로 표시하지 않는다.
+      변화 없음은 빈 결과. 저장된 구성 정보만 사용한다.
+    test_strategy: >-
+      Swift Testing: 분류별 사례, 복합 변화, 그룹 이동 시 자손 중복 없음, 앞쪽 삽입 시 형제 순서 변경 없음,
+      동일 스냅샷 빈 결과, 빈 구성 대 빈 구성.
+    status: pending
+    priority: high
+    dependencies: [W02]
+    source_refs:
+      - docs/PRD.md#e-차이-비교
+      - docs/TECH_STACK.md#차이-비교
+      - docs/decisions/0002-web-links-are-nodes.md
+    acceptance_refs: [A07]
+    subtasks: []
+
+  - id: W17
+    title: 이력 목록과 날짜 시점 조회
+    description: revision 목록을 순번 순서로 보여 주고 날짜·시각으로 당시의 마지막 기록을 찾는다.
+    details: >-
+      목록은 필요한 양만 로드하고 선택한 revision만 디코딩한다. 날짜 조회는 기록 시각이 지정 시각 이하인
+      것 중 가장 늦은 시각, 같은 시각은 순번으로 결정(시계 역행 대응). 생성 이전은 "이 시점의 기록 없음".
+      저장은 절대 시각, 표시·선택은 시스템 시간대. 실제 기록 시각을 함께 표시하고 매일 스냅샷처럼
+      표현하지 않는다. 조회는 현재 구성을 바꾸지 않는다.
+    test_strategy: >-
+      시점 선택은 순수 함수 단위 테스트(경계: 정확히 같은 시각, 생성 이전, 시계 역행, 같은 시각 다른 순번).
+      서비스 테스트: 페이지 로드 개수, 조회 후 현재 구성·revision 수 불변.
+    status: pending
+    priority: high
+    dependencies: [W05]
+    source_refs:
+      - docs/PRD.md#d-과거-구성-확인
+      - docs/TECH_STACK.md#저장-방식
+      - docs/PRD.md#경량화
+    acceptance_refs: [A05]
+    subtasks: []
+
+  - id: W18
+    title: 과거 구성 읽기 전용 보기와 당시 대상 열기
+    description: 선택한 revision의 구성을 읽기 전용으로 보여 주고, 과거 항목을 열 때 현재와 혼동하지 않게 한다.
+    details: >-
+      "과거 구성 · 읽기 전용"과 기록 시각을 표시(색상만으로 구분하지 않음). 과거 항목 열기는 그 reference가
+      현재 해석하는 대상을 열고, recordedPath와 현재 위치가 다르면 둘을 구분해 표시(0003). 실제 파일
+      내용은 현재 내용이라는 설명 제공. 과거 화면 재연결은 같은 대상 접근 복구만 허용하고 다른 대상으로
+      덮어쓰지 않는다. 당시 존재 여부를 증명하지 않는다.
+    test_strategy: >-
+      화면 상태 테스트: 편집 동작 비활성, 경로 차이 표시 판정, 대상 교체 이후 과거 항목이 이전 reference를
+      여는지(어댑터 주입). 과거 화면에서 다른 대상 재연결 거부.
+    status: pending
+    priority: high
+    dependencies: [W09, W15, W17]
+    source_refs:
+      - docs/PRD.md#d-과거-구성-확인
+      - docs/PRD.md#h-연결-오류와-재연결
+      - docs/decisions/0003-snapshot-records-paths.md
+    acceptance_refs: [A06]
+    subtasks: []
+
+  - id: W19
+    title: 구성 비교 화면
+    description: 같은 Board의 두 revision 또는 과거와 현재를 비교해 보여 준다.
+    details: >-
+      과거 revision 대 현재 비교를 빠른 동작으로 제공하고, 임의의 두 revision도 선택할 수 있다. W16 결과를
+      종류별로 표시하고 변화 없음은 명확한 빈 상태. 파일 시스템·네트워크 없이 동작한다.
+    test_strategy: >-
+      서비스 테스트: 두 revision 로드 후 비교 결과, 파일 시스템 어댑터 실패 주입 상태에서도 비교 성공.
+      화면 상태 테스트: 빈 상태 표시.
+    status: pending
+    priority: high
+    dependencies: [W16, W17]
+    source_refs:
+      - docs/PRD.md#e-차이-비교
+    acceptance_refs: [A07]
+    subtasks: []
+
+  - id: W20
+    title: 과거 구성으로 복원
+    description: 차이를 먼저 보여 준 뒤 확정하면 과거 구성을 현재로 되돌리는 새 revision을 만든다.
+    details: >-
+      Board 이름과 Node 구성을 해당 시점으로 바꾸고 restoredFromRevisionID를 기록(0005). 기존 revision과
+      체크포인트는 유지. 현재와 동일하면 revision을 만들지 않는다. 접근 불가 항목도 제외하지 않고 복원하며
+      누락 상태와 해결 동작을 표시한다. 실제 파일·Git 상태는 건드리지 않는다. 보관된 Board에서는 거부.
+    test_strategy: >-
+      서비스 테스트: 복원 후 새 revision과 출처 ID, 기존 revision·체크포인트 수 유지, 동일 구성 무변경,
+      대상이 삭제된 항목 포함 복원, 저장 실패 주입 시 이전 현재 구성 유지, 원본 파일 불변.
+    status: pending
+    priority: high
+    dependencies: [W16, W17]
+    source_refs:
+      - docs/PRD.md#f-복원과-새-프로젝트-만들기
+      - docs/decisions/0005-provenance-and-archive-fields.md
+    acceptance_refs: [A08]
+    subtasks: []
+
+  - id: W21
+    title: 과거 구성에서 새 Board 만들기
+    description: 선택한 구성의 복사본과 새 이름으로 독립적인 새 Board를 만든다.
+    details: >-
+      프로젝트·Node에 새 UUID를 부여하고 부모 관계를 재매핑(순수 Domain 함수). 원본 프로젝트·revision을
+      origin으로 기록(0005). 원본 이력·체크포인트는 복사하지 않고 새 Board의 첫 revision이 복사된 구성.
+      보관된 Board에서도 허용. 정책 모호성: PRD는 "연결 참조는 같은 로컬 대상과 접근 정보를 사용할 수
+      있다"고만 한다. 원본과 ResourceReference 레코드를 공유할지, 같은 북마크 데이터로 새 reference를
+      만들지에 따라 한쪽의 북마크 갱신·대상 교체가 다른 Board에 영향을 주는지가 달라진다. 게이트가
+      권장안과 함께 질문한다.
+    test_strategy: >-
+      Domain 단위 테스트: ID 재매핑 후 구조 동형, 원본과 겹치는 ID 없음. 서비스 테스트: 새 Board의
+      revision 1개와 origin, 이후 원본 편집이 새 Board에 영향 없음(그 반대도).
+    status: pending
+    priority: high
+    dependencies: [W17, W10]
+    source_refs:
+      - docs/PRD.md#f-복원과-새-프로젝트-만들기
+      - docs/decisions/0005-provenance-and-archive-fields.md
+    acceptance_refs: [A09]
+    subtasks: []
+
+  # ── 단계 4: 작업 맥락과 데이터 이동 ─────────────────────────────
+  - id: W22
+    title: 체크포인트 저장과 재개
+    description: 고정한 revision에 제목·진행 메모·다음 할 일을 담은 불변 체크포인트를 저장하고 조회한다.
+    details: >-
+      작성 시작 시 연결할 revision을 고정하고 저장 전까지 구성 편집을 막는 시트. 제목 필수, 메모·다음 할
+      일 선택. 입력 중에는 revision을 만들지 않고 기존 revision에 붙인다. 저장 후 불변, 같은 revision에
+      여러 체크포인트 허용. 조회는 연결된 과거 구성을 읽기 전용으로 보여 주고 복원은 별도 동작. 웹 링크는
+      revision 구성으로 참조(0002). 실패 시 부분 생성 없이 입력을 유지해 재시도. 로그에 메모 원문 금지.
+    test_strategy: >-
+      서비스 테스트: 저장 전후 revision 수 불변, 고정 revision 연결, 빈 제목 거부, 저장 실패 주입 시
+      체크포인트 미생성, 같은 revision 다중 체크포인트. 화면 상태 테스트: 시트 동안 편집 비활성.
+      XCUITest: 체크포인트 저장 후 조회.
+    status: pending
+    priority: high
+    dependencies: [W18]
+    source_refs:
+      - docs/PRD.md#g-체크포인트-남기기와-재개
+      - docs/decisions/0002-web-links-are-nodes.md
+    acceptance_refs: [A10]
+    subtasks: []
+
+  - id: W23
+    title: 체크포인트 이미지 첨부
+    description: 이미 있는 PNG/JPEG 파일을 골라 앱 저장소로 복사해 체크포인트에 첨부한다.
+    details: >-
+      읽기 전용으로 열어 앱 컨테이너로 복사(0001). staging 후 DB 저장 성공 시 확정, 실패 시 정리해 고아
+      파일·부분 체크포인트를 남기지 않는다. PNG/JPEG만 허용(내용 기준 검증). 썸네일은 ImageIO로 크기 제한,
+      MainActor 밖. 화면 기록 권한을 요청하지 않는다. 로그에 이미지 내용 금지. PRD §4에 따라 마지막
+      단계에 구현할 수 있다.
+    test_strategy: >-
+      임시 디렉토리 서비스 테스트: 첨부 후 원본 삭제해도 조회 가능, 확장자 위장 파일 거부, DB 실패 주입 시
+      staging 파일 정리·체크포인트 미생성, 원본 이미지 불변. entitlement·Info.plist에 화면 기록 권한 없음 확인.
+    status: pending
+    priority: low
+    dependencies: [W22]
+    source_refs:
+      - docs/PRD.md#g-체크포인트-남기기와-재개
+      - docs/PRD.md#첫-버전-필수
+      - docs/TECH_STACK.md#저장-위치와-내보내기
+      - docs/decisions/0001-sandbox-file-access.md
+    acceptance_refs: [A11]
+    subtasks: []
+
+  - id: W24
+    title: Board 내보내기
+    description: Board 하나의 현재 구성·전체 revision·체크포인트·첨부를 사용자가 고른 폴더에 묶음으로 쓴다.
+    details: >-
+      폴더 묶음: manifest.json(schema version, Project·Node·Revision·Checkpoint·ResourceReference,
+      origin·restoredFromRevisionID 포함)과 attachments/. ZIP 의존성 없음. 기록된 경로가 포함된다는 안내.
+      연결 대상 내용과 북마크 권한에 의존하지 않는다. 쓰기 위치 접근은 저장 패널로 얻고 북마크로 저장하지
+      않는다(0001). 보관된 Board도 허용. 실패 시 불완전한 묶음을 남기지 않는다.
+    test_strategy: >-
+      Domain manifest 인코딩 단위 테스트. 임시 디렉토리 서비스 테스트: 파일 구성, 첨부 바이트 일치,
+      쓰기 실패 주입 시 대상 폴더 정리, 원본 대상 파일 불변.
+    status: pending
+    priority: medium
+    dependencies: [W22]
+    source_refs:
+      - docs/PRD.md#i-내보내기가져오기
+      - docs/TECH_STACK.md#저장-위치와-내보내기
+      - docs/decisions/0001-sandbox-file-access.md
+      - docs/decisions/0005-provenance-and-archive-fields.md
+    acceptance_refs: [A15]
+    subtasks: []
+
+  - id: W25
+    title: Board 가져오기
+    description: 내보낸 묶음을 검증한 뒤 ID를 재매핑해 새 Board로 만든다.
+    details: >-
+      가져오기 전 검증: 지원 schema version, 구성 JSON 손상, 트리 규칙(W02), 현재 구성 포인터, 필수 첨부
+      존재, 첨부 경로의 묶음 폴더 이탈 거부, origin 필드 형식(0005). 하나라도 실패하면 전체 중단, 기존
+      데이터·원본 자료 변경 없음. 통과 시 Project·Node·Revision·Checkpoint·ResourceReference ID를
+      재매핑하며 관계와 Node 이력상 동일성 유지, 원본 ID는 origin으로만 보존. 북마크 권한에 의존하지
+      않고 로컬 대상을 재연결 필요 상태로 표시(경로 없음은 손상 아님).
+    test_strategy: >-
+      Domain 검증·재매핑 단위 테스트(경계: 빈 이력, 첨부 0개, ../ 경로, 미지원 버전, 순환 트리).
+      W24 출력으로 왕복 테스트해 이력·체크포인트·첨부·관계 보존. 손상 묶음별로 저장소 레코드 수 불변.
+    status: pending
+    priority: medium
+    dependencies: [W24, W15]
+    source_refs:
+      - docs/PRD.md#i-내보내기가져오기
+      - docs/TECH_STACK.md#저장-위치와-내보내기
+      - docs/decisions/0005-provenance-and-archive-fields.md
+    acceptance_refs: [A15, A16]
+    subtasks: []
+
+  # ── 단계 5: 실제 개인 사용 검증 ─────────────────────────────────
+  - id: W26
+    title: 성능 측정 데이터와 Release 측정
+    description: 기준 규모의 데이터로 Release 빌드의 지연·자원 수치를 측정하고 오프라인 동작을 확인한다.
+    details: >-
+      검증 데이터 생성기(프로젝트 10개, 선택 프로젝트 Node 500개 중 그룹 50개, revision 1,000개, 결정적
+      시드). Release + Instruments로 시작 시간, 유휴 CPU·메모리, revision 저장 지연, 과거 구성 표시,
+      비교 시간, DB·첨부 크기를 기록한다. 정량 목표는 이 측정 후 정한다(측정 전 수치 약속 없음).
+      네트워크 차단 상태에서 조회·비교·복원.
+    test_strategy: >-
+      데이터 생성기는 결정적 출력 단위 테스트. 측정은 Release 빌드 Instruments 수동 수행 후 결과 문서화.
+      모든 revision을 디코딩하지 않는지 디코딩 횟수 계측 테스트.
+    status: pending
+    priority: medium
+    dependencies: [W19, W20]
+    source_refs:
+      - docs/PRD.md#경량화
+      - docs/PRD.md#단계-5-실제-개인-사용-검증
+      - docs/TECH_STACK.md#구조와-경량화-원칙
+    acceptance_refs: [A17]
+    subtasks: []
+
+  - id: W27
+    title: Release 실사용 검증과 최소 OS 호환성 보고
+    description: Release 앱으로 대표 시나리오와 실제 환경 항목을 검증하고 결과를 보고한다.
+    details: >-
+      대표 시나리오(PRD §2) 수행, 재실행 후 sandbox 파일 접근, 파일 이동·삭제, 외장 볼륨 분리, 권한
+      재요청, Finder 열기, 키보드 접근, macOS 15 실기 실행. 수행하지 못한 항목은 미검증으로 명시한다.
+      개발 기기 macOS 27 통과를 macOS 15 통과로 보고하지 않는다.
+    test_strategy: >-
+      체크리스트 기반 수동 검증과 결과 문서(빌드 성공·테스트 통과·실제 환경 확인 구분). 가능한 범위는
+      XCUITest 대표 시나리오로 자동화한다.
+    status: pending
+    priority: medium
+    dependencies: [W23, W25, W26]
+    source_refs:
+      - docs/PRD.md#단계-5-실제-개인-사용-검증
+      - docs/TECH_STACK.md#검증과-배포
+      - docs/PRD.md#대표-시나리오
+    acceptance_refs: [A02, A12, A18]
+    subtasks: []

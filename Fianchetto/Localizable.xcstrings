@@ -1,0 +1,10 @@
+{
+  "sourceLanguage" : "ko",
+  "strings" : {
+    "Fianchetto" : {
+      "comment" : "기본 창 제목. 앱 이름이라 번역하지 않는다.",
+      "shouldTranslate" : false
+    }
+  },
+  "version" : "1.0"
+}

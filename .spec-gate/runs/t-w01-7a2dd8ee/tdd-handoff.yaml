@@ -1,0 +1,79 @@
+schema_version: "1.0"
+run_id: t-w01-7a2dd8ee
+verdict: READY
+source:
+  baseline:
+    - path: docs/PRD.md
+      fingerprint: 5d8c45fd91830695e3f8f90fb49be3f9d8be64e0ca0256d382a31d0af4a4ae0a
+    - path: docs/TECH_STACK.md
+      fingerprint: ae6385abc1fac2c439f9bf681891126a048ecc5a36346f4cf8ff87b61c2e6830
+  decision_records:
+    path: docs/decisions
+    fingerprint: 81e61f12e8cf438cae77b6adff5d3b4a8b0ec3e2d5225eee126c3db1d80ed49e
+  work_items_artifact: docs/work-items.yaml
+  work_items_fingerprint: 35eeb43387b2651af7b498fa468ab8b8a1023af6bc9e9094ed312d5dd38c72d8
+  normalized_artifact: .spec-gate/runs/t-w01-7a2dd8ee/normalized-tasks.yaml
+source_tasks:
+  - task_id: W01
+    title: 앱 프로젝트와 빌드·샌드박스 기반 만들기
+    route: PASS
+    acceptance_refs:
+      - A18
+accepted_specifications: []
+test_obligations:
+  - obligation_id: W01-build-settings-fixed
+    task_id: W01
+    kind: build-check
+    description: 앱 target과 두 테스트 target의 확정 빌드 설정이 SWIFT_VERSION 6, strict concurrency complete, MACOSX_DEPLOYMENT_TARGET 15.0, ARCHS arm64이다(xcodebuild -showBuildSettings로 확인). Swift Package 의존성이 0개다.
+    source: docs/TECH_STACK.md#확정-기술스택
+    acceptance_refs:
+      - A18
+  - obligation_id: W01-build-and-test-zero-warnings
+    task_id: W01
+    kind: build-check
+    description: 고정한 scheme으로 xcodebuild build와 test가 성공하고 컴파일러 경고가 0개다. 단위 테스트 target은 Swift Testing 테스트 1개 이상을 실행하고, UI 테스트 target은 빌드된다.
+    source: docs/work-items.yaml#W01
+    acceptance_refs:
+      - A18
+  - obligation_id: W01-sandbox-entitlements
+    task_id: W01
+    kind: configuration-check
+    description: 서명된 앱의 entitlement가 app-sandbox, files.user-selected.read-write, files.bookmarks.app-scope를 포함하고, 네트워크·화면 기록·Accessibility 관련 권한은 포함하지 않는다(codesign -d --entitlements로 확인).
+    source: docs/decisions/0001-sandbox-file-access.md
+  - obligation_id: W01-folder-structure-and-domain-imports
+    task_id: W01
+    kind: structure-check
+    description: App/Features/Services/Domain/Persistence/Platform 폴더가 앱 target에 있고, Domain 폴더의 소스는 Foundation 외 모듈을 import하지 않는다(검사 스크립트 또는 테스트로 확인).
+    source: docs/TECH_STACK.md#구조와-경량화-원칙
+  - obligation_id: W01-launch-shows-window
+    task_id: W01
+    kind: launch-check
+    description: 앱이 실행되어 기본 창 하나를 띄운다(XCUITest 실행 테스트). 기능 화면은 포함하지 않는다.
+    source: docs/work-items.yaml#W01
+  - obligation_id: W01-build-commands-recorded
+    task_id: W01
+    kind: documentation-check
+    description: CLAUDE.md 빌드·테스트 절에 실제 scheme 이름의 build·test 명령이 기록되고, 그 명령이 그대로 실행된다. 보고에는 빌드 성공·테스트 통과·macOS 15 미검증을 구분해 적는다.
+    source: docs/work-items.yaml#W01
+acceptance_coverage:
+  A18:
+    - W01-build-settings-fixed
+    - W01-build-and-test-zero-warnings
+decision_log: null
+critic_report: .spec-gate/runs/t-w01-7a2dd8ee/critic-pass-1.yaml
+non_blocking_notes:
+  - finding_id: F-W01-1
+    task_id: W01
+    note: The work item scope includes a String Catalog and an OSLog subsystem definition, but no test obligation covers either. CLAUDE.md says TDD proceeds from the handoff's test obligations, so these two scope items could be silently dropped. This does not affect the A18 acceptance boundary.
+  - finding_id: F-W01-2
+    task_id: W01
+    note: "\"strict concurrency complete\" is to be verified with xcodebuild -showBuildSettings. Under Swift 6 language mode, complete checking can apply without SWIFT_STRICT_CONCURRENCY being explicit, so the pass condition is ambiguous. The obligation also does not say which build configurations are checked. Xcode's default Release ARCHS is ARCHS_STANDARD (arm64 + x86_64), and A17 measurement uses Release builds, so checking Debug alone is not enough."
+  - finding_id: F-W01-3
+    task_id: W01
+    note: The macOS App template's default sandbox entitlements include com.apple.security.files.user-selected.read-only. The obligation requires read-write to be present but does not require read-only to be absent. If both are declared, the user-selected file permission becomes ambiguous, which conflicts with 0001's decision of a single read-write entitlement.
+  - finding_id: F-W01-4
+    task_id: W01
+    note: This source_ref is not used as the source of any obligation. It is reflected only in risk_signals (macOS 27 versus macOS 15 confusion) and in the reporting-separation text of W01-build-commands-recorded. The tool-version record is environment information, not a pass condition, so this is acceptable.
+  - finding_id: F-W01-5
+    task_id: W01
+    note: The exclusion of network-client, screen-recording, and Accessibility entitlements is an agent-chosen default and is recorded as an assumption. It is consistent with PRD §8 (offline, no outbound transmission) and §4 exclusions. Opening a web link uses NSWorkspace, which needs no network entitlement, so this does not invent a new policy.
