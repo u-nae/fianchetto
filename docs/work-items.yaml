@@ -66,7 +66,7 @@ items:
     test_strategy: >-
       Swift Testing: 연산별 결과 스냅샷, UUID 유지, 대상 교체 시 새 referenceID와 원래 스냅샷 불변,
       같은 값 확정·같은 위치 이동의 무변경 판정, 순환 이동 거부, 동일성 판정 세 경우.
-    status: pending
+    status: done
     priority: high
     dependencies: [W02]
     source_refs:
