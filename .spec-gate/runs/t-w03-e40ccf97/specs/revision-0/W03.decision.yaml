@@ -1,0 +1,53 @@
+schema_version: "1.0"
+task_id: W03
+decision_id: target_identity
+execution_format: review-only
+# 위에서 아래로 처음 맞는 규칙을 적용한다. 식별자 하나라도 얻을 수 없으면 다른 식별자와 상관없이 판정 불가다.
+hit_policy: FIRST
+ordered_rules: true
+inputs:
+  - name: file_identifier
+    type: string
+    # 기존 대상과 새 대상의 fileResourceIdentifier 비교 결과. unavailable: 어느 한쪽이라도 얻지 못함.
+    allowed_values: [same, different, unavailable]
+    blank_means: any
+  - name: volume_identifier
+    type: string
+    # 기존 대상과 새 대상의 volumeIdentifier 비교 결과. unavailable: 어느 한쪽이라도 얻지 못함.
+    allowed_values: [same, different, unavailable]
+    blank_means: any
+outputs:
+  - name: identity
+    type: string
+    allowed_values: [same_target, different_target, undetermined]
+rules:
+  - rule_id: R1
+    when: {file_identifier: unavailable}
+    then: {identity: undetermined}
+  - rule_id: R2
+    when: {volume_identifier: unavailable}
+    then: {identity: undetermined}
+  - rule_id: R3
+    when: {file_identifier: same, volume_identifier: same}
+    then: {identity: same_target}
+  - rule_id: R4
+    when: {file_identifier: different}
+    then: {identity: different_target}
+  - rule_id: R5
+    when: {volume_identifier: different}
+    then: {identity: different_target}
+default_rule: null
+gap_analysis:
+  - >-
+    입력 공간 3 × 3 = 9 조합. unavailable을 포함한 5 조합은 R1·R2, 남은 4 조합(same/different × same/different) 중
+    (same, same)은 R3, 나머지 3 조합은 R4 또는 R5가 덮는다. 빈 칸이 없어 default_rule은 필요 없다.
+overlap_analysis:
+  - >-
+    R1·R2는 (unavailable, unavailable)에서 겹치고 결과가 같다. R4·R5는 (different, different)에서 겹치고 결과가 같다.
+    R1·R2와 R4·R5는 (unavailable, different)·(different, unavailable)에서 겹치며, FIRST 순서상 판정 불가가 이긴다.
+    0004가 "둘 중 하나라도 얻을 수 없으면 판정 불가"라고 정했기 때문이다.
+  - >-
+    경로 문자열은 입력이 아니다. 경로만으로 동일 대상 여부를 확정하지 않는다(PRD §6-B, 0004).
+source_locators:
+  - docs/decisions/0004-same-target-identity.md
+  - docs/PRD.md#b-backend-대상-교체
