@@ -5,4 +5,5 @@ extension Tag {
     @Tag static var A03: Self
     @Tag static var A04: Self
     @Tag static var A14: Self
+    @Tag static var A18: Self
 }

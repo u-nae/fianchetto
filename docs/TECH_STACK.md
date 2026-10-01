@@ -75,15 +75,15 @@ SwiftData가 프로젝트 구성 이력을 자동으로 만들어 주는 것은 
 
 ### 주요 개념
 
-- `Project`: 안정적인 UUID, 이름, 생성일, 현재 revision ID, 보관 시각(선택), 출처(선택: 복제/가져오기의 원본 프로젝트·revision ID) — [0005](decisions/0005-provenance-and-archive-fields.md)
-- `Node`: 안정적인 UUID, 종류(group/file/folder/webLink), 표시 이름, 부모 ID, 정렬 순서, 연결 참조 ID(file/folder), URL(webLink) — [0002](decisions/0002-web-links-are-nodes.md)
+- `Project`: 안정적인 UUID, 생성일, 현재 revision ID, 보관 시각(선택), 출처(선택: 복제/가져오기의 원본 프로젝트·revision ID) — [0005](decisions/0005-provenance-and-archive-fields.md). 이름은 현재 revision이 가진다 — [0007](decisions/0007-current-configuration-is-revision-pointer.md)
+- `Node`: 안정적인 UUID, 종류(group/file/folder/webLink), 표시 이름, 부모 ID, 정렬 순서, 연결 참조 ID(file/folder), URL(webLink) — [0002](decisions/0002-web-links-are-nodes.md). 별도 레코드가 아니라 revision 스냅샷 안의 값이다 — [0007](decisions/0007-current-configuration-is-revision-pointer.md)
 - `ResourceReference`: 특정 연결 대상을 가리키는 UUID, 최초 경로, 파일·폴더 종류, 북마크 데이터, 마지막 해석 경로
-- `Revision`: 프로젝트 ID, 증가하는 순번, 기록 시간, 원인, 복원 출처 revision ID(선택), 구성 JSON, JSON schema version
+- `Revision`: 프로젝트 ID, 증가하는 순번, 기록 시간, 원인, 복원 출처 revision ID(선택), 그 시점의 프로젝트 이름, 구성 JSON, JSON schema version
 - `Checkpoint`: 특정 revision ID, 제목, 진행 메모, 다음 할 일, 이미지 첨부 참조
 
 Node는 독립적인 논리 항목이다. 이름 변경이나 대상 교체 후에도 UUID를 유지한다. ResourceReference는 대상 교체 시 새로 생성하고, 이전 reference는 과거 revision에서 참조하는 동안 보존한다.
 
-Revision의 Node 목록은 Codable 값 타입을 복사한 불변 JSON으로 저장한다. 과거 revision이 현재의 수정 가능한 Node 모델을 그대로 참조하지 않도록 한다. 과거 표시 이름·배치·참조 ID·당시 경로(`recordedPath`)·URL을 보존한다 — [0003](decisions/0003-snapshot-records-paths.md).
+Revision의 Node 목록은 Codable 값 타입을 복사한 불변 JSON으로 저장한다. 현재 구성은 현재 revision의 스냅샷이며 수정 가능한 Node 레코드를 따로 두지 않으므로, 과거 revision이 현재 구성과 객체를 공유하지 않는다 — [0007](decisions/0007-current-configuration-is-revision-pointer.md). 과거 표시 이름·배치·참조 ID·당시 경로(`recordedPath`)·URL을 보존한다 — [0003](decisions/0003-snapshot-records-paths.md).
 
 북마크 데이터 갱신은 운영상 접근 정보 갱신이다. 과거 revision에 기록된 경로나 표시 정보를 덮어쓰지 않는다.
 

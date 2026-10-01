@@ -81,17 +81,17 @@ items:
     title: SwiftData 스키마 V1과 저장소 열기
     description: 영구 저장 모델 V1과 마이그레이션 계획을 만들고, 저장소를 열 수 없을 때 안전하게 실패한다.
     details: >-
-      @Model: Project(id, name, createdAt, currentRevisionID, archivedAt?, origin?), ResourceReference(id,
+      @Model: Project(id, createdAt, currentRevisionID, archivedAt?, origin?), ResourceReference(id,
       최초 경로, 대상 종류, 북마크 데이터, 마지막 해석 경로), Revision(projectID, sequence, recordedAt,
-      cause, restoredFromRevisionID?, 구성 JSON, JSON schema version), Checkpoint(revisionID, 제목,
-      진행 메모, 다음 할 일, 첨부 참조)(0005). VersionedSchema V1 + SchemaMigrationPlan. 경계에서
+      cause, restoredFromRevisionID?, 프로젝트 이름, 구성 JSON, JSON schema version), Checkpoint(revisionID, 제목,
+      진행 메모, 다음 할 일, 첨부 참조)(0005). 현재 구성은 currentRevisionID가 가리키는 스냅샷이며 Node 레코드는 없다(0007). VersionedSchema V1 + SchemaMigrationPlan. 경계에서
       Domain 값 타입으로 변환하고 @Model은 Persistence 밖으로 내보내지 않는다. 저장소 열기 실패 시
       오류를 반환하고 빈 저장소로 교체하지 않는다. 저장소 위치는 Application Support.
     test_strategy: >-
       임시 디렉토리 ModelContainer로 저장·재오픈 후 값 보존, Domain 변환 왕복, 손상·접근 불가 저장소
       열기 실패가 오류로 드러나고 기존 파일이 남는지 확인. 스키마 이전은 테스트 전용 V2 스키마로
       V1 데이터가 유지되는지 검증한다.
-    status: pending
+    status: done
     priority: high
     dependencies: [W02]
     source_refs:
@@ -100,6 +100,7 @@ items:
       - docs/TECH_STACK.md#저장-위치와-내보내기
       - docs/PRD.md#7-기록-정책과-저장-안정성
       - docs/decisions/0005-provenance-and-archive-fields.md
+      - docs/decisions/0007-current-configuration-is-revision-pointer.md
     acceptance_refs: [A18]
     subtasks: []
 
@@ -157,14 +158,17 @@ items:
       Inspector 상세). 첫 실행 빈 목록과 "Board 만들기" 동작. 재실행 시 마지막 Board로 돌아가되 현재
       구성으로 진입(@AppStorage). Commands와 키보드 접근, 접근성 레이블, 문자열은 String Catalog
       (0006 용어). 화면 상태는 @Observable @MainActor. 이후 기능 항목이 이 창에 동작을 추가한다.
+      저장소를 열 수 없으면(W04 원인 범주 accessDenied·damaged·incompatible·unavailable) 빈 창 대신 오류와 복구 선택지를
+      보여 주고, 빈 저장소로 조용히 바꾸지 않는다(PRD §7). 선택지의 구체 내용은 이 항목의 게이트에서 정한다.
     test_strategy: >-
-      화면 상태 단위 테스트(선택·마지막 Board 복원·빈 상태). XCUITest 핵심 흐름: 첫 실행에서 Board를
+      화면 상태 단위 테스트(선택·마지막 Board 복원·빈 상태·저장소 열기 실패 상태). XCUITest 핵심 흐름: 첫 실행에서 Board를
       만들고 트리에 표시되는지, 메뉴·키보드로 같은 동작이 가능한지.
     status: pending
     priority: high
     dependencies: [W05]
     source_refs:
       - docs/PRD.md#기본-창
+      - docs/PRD.md#7-기록-정책과-저장-안정성
       - docs/PRD.md#ui-언어와-전달
       - docs/TECH_STACK.md#ui-구성
       - docs/decisions/0006-board-and-bishop-terms.md
