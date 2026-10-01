@@ -91,7 +91,7 @@ items:
       임시 디렉토리 ModelContainer로 저장·재오픈 후 값 보존, Domain 변환 왕복, 손상·접근 불가 저장소
       열기 실패가 오류로 드러나고 기존 파일이 남는지 확인. 스키마 이전은 테스트 전용 V2 스키마로
       V1 데이터가 유지되는지 검증한다.
-    status: pending
+    status: done
     priority: high
     dependencies: [W02]
     source_refs:

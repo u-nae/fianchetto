@@ -34,7 +34,6 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Features/.gitkeep,
-				Persistence/.gitkeep,
 				Services/.gitkeep,
 			);
 			target = FA0000000000000000000010 /* Fianchetto */;
