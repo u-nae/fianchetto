@@ -1,0 +1,191 @@
+schema_version: "1.0"
+run_id: t-w02-d713ae1d
+verdict: READY
+source:
+  baseline:
+    - path: docs/PRD.md
+      fingerprint: 5d8c45fd91830695e3f8f90fb49be3f9d8be64e0ca0256d382a31d0af4a4ae0a
+    - path: docs/TECH_STACK.md
+      fingerprint: ae6385abc1fac2c439f9bf681891126a048ecc5a36346f4cf8ff87b61c2e6830
+  decision_records:
+    path: docs/decisions
+    fingerprint: 81e61f12e8cf438cae77b6adff5d3b4a8b0ec3e2d5225eee126c3db1d80ed49e
+  work_items_artifact: docs/work-items.yaml
+  work_items_fingerprint: bdfed8504cb6e781e570bfee2a4e0b43c5b410058311820cd043971640a30eac
+  normalized_artifact: .spec-gate/runs/t-w02-d713ae1d/normalized-tasks.yaml
+source_tasks:
+  - task_id: W02
+    title: 구성 스냅샷 값 타입과 트리 규칙
+    route: BOTH
+    acceptance_refs:
+      - A14
+accepted_specifications:
+  - task_id: W02
+    route: BOTH
+    path: .spec-gate/runs/t-w02-d713ae1d/specs/revision-1/task-W02.feature
+  - task_id: W02
+    route: BOTH
+    path: .spec-gate/runs/t-w02-d713ae1d/specs/revision-0/W02.decision.yaml
+test_obligations:
+  - obligation_id: W02-json-roundtrip
+    task_id: W02
+    kind: scenario
+    description: 유효한 스냅샷을 JSON으로 기록 후 다시 읽으면 같은 스냅샷이고 UUID·이름·부모·순서·referenceID·기록 당시 경로·URL이 보존된다
+    source: .spec-gate/runs/t-w02-d713ae1d/specs/revision-1/task-W02.feature#유효한 스냅샷은 JSON으로 기록한 뒤 다시 읽어도 같은 구성이다
+  - obligation_id: W02-schema-version-recorded
+    task_id: W02
+    kind: scenario
+    description: 기록한 JSON에 schema version 1이 담긴다
+    source: .spec-gate/runs/t-w02-d713ae1d/specs/revision-1/task-W02.feature#기록한 JSON에는 스냅샷 schema version 1이 담긴다
+  - obligation_id: W02-unsupported-schema-version-rejected
+    task_id: W02
+    kind: scenario
+    description: schema version 0·2·누락 JSON은 지원하지 않는 version 오류로 거부된다
+    source: .spec-gate/runs/t-w02-d713ae1d/specs/revision-1/task-W02.feature#지원하지 않는 schema version의 JSON은 읽지 않는다
+  - obligation_id: W02-corrupt-json-rejected
+    task_id: W02
+    kind: scenario
+    description: 잘린 JSON, 알 수 없는 Node 종류, 잘못된 UUID, 필수 필드 누락은 읽기 오류로 거부되고 스냅샷이 만들어지지 않는다
+    source: .spec-gate/runs/t-w02-d713ae1d/specs/revision-1/task-W02.feature#손상된 JSON은 읽지 않는다
+  - obligation_id: W02-equality-ignores-list-order
+    task_id: W02
+    kind: scenario
+    description: Node 목록의 저장 순서만 다른 두 스냅샷은 같다
+    source: .spec-gate/runs/t-w02-d713ae1d/specs/revision-1/task-W02.feature#Node 목록의 저장 순서가 달라도 같은 구성은 같은 스냅샷이다
+  - obligation_id: W02-copy-does-not-affect-original
+    task_id: W02
+    kind: scenario
+    description: 복사본의 변경이 원래 스냅샷에 영향을 주지 않는다(불변식 6·7)
+    source: .spec-gate/runs/t-w02-d713ae1d/specs/revision-1/task-W02.feature#스냅샷을 복사해 바꿔도 원래 스냅샷은 바뀌지 않는다
+  - obligation_id: W02-display-name-trimmed
+    task_id: W02
+    kind: scenario
+    description: 표시 이름은 앞뒤 공백·줄바꿈·탭·전각 공백을 정리하고 내부 공백은 유지한다
+    source: .spec-gate/runs/t-w02-d713ae1d/specs/revision-1/task-W02.feature#표시 이름은 앞뒤 공백을 정리해 만든다
+  - obligation_id: W02-blank-name-rejected
+    task_id: W02
+    kind: scenario
+    description: 비었거나 공백만 있는 표시 이름은 빈 이름 오류로 거부된다
+    source: .spec-gate/runs/t-w02-d713ae1d/specs/revision-1/task-W02.feature#공백만 있거나 비어 있는 표시 이름은 만들 수 없다
+  - obligation_id: W02-project-name-rules
+    task_id: W02
+    kind: scenario
+    description: 프로젝트 이름도 앞뒤 공백을 정리해 만든다
+    source: .spec-gate/runs/t-w02-d713ae1d/specs/revision-1/task-W02.feature#프로젝트 이름도 앞뒤 공백을 정리해 만든다
+  - obligation_id: W02-untrimmed-name-in-json-rejected
+    task_id: W02
+    kind: scenario
+    description: JSON의 Node 표시 이름·프로젝트 이름이 정리되지 않았으면 untrimmed_name, 비었으면 blank_name으로 거부하고 값을 고치지 않는다
+    source: .spec-gate/runs/t-w02-d713ae1d/specs/revision-1/task-W02.feature#정리되지 않았거나 빈 이름을 담은 JSON은 검증에서 거부한다
+  - obligation_id: W02-same-name-same-path-not-merged
+    task_id: W02
+    kind: scenario
+    description: 같은 부모·같은 이름·같은 경로의 서로 다른 Node는 유효하고 둘 다 보존된다(불변식 2)
+    source: .spec-gate/runs/t-w02-d713ae1d/specs/revision-1/task-W02.feature#같은 부모 아래 같은 표시 이름과 같은 경로의 Node를 병합하지 않는다
+  - obligation_id: W02-empty-configuration-valid
+    task_id: W02
+    kind: scenario
+    description: Node가 없는 구성은 유효하다
+    source: .spec-gate/runs/t-w02-d713ae1d/specs/revision-1/task-W02.feature#Node가 없는 빈 구성도 유효하다
+  - obligation_id: W02-self-parent-cycle-rejected
+    task_id: W02
+    kind: scenario
+    description: 자기 자신을 부모로 가진 그룹은 순환으로 거부된다
+    source: .spec-gate/runs/t-w02-d713ae1d/specs/revision-1/task-W02.feature#자기 자신을 부모로 가진 그룹은 순환으로 거부한다
+    acceptance_refs:
+      - A14
+  - obligation_id: W02-mutual-cycle-rejected
+    task_id: W02
+    kind: scenario
+    description: 서로를 부모로 가진 두 그룹은 순환으로 거부된다
+    source: .spec-gate/runs/t-w02-d713ae1d/specs/revision-1/task-W02.feature#두 그룹이 서로의 부모인 구성은 순환으로 거부한다
+    acceptance_refs:
+      - A14
+  - obligation_id: W02-deep-cycle-rejected
+    task_id: W02
+    kind: scenario
+    description: 5단계 중첩을 거쳐 돌아오는 순환도 거부되고 관련 Node 모두에 보고된다
+    source: .spec-gate/runs/t-w02-d713ae1d/specs/revision-1/task-W02.feature#깊은 자손을 거쳐 돌아오는 순환도 거부한다
+    acceptance_refs:
+      - A14
+  - obligation_id: W02-missing-parent-rejected
+    task_id: W02
+    kind: scenario
+    description: 스냅샷에 없는 부모 ID를 가리키는 Node는 거부된다
+    source: .spec-gate/runs/t-w02-d713ae1d/specs/revision-1/task-W02.feature#존재하지 않는 부모를 가리키는 Node는 거부한다
+  - obligation_id: W02-duplicate-node-id-rejected
+    task_id: W02
+    kind: scenario
+    description: "같은 UUID가 두 번 나오는 스냅샷은 거부된다(불변식 10: 부모 하나)"
+    source: .spec-gate/runs/t-w02-d713ae1d/specs/revision-1/task-W02.feature#같은 UUID의 Node가 두 번 나오면 거부한다
+  - obligation_id: W02-parent-must-be-group
+    task_id: W02
+    kind: decision-rule
+    description: 부모는 그룹이거나 최상위여야 한다(결정표 R1~R3, 연결 폴더는 부모가 될 수 없다)
+    source: .spec-gate/runs/t-w02-d713ae1d/specs/revision-0/W02.decision.yaml#R1-R3
+  - obligation_id: W02-node-shape-by-kind
+    task_id: W02
+    kind: decision-rule
+    description: Node 종류별 참조·기록 당시 경로·URL 필드 모양을 결정표 R4~R23대로 판정한다
+    source: .spec-gate/runs/t-w02-d713ae1d/specs/revision-0/W02.decision.yaml#R4-R23
+  - obligation_id: W02-recorded-path-must-be-absolute
+    task_id: W02
+    kind: scenario
+    description: 기록 당시 경로가 비었거나 절대 경로가 아니면 incomplete_reference다
+    source: .spec-gate/runs/t-w02-d713ae1d/specs/revision-1/task-W02.feature#기록 당시 경로가 절대 경로가 아니면 참조 필드가 불완전하다
+  - obligation_id: W02-sibling-order-contiguous
+    task_id: W02
+    kind: scenario
+    description: 부모마다 형제 정렬 순서가 0부터 빈틈없으면 유효하다
+    source: .spec-gate/runs/t-w02-d713ae1d/specs/revision-1/task-W02.feature#형제의 정렬 순서는 부모마다 0부터 빈틈없이 매긴다
+  - obligation_id: W02-sibling-order-violations-rejected
+    task_id: W02
+    kind: scenario
+    description: 그룹·최상위 형제 정렬 순서의 중복·빈칸·0이 아닌 시작·음수는 거부되고 sibling_order 위반이 부모 단위로 하나 보고된다
+    source: .spec-gate/runs/t-w02-d713ae1d/specs/revision-1/task-W02.feature#형제 정렬 순서에 중복·빈칸·음수가 있으면 거부한다
+  - obligation_id: W02-all-violations-reported
+    task_id: W02
+    kind: scenario
+    description: 여러 Node의 위반을 한 번의 검증에서 모두 보고한다
+    source: .spec-gate/runs/t-w02-d713ae1d/specs/revision-1/task-W02.feature#여러 Node가 규칙을 어기면 위반을 모두 보고한다
+  - obligation_id: W02-different-snapshots-not-equal
+    task_id: W02
+    kind: scenario
+    description: 프로젝트 이름·표시 이름·부모·정렬 순서·종류·referenceID·기록 당시 경로·URL·Node 추가/제거 중 하나만 달라도 두 스냅샷은 같지 않다(W03 무변경 판정의 기준)
+    source: .spec-gate/runs/t-w02-d713ae1d/specs/revision-1/task-W02.feature#한 가지라도 다른 두 스냅샷은 같지 않다
+  - obligation_id: W02-project-name-blank-rejected
+    task_id: W02
+    kind: scenario
+    description: 공백만 있는 프로젝트 이름은 blank_name 오류로 거부된다
+    source: .spec-gate/runs/t-w02-d713ae1d/specs/revision-1/task-W02.feature#공백만 있는 프로젝트 이름은 만들 수 없다
+  - obligation_id: W02-cycle-descendants-not-reported
+    task_id: W02
+    kind: scenario
+    description: 순환에 매달린 자손에는 cycle 위반을 보고하지 않고 순환에 속한 Node에만 보고한다
+    source: .spec-gate/runs/t-w02-d713ae1d/specs/revision-1/task-W02.feature#순환에 매달린 자손에는 cycle 위반을 보고하지 않는다
+    acceptance_refs:
+      - A14
+acceptance_coverage:
+  A14:
+    - W02-self-parent-cycle-rejected
+    - W02-mutual-cycle-rejected
+    - W02-deep-cycle-rejected
+    - W02-cycle-descendants-not-reported
+decision_log: null
+critic_report: .spec-gate/runs/t-w02-d713ae1d/critic-pass-2.yaml
+non_blocking_notes:
+  - finding_id: F2-W02-1
+    task_id: W02
+    note: '위반 출처가 셋(결정표, 트리 위반, 이름 위반)인데 한 Node에 둘 이상이 겹칠 때의 보고 규칙이 일부만 정해졌다. (a) missing_parent인 Node는 parent_kind가 없어 결정표 입력이 되지 않으므로, 그 Node의 필드 모양(예: URL이 있는 연결 파일)을 함께 판정하는지 정해지지 않았다. (b) blank_name·untrimmed_name은 "결정표와 별개" 목록에 없어 필드 모양 위반과 함께 보고되는지 알 수 없다. (c) 자기 자신을 부모로 둔 연결 파일은 cycle과 parent_not_group 둘 다 해당한다. 어느 경우든 스냅샷은 거부되므로 수용 경계는 바뀌지 않지만, 위반 목록을 정확히 비교하는 테스트는 구현마다 달라질 수 있다.'
+  - finding_id: F2-W02-2
+    task_id: W02
+    note: reference_fields는 빈 recordedPath를 incomplete로 분류한다고 적었지만, url 입력은 빈 문자열 ""이 absent인지 other인지 정하지 않았다. 웹 링크의 url이 ""이면 missing_url과 invalid_url 중 어느 쪽인지, 그룹의 url이 ""이면 valid인지 unexpected_url인지가 갈린다. JSON 가져오기(W25)에서 실제로 나올 수 있는 값이다.
+  - finding_id: F2-W02-3
+    task_id: W02
+    note: 시나리오가 다른 시나리오의 데이터 표를 참조한다. Gherkin 시나리오는 독립적이어야 하며, 직렬화 시나리오의 표가 바뀌면 이 Outline의 예시 행("backend", "설계 메모", "API 명세", 정렬 순서 2)이 조용히 의미를 잃는다.
+  - finding_id: F2-W02-4
+    task_id: W02
+    note: Gherkin 표 셀은 \n, \\, \| 만 이스케이프로 해석하고 \t·\u{3000}은 문자 그대로 남긴다. 그래서 \n만 \\n으로 적고 \t는 그대로 둔 표기는 결과적으로 일관된 Swift 리터럴 문자열을 만든다. 다만 비대칭이라 테스트 작성 시 혼동하기 쉽다. 수정 요청 없음.
+  - finding_id: F2-W02-5
+    task_id: W02
+    note: 이전 pass의 major(동등성 부정 사례)와 minor 다섯 건이 모두 시나리오·assumption으로 반영되었음을 독립적으로 확인했다. 모든 obligation의 source 앵커가 revision-1 피처의 시나리오 이름과 정확히 일치하고, A14는 순환 시나리오 네 개로 덮이며 그룹 제거 범위·과거 구성 보존 부분은 A14를 함께 가진 다른 작업 항목(W03 등)의 범위다. 필드 모양 Outline 두 개가 결정표 obligation과 중복되는 유지보수 위험(F-W02-7)은 그대로 남아 있다.
