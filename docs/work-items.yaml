@@ -40,7 +40,7 @@ items:
     test_strategy: >-
       Swift Testing 단위 테스트: JSON 왕복 동일성, schema version 기록, 각 위반 규칙의 거부와 경계값
       (공백만 있는 이름, 자기 자신을 부모로, 깊은 자손 순환, 빈 트리, http 외 scheme).
-    status: pending
+    status: done
     priority: high
     dependencies: [W01]
     source_refs:
