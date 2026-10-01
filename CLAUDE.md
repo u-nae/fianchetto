@@ -69,8 +69,11 @@ App/               진입점, 의존성 조립, Commands, Settings
 ## UI·문구
 
 - 기본 UI는 한국어, 문자열은 String Catalog로 분리한다.
-- 용어: 프로젝트·그룹·연결·연결 제거·연결 대상 변경·과거 구성·구성 복원·체크포인트.
-  '파일 삭제' 표현과 DB·JSON·bookmark 같은 구현 용어를 화면에 쓰지 않는다.
+- 화면 용어(0006): 프로젝트는 **Board**, 로컬 파일·폴더 연결 항목은 **Bishop**(영문 고유 용어 그대로).
+  그 밖에 그룹·웹 링크·Board 만들기·새 Bishop·Bishop 추가·Bishop 제거·연결 대상 변경·과거 구성·구성 복원·체크포인트.
+  체스 규칙을 기능·문구에 끌어오지 않는다.
+- 코드·데이터 모델·내보내기 형식은 중립 용어(Project, Group, Node, ResourceReference)를 쓴다. Board·Bishop은 String Catalog에만 둔다.
+- '파일 삭제' 표현과 DB·JSON·bookmark 같은 구현 용어를 화면에 쓰지 않는다.
 - 과거/현재, 오류 상태를 색상만으로 구분하지 않는다. 모든 기능은 메뉴·키보드로 접근 가능해야 한다.
 
 ## 로그
