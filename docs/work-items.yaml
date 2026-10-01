@@ -158,14 +158,17 @@ items:
       Inspector 상세). 첫 실행 빈 목록과 "Board 만들기" 동작. 재실행 시 마지막 Board로 돌아가되 현재
       구성으로 진입(@AppStorage). Commands와 키보드 접근, 접근성 레이블, 문자열은 String Catalog
       (0006 용어). 화면 상태는 @Observable @MainActor. 이후 기능 항목이 이 창에 동작을 추가한다.
+      저장소를 열 수 없으면(W04 원인 범주 accessDenied·damaged·incompatible·unavailable) 빈 창 대신 오류와 복구 선택지를
+      보여 주고, 빈 저장소로 조용히 바꾸지 않는다(PRD §7). 선택지의 구체 내용은 이 항목의 게이트에서 정한다.
     test_strategy: >-
-      화면 상태 단위 테스트(선택·마지막 Board 복원·빈 상태). XCUITest 핵심 흐름: 첫 실행에서 Board를
+      화면 상태 단위 테스트(선택·마지막 Board 복원·빈 상태·저장소 열기 실패 상태). XCUITest 핵심 흐름: 첫 실행에서 Board를
       만들고 트리에 표시되는지, 메뉴·키보드로 같은 동작이 가능한지.
     status: pending
     priority: high
     dependencies: [W05]
     source_refs:
       - docs/PRD.md#기본-창
+      - docs/PRD.md#7-기록-정책과-저장-안정성
       - docs/PRD.md#ui-언어와-전달
       - docs/TECH_STACK.md#ui-구성
       - docs/decisions/0006-board-and-bishop-terms.md
