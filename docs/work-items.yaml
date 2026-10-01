@@ -81,10 +81,10 @@ items:
     title: SwiftData 스키마 V1과 저장소 열기
     description: 영구 저장 모델 V1과 마이그레이션 계획을 만들고, 저장소를 열 수 없을 때 안전하게 실패한다.
     details: >-
-      @Model: Project(id, name, createdAt, currentRevisionID, archivedAt?, origin?), ResourceReference(id,
+      @Model: Project(id, createdAt, currentRevisionID, archivedAt?, origin?), ResourceReference(id,
       최초 경로, 대상 종류, 북마크 데이터, 마지막 해석 경로), Revision(projectID, sequence, recordedAt,
-      cause, restoredFromRevisionID?, 구성 JSON, JSON schema version), Checkpoint(revisionID, 제목,
-      진행 메모, 다음 할 일, 첨부 참조)(0005). VersionedSchema V1 + SchemaMigrationPlan. 경계에서
+      cause, restoredFromRevisionID?, 프로젝트 이름, 구성 JSON, JSON schema version), Checkpoint(revisionID, 제목,
+      진행 메모, 다음 할 일, 첨부 참조)(0005). 현재 구성은 currentRevisionID가 가리키는 스냅샷이며 Node 레코드는 없다(0007). VersionedSchema V1 + SchemaMigrationPlan. 경계에서
       Domain 값 타입으로 변환하고 @Model은 Persistence 밖으로 내보내지 않는다. 저장소 열기 실패 시
       오류를 반환하고 빈 저장소로 교체하지 않는다. 저장소 위치는 Application Support.
     test_strategy: >-
@@ -100,6 +100,7 @@ items:
       - docs/TECH_STACK.md#저장-위치와-내보내기
       - docs/PRD.md#7-기록-정책과-저장-안정성
       - docs/decisions/0005-provenance-and-archive-fields.md
+      - docs/decisions/0007-current-configuration-is-revision-pointer.md
     acceptance_refs: [A18]
     subtasks: []
 
