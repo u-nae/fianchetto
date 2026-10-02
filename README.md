@@ -155,7 +155,7 @@ docs/                기준 문서, 결정 기록, 작업 항목, 디자인 규�
 | --- | --- |
 | [docs/PRD.md](docs/PRD.md) | 제품 동작, 데이터 불변식, 수용 기준(A01–A18) |
 | [docs/TECH_STACK.md](docs/TECH_STACK.md) | 기술 선택 |
-| [docs/decisions/](docs/decisions/) | 기준 문서의 공백·모순 해소와 이후 결정 기록(0001–0017) |
+| [docs/decisions/](docs/decisions/) | 기준 문서의 공백·모순 해소와 이후 결정 기록(0001–0018) |
 | [docs/work-items.yaml](docs/work-items.yaml) | 구현 작업 항목과 진행 상태 |
 | [docs/DESIGN.md](docs/DESIGN.md) | 시각 디자인 규칙(초안) |
 | [docs/design/](docs/design/) | 디자인 레퍼런스(REFERENCES.md)와 네이티브 동작 점검 기록(AUDIT-날짜.md) |

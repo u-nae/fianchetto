@@ -108,6 +108,12 @@ private struct BoardListView: View {
                 }
             }
         }
+        // 오른쪽 클릭 메뉴는 파일 메뉴의 Board 명령과 같은 이름·순서다. 누른 Board를 먼저 고른 뒤 실행한다.
+        .contextMenu(forSelectionType: UUID.self) { ids in
+            if let id = ids.first, let board = (model.activeBoards + model.archivedBoards).first(where: { $0.id == id }) {
+                BoardContextMenu(model: model, boardID: id, isArchived: board.archivedAt != nil)
+            }
+        }
         .toolbar {
             Button("Board 만들기", systemImage: "plus") { model.beginCreate() }
                 .help("Board 만들기")
@@ -140,6 +146,7 @@ private struct BoardRow: View {
 
 private struct ConfigurationTreeView: View {
     @Bindable var model: BoardBrowserModel
+    @State private var listTargeted = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -151,6 +158,18 @@ private struct ConfigurationTreeView: View {
                     .background(.quaternary)
             }
             content
+        }
+        .toolbar {
+            ToolbarItemGroup {
+                Button { Task { await model.addBishops() } } label: {
+                    Label("Bishop 추가", image: .fianchettoBishop)
+                }
+                .help("Bishop 추가")
+                .disabled(!model.canAddToBoard)
+                Button("Wing 추가", systemImage: "folder.badge.plus") { model.beginAddGroup() }
+                    .help("Wing 추가")
+                    .disabled(!model.canAddToBoard)
+            }
         }
     }
 
@@ -186,20 +205,22 @@ private struct ConfigurationTreeView: View {
                     TreeBranch(model: model, item: item, accept: accept)
                 }
             }
-            // 이중 클릭은 열기다. 오른쪽 클릭 메뉴는 메뉴 막대와 같은 명령이다.
+            // 이중 클릭은 열기다. 오른쪽 클릭 메뉴는 항목 종류에 맞는 메뉴 막대 명령을 같은 이름·순서로 보여 준다.
             .contextMenu(forSelectionType: UUID.self) { ids in
-                if let id = ids.first {
-                    Button("열기") { Task { await model.open(id) } }
-                    Button("Finder에서 보기") {
-                        model.selectedNodeID = id
-                        Task { await model.revealSelected() }
-                    }
+                if let id = ids.first, let node = TreeItem.node(id, in: model.tree) {
+                    NodeContextMenu(model: model, node: node)
                 }
             } primaryAction: { ids in
                 if let id = ids.first { Task { await model.open(id) } }
             }
+            // Delete 키는 편집 메뉴의 '제거…'와 같다. 확인 창을 열고, 화면에 '삭제' 표현을 쓰지 않는다.
+            // onKeyPress는 목록의 키보드 포커스를 빼앗아 방향키까지 막으므로, 시스템 Delete 명령에 연결한다.
+            .onDeleteCommand { model.beginRemove() }
             .dropDestination(for: TreeDropItem.self) { items, _ in
                 accept(items, on: nil)
+            } isTargeted: { listTargeted = $0 }
+            .overlay {
+                DropHighlight(isActive: listTargeted && model.canAcceptDrop(on: nil))
             }
         }
     }
@@ -210,6 +231,7 @@ private struct TreeBranch: View {
     let model: BoardBrowserModel
     let item: TreeItem
     let accept: ([TreeDropItem], UUID?) -> Bool
+    @State private var isTargeted = false
 
     var body: some View {
         if let children = item.children {
@@ -232,7 +254,105 @@ private struct TreeBranch: View {
             .draggable(NodeDragItem(nodeID: item.node.id))
             .dropDestination(for: TreeDropItem.self) { items, _ in
                 accept(items, item.node.id)
+            } isTargeted: { isTargeted = $0 }
+            // 놓을 수 있는 Wing만 강조한다. 놓을 수 없는 곳은 강조하지 않는다.
+            .background {
+                DropHighlight(isActive: isTargeted && model.canAcceptDrop(on: item.node.id))
             }
+    }
+}
+
+/// 끌어 놓을 위치 표시. 시스템 강조 색 테두리라 사용자의 강조 색 설정을 따른다.
+private struct DropHighlight: View {
+    let isActive: Bool
+
+    var body: some View {
+        RoundedRectangle(cornerRadius: 5)
+            .strokeBorder(Color.accentColor, lineWidth: 2)
+            .opacity(isActive ? 1 : 0)
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+    }
+}
+
+/// 트리 항목의 오른쪽 클릭 메뉴. 누른 항목을 먼저 고른 뒤 메뉴 막대와 같은 명령을 실행한다.
+private struct NodeContextMenu: View {
+    let model: BoardBrowserModel
+    let node: ConfigurationNode
+
+    var body: some View {
+        switch node.kind {
+        case .file, .folder:
+            Button("열기") { run { await model.openSelected() } }
+            Button("Finder에서 보기") { run { await model.revealSelected() } }
+            Divider()
+            Button("다시 선택…") { run { await model.reselectSelectedTarget() } }
+            Button("연결 대상 변경…") { run { await model.beginReplaceTarget() } }
+                .disabled(!model.canAddToBoard)
+        case .webLink:
+            Button("열기") { run { await model.openSelected() } }
+            Divider()
+            Button("URL 변경…") { run { model.beginChangeURL() } }
+                .disabled(!model.canAddToBoard)
+        case .group:
+            Group {
+                Button("Bishop 추가…") { run { await model.addBishops() } }
+                Button("Wing 추가…") { run { model.beginAddGroup() } }
+                Button("웹 링크 추가…") { run { model.beginAddWebLink() } }
+            }
+            .disabled(!model.canAddToBoard)
+        }
+        Divider()
+        // 편집 명령은 Board를 편집할 수 있을 때만 켠다(보관된 Board는 읽기 전용).
+        Group {
+            Button("이름 변경…") { run { model.beginRenameNode() } }
+            Button("이동…") { run { model.beginMove() } }
+            Divider()
+            Button("제거…") { run { model.beginRemove() } }
+        }
+        .disabled(!model.canAddToBoard)
+    }
+
+    private func run(_ action: @escaping @MainActor () async -> Void) {
+        model.selectedNodeID = node.id
+        Task {
+            await model.selectNode(node.id)
+            await action()
+        }
+    }
+}
+
+/// Board 목록의 오른쪽 클릭 메뉴. 보관 여부에 따라 보관 또는 보관 해제 하나만 보여 준다.
+private struct BoardContextMenu: View {
+    let model: BoardBrowserModel
+    let boardID: UUID
+    let isArchived: Bool
+
+    var body: some View {
+        Button("Board 이름 변경…") { run { model.beginRename() } }
+        if isArchived {
+            Button("보관 해제") { run { await model.unarchiveSelected() } }
+        } else {
+            Button("Board 보관") { run { await model.archiveSelected() } }
+        }
+    }
+
+    private func run(_ action: @escaping @MainActor () async -> Void) {
+        Task {
+            await model.select(boardID)
+            await action()
+        }
+    }
+}
+
+private extension TreeItem {
+    /// 트리에서 id로 항목을 찾는다(오른쪽 클릭 메뉴용 조회. 상태를 바꾸지 않는다).
+    static func node(_ id: UUID, in items: [TreeItem]) -> ConfigurationNode? {
+        for item in items {
+            if item.id == id { return item.node }
+            if let found = node(id, in: item.children ?? []) { return found }
+        }
+        return nil
     }
 }
 

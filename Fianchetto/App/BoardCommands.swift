@@ -1,48 +1,72 @@
 import SwiftUI
 
-/// 파일 메뉴의 Board 만들기(⌘N).
-/// SwiftUI는 메뉴 항목의 꺼짐 상태를 메뉴를 열 때까지 갱신하지 않아, 앱 시작 시점(저장소를 여는 중)에 꺼짐으로 굳으면
-/// ⌘N이 동작하지 않는다. 그래서 항목은 켜 두고, 저장소를 열 수 없거나 여는 중이면 모델이 만들기를 시작하지 않는다.
+/// 메뉴 막대의 Board·항목 명령. 지금 실행할 수 없는 명령은 꺼서 흐리게 보인다(AUDIT-1).
+/// 예외: Board 만들기(⌘N)는 늘 켜 둔다. 앱 시작 시점(저장소를 여는 중)에 꺼짐으로 굳으면 메뉴를 열기 전까지 ⌘N이 동작하지 않았다(W07).
+/// 저장소를 열 수 없거나 여는 중이면 모델이 만들기를 시작하지 않는다. 선택 변화에 따른 꺼짐은 메뉴를 열지 않아도 단축키에 바로 반영된다
+/// (NativeCommandUITests가 ⌘⌫로 확인한다).
 struct BoardCommands: Commands {
     let model: BoardBrowserModel?
+
+    private func isEnabled(_ capability: KeyPath<BoardBrowserModel, Bool>) -> Bool {
+        model?[keyPath: capability] ?? false
+    }
 
     var body: some Commands {
         CommandGroup(after: .pasteboard) {
             Divider()
             Button("이름 변경…") { model?.beginRenameNode() }
+                .disabled(!isEnabled(\.canRenameSelectedNode))
             Button("URL 변경…") { model?.beginChangeURL() }
+                .disabled(!isEnabled(\.canChangeURLOfSelected))
             Divider()
             Button("위로 이동") { Task { await model?.moveSelectedUp() } }
                 .keyboardShortcut(.upArrow, modifiers: [.command, .option])
+                .disabled(!isEnabled(\.canMoveSelectedUp))
             Button("아래로 이동") { Task { await model?.moveSelectedDown() } }
                 .keyboardShortcut(.downArrow, modifiers: [.command, .option])
+                .disabled(!isEnabled(\.canMoveSelectedDown))
             Button("이동…") { model?.beginMove() }
+                .disabled(!isEnabled(\.canMoveSelected))
             Divider()
             Button("제거…") { model?.beginRemove() }
                 .keyboardShortcut(.delete, modifiers: .command)
+                .disabled(!isEnabled(\.canRemoveSelected))
         }
+        // 첫 버전에는 도움말 문서가 없으므로, 눌러도 "도움말을 사용할 수 없음"만 뜨는 기본 항목을 뺀다(메뉴 검색은 시스템이 유지한다).
+        CommandGroup(replacing: .help) {}
         CommandGroup(replacing: .newItem) {
             Button("Board 만들기…") { model?.beginCreate() }
                 .keyboardShortcut("n")
             Button("Bishop 추가…") { Task { await model?.addBishops() } }
                 .keyboardShortcut("a", modifiers: [.command, .shift])
+                .disabled(!isEnabled(\.canAddToBoard))
             Button("연결 대상 변경…") { Task { await model?.beginReplaceTarget() } }
                 .keyboardShortcut("r", modifiers: [.command, .shift])
+                .disabled(!isEnabled(\.canReplaceSelectedTarget))
             Button("Wing 추가…") { model?.beginAddGroup() }
                 .keyboardShortcut("n", modifiers: [.command, .option])
+                .disabled(!isEnabled(\.canAddToBoard))
             Button("웹 링크 추가…") { model?.beginAddWebLink() }
                 .keyboardShortcut("l", modifiers: [.command, .option])
+                .disabled(!isEnabled(\.canAddToBoard))
             Divider()
             Button("열기") { Task { await model?.openSelected() } }
                 .keyboardShortcut("o")
+                .disabled(!isEnabled(\.canOpenSelected))
             Button("Finder에서 보기") { Task { await model?.revealSelected() } }
                 .keyboardShortcut("r")
+                .disabled(!isEnabled(\.canRevealSelected))
             Button("다시 선택…") { Task { await model?.reselectSelectedTarget() } }
+                .disabled(!isEnabled(\.canReselectSelected))
             Button("상태 새로고침") { Task { await model?.refreshStatuses() } }
+                .disabled(!isEnabled(\.canRefreshStatuses))
             Divider()
             Button("Board 이름 변경…") { model?.beginRename() }
+                .disabled(!isEnabled(\.canRenameSelectedBoard))
             Button("Board 보관") { Task { await model?.archiveSelected() } }
+                .disabled(!isEnabled(\.canArchiveSelected))
             Button("보관 해제") { Task { await model?.unarchiveSelected() } }
+                .disabled(!isEnabled(\.canUnarchiveSelected))
         }
     }
 }
