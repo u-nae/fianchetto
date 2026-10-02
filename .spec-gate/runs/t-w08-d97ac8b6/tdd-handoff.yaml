@@ -1,0 +1,166 @@
+schema_version: "1.0"
+run_id: t-w08-d97ac8b6
+verdict: READY
+source:
+  baseline:
+    - path: docs/PRD.md
+      fingerprint: 5d8c45fd91830695e3f8f90fb49be3f9d8be64e0ca0256d382a31d0af4a4ae0a
+    - path: docs/TECH_STACK.md
+      fingerprint: 9cba18e5f7490fe1c39a658ed3485d17fe782060c588b429d6db923c23d55fbe
+  decision_records:
+    path: docs/decisions
+    fingerprint: d4f8e85d8e29f349273fde02a25e81c3277efd6ceef08978ecc2e94e830ef170
+  work_items_artifact: docs/work-items.yaml
+  work_items_fingerprint: ed6e4d27b61c0b277e07c78e50b838fb1c05cc522763ec7d04d6623b26a68f2f
+  normalized_artifact: .spec-gate/runs/t-w08-d97ac8b6/normalized-tasks.yaml
+source_tasks:
+  - task_id: W08
+    title: 로컬 파일·폴더를 Bishop으로 연결하기
+    route: GHERKIN
+    acceptance_refs:
+      - A02
+accepted_specifications:
+  - task_id: W08
+    route: GHERKIN
+    path: .spec-gate/runs/t-w08-d97ac8b6/specs/revision-1/task-W08.feature
+test_obligations:
+  - obligation_id: W08-link-multiple-one-revision
+    task_id: W08
+    kind: scenario
+    description: 여러 위치의 대상을 선택 순서대로 revision 하나로 연결하고 이름·종류·기록 당시 경로와, 저장소를 다시 열어도 해석되는 북마크 참조를 저장한다
+    source: .spec-gate/runs/t-w08-d97ac8b6/specs/revision-1/task-W08.feature#여러 위치의 파일·폴더를 한 작업으로 선택 순서대로 연결한다
+    acceptance_refs:
+      - A02
+  - obligation_id: W08-package-as-file
+    task_id: W08
+    kind: scenario
+    description: 패키지 폴더는 Bishop 파일로 연결한다
+    source: .spec-gate/runs/t-w08-d97ac8b6/specs/revision-1/task-W08.feature#패키지 폴더는 Bishop 파일로 연결한다
+  - obligation_id: W08-same-target-twice-no-merge
+    task_id: W08
+    kind: scenario
+    description: 같은 대상을 두 번 고르면 서로 다른 Bishop과 참조 두 개가 된다(불변식 2)
+    source: .spec-gate/runs/t-w08-d97ac8b6/specs/revision-1/task-W08.feature#같은 대상을 한 번에 두 번 고르면 서로 다른 Bishop 두 개가 된다
+  - obligation_id: W08-empty-selection-unchanged
+    task_id: W08
+    kind: scenario
+    description: 빈 선택은 unchanged이고 revision·참조가 늘지 않는다
+    source: .spec-gate/runs/t-w08-d97ac8b6/specs/revision-1/task-W08.feature#고른 대상이 없으면 아무것도 기록하지 않는다
+  - obligation_id: W08-bookmark-failure-all-or-nothing
+    task_id: W08
+    kind: scenario
+    description: 북마크 생성 실패(주입·대상 삭제) 시 실패 대상을 알리고 아무것도 저장하지 않으며, 원인을 없앤 재시도는 revision 하나로 성공한다(PRD §6-A)
+    source: .spec-gate/runs/t-w08-d97ac8b6/specs/revision-1/task-W08.feature#대상 하나라도 북마크를 만들지 못하면 아무것도 연결하지 않고 다시 시도할 수 있다
+  - obligation_id: W08-targets-untouched
+    task_id: W08
+    kind: scenario
+    description: 연결 후 대상의 내용·수정 시각·권한·목록이 그대로이고 새 파일이 생기지 않는다
+    source: .spec-gate/runs/t-w08-d97ac8b6/specs/revision-1/task-W08.feature#연결은 대상 파일과 폴더를 바꾸지 않는다
+    acceptance_refs:
+      - A02
+  - obligation_id: W08-save-failure-nothing-left
+    task_id: W08
+    kind: scenario
+    description: 저장 실패 시 Node·revision·참조가 남지 않는다(A13 경로)
+    source: .spec-gate/runs/t-w08-d97ac8b6/specs/revision-1/task-W08.feature#저장이 실패하면 연결이 하나도 남지 않는다
+  - obligation_id: W08-archived-rejected
+    task_id: W08
+    kind: scenario
+    description: 보관된 Board 연결은 archived 거부이고 북마크를 만들지 않는다
+    source: .spec-gate/runs/t-w08-d97ac8b6/specs/revision-1/task-W08.feature#보관된 Board에는 연결할 수 없다
+  - obligation_id: W08-bookmarks-off-main
+    task_id: W08
+    kind: scenario
+    description: MainActor에서 요청해도 북마크 생성은 메인 스레드 밖에서 한다
+    source: .spec-gate/runs/t-w08-d97ac8b6/specs/revision-1/task-W08.feature#북마크 생성은 메인 스레드 밖에서 한다
+  - obligation_id: W08-add-location-by-selection
+    task_id: W08
+    kind: scenario
+    description: 선택 없음·그룹·Bishop·웹 링크 선택에 따라 최상위·그룹·부모 그룹·최상위 끝에 연결한다
+    source: .spec-gate/runs/t-w08-d97ac8b6/specs/revision-1/task-W08.feature#Bishop 추가는 선택한 항목에 따라 연결할 위치를 정한다
+  - obligation_id: W08-picker-cancel
+    task_id: W08
+    kind: scenario
+    description: 선택 창 취소는 revision과 안내를 만들지 않는다
+    source: .spec-gate/runs/t-w08-d97ac8b6/specs/revision-1/task-W08.feature#파일 선택 창을 취소하면 아무것도 기록하지 않는다
+  - obligation_id: W08-add-requires-board
+    task_id: W08
+    kind: scenario
+    description: 선택된 Board가 없으면 선택 창을 열지 않는다
+    source: .spec-gate/runs/t-w08-d97ac8b6/specs/revision-1/task-W08.feature#Board를 선택하지 않았으면 Bishop 추가는 아무 일도 하지 않는다
+  - obligation_id: W08-failure-message-and-retry
+    task_id: W08
+    kind: scenario
+    description: 실패 안내에 실패 대상 이름·다시 시도·닫기가 있고 구현 용어가 없으며, 다시 시도는 선택이 바뀌어도 같은 Board·같은 위치에 같은 대상을 연결한다
+    source: .spec-gate/runs/t-w08-d97ac8b6/specs/revision-1/task-W08.feature#연결에 실패하면 실패한 대상 이름과 다시 시도를 보여 주고, 다시 시도하면 같은 Board·같은 위치에 다시 연결한다
+  - obligation_id: W08-tree-refreshes
+    task_id: W08
+    kind: scenario
+    description: 연결 후 현재 구성 트리가 새 Bishop을 보여 준다
+    source: .spec-gate/runs/t-w08-d97ac8b6/specs/revision-1/task-W08.feature#연결이 끝나면 현재 구성 트리를 새 구성으로 바꾼다
+  - obligation_id: W08-relink-creates-new-bishop
+    task_id: W08
+    kind: scenario
+    description: 이미 연결된 대상을 다시 연결하면 기존 Bishop과 별개인 새 Bishop·새 참조를 만든다(불변식 2·10)
+    source: .spec-gate/runs/t-w08-d97ac8b6/specs/revision-1/task-W08.feature#이미 연결된 대상을 다시 연결하면 별도 Bishop을 만든다
+  - obligation_id: W08-multiple-failures-reported
+    task_id: W08
+    kind: scenario
+    description: 여러 대상이 실패하면 실패 대상을 선택 순서대로 모두 알리고 아무것도 저장하지 않는다
+    source: .spec-gate/runs/t-w08-d97ac8b6/specs/revision-1/task-W08.feature#여러 대상이 실패하면 실패한 대상을 모두 알려 준다
+  - obligation_id: W08-dismiss-failure-records-nothing
+    task_id: W08
+    kind: scenario
+    description: 실패 안내를 닫아도 아무것도 기록하지 않는다
+    source: .spec-gate/runs/t-w08-d97ac8b6/specs/revision-1/task-W08.feature#실패 안내를 닫으면 아무것도 기록하지 않는다
+  - obligation_id: W08-save-failure-message-and-retry
+    task_id: W08
+    kind: scenario
+    description: 저장 실패 시 저장하지 못했다는 안내와 다시 시도를 보여 주고 다시 시도로 연결한다
+    source: .spec-gate/runs/t-w08-d97ac8b6/specs/revision-1/task-W08.feature#저장에 실패하면 저장하지 못했다는 안내와 다시 시도를 보여 준다
+  - obligation_id: W08-archived-board-ui
+    task_id: W08
+    kind: scenario
+    description: 보관된 Board에서는 Bishop 추가가 선택 창을 열지 않고 안내를 보여 주며, 드롭은 거부된다(0005, PRD §6-C)
+    source: .spec-gate/runs/t-w08-d97ac8b6/specs/revision-1/task-W08.feature#보관된 Board에서는 Bishop 추가와 드롭이 아무것도 바꾸지 않는다
+  - obligation_id: W08-drop-folder
+    task_id: W08
+    kind: scenario
+    description: Finder에서 끌어 놓은 폴더는 Bishop 폴더로 연결한다
+    source: .spec-gate/runs/t-w08-d97ac8b6/specs/revision-1/task-W08.feature#Finder에서 폴더를 끌어다 놓으면 Bishop 폴더로 연결한다
+  - obligation_id: W08-drop-non-file-rejected
+    task_id: W08
+    kind: scenario
+    description: 파일이 아닌 항목(웹 주소·텍스트) 드롭은 거부한다
+    source: .spec-gate/runs/t-w08-d97ac8b6/specs/revision-1/task-W08.feature#파일이 아닌 항목을 끌어다 놓으면 받지 않는다
+  - obligation_id: W08-picker-configuration
+    task_id: W08
+    kind: scenario
+    description: Bishop 추가 선택 창은 파일·폴더·다중 선택을 허용하고 새 폴더 만들기는 끈다
+    source: .spec-gate/runs/t-w08-d97ac8b6/specs/revision-1/task-W08.feature#파일 선택 창은 파일과 폴더를 여러 개 고를 수 있다
+  - obligation_id: W08-drop-target-rules
+    task_id: W08
+    kind: scenario
+    description: 외부 드롭은 최상위·그룹이면 revision 하나로 끝에 연결하고, Bishop 폴더·파일·웹 링크 위면 거부한다(PRD §6-C)
+    source: .spec-gate/runs/t-w08-d97ac8b6/specs/revision-1/task-W08.feature#Finder에서 끌어온 파일은 놓은 곳이 그룹이나 최상위일 때만 받는다
+  - obligation_id: W08-menu-command
+    task_id: W08
+    kind: scenario
+    description: 파일 메뉴에 ⇧⌘A "Bishop 추가…"가 있고 String Catalog에 문구가 있다
+    source: .spec-gate/runs/t-w08-d97ac8b6/specs/revision-1/task-W08.feature#Bishop 추가 명령이 메뉴와 단축키로 있다
+acceptance_coverage:
+  A02:
+    - W08-link-multiple-one-revision
+    - W08-targets-untouched
+decision_log: null
+critic_report: .spec-gate/runs/t-w08-d97ac8b6/critic-pass-2.yaml
+non_blocking_notes:
+  - finding_id: F-W08-9
+    task_id: W08
+    note: 화면 저장 실패 시나리오는 안내·다시 시도·revision 수 불변만 단언한다. 이전 critic F-W08-6이 요청한 "트리가 이전 구성을 유지한다(design.md가 트리에 보이지 않는다)"와 "완료 표시가 없다"는 단언이 빠져, 화면 모델이 서비스 결과를 기다리지 않고 트리를 낙관적으로 갱신하는 구현도 통과할 수 있다. 서비스 시나리오(줄 68-71)가 저장소 쪽 원자성은 이미 증명하므로 경미하다.
+  - finding_id: F-W08-10
+    task_id: W08
+    note: 시나리오 이름은 "같은 Board"를 약속하지만 단계는 트리 항목 선택만 바꾼다. 실패 안내가 떠 있는 동안 다른 Board를 선택한 뒤 다시 시도하는 경우(안내가 남는지, 원래 Board에 연결되는지)는 증명되지 않는다. 가정이 동작을 정했으므로 정책 질문은 아니다.
+  - finding_id: F-W08-11
+    task_id: W08
+    note: 줄 85의 "선택돼 있다"는 Board 선택을 뜻하지만 웹 링크 선택으로도 읽힌다(다음 단계가 트리 선택을 따로 정하므로 테스트에는 영향이 작다). 실패 안내는 실패 대상 이름만 단언하고 원인(대상 없음 등)의 표시는 정하지 않았다. 원인별 상태 표시는 PRD §6-H 항목(W14 등)의 범위로 보이므로 수정 요구는 없다. 이전 F-W08-1~F-W08-7은 revision-1에서 해소되었다.

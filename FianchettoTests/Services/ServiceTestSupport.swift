@@ -21,9 +21,11 @@ final class TestClock: Sendable {
     }
 }
 
-/// 2000번대부터 차례로 UUID를 내주는 결정적 생성기.
+/// 정한 번호부터 차례로 UUID를 내주는 결정적 생성기. 같은 저장소를 쓰는 하네스끼리는 번호대가 겹치지 않게 시작 번호를 다르게 준다.
 final class TestIDs: Sendable {
-    private let next = Mutex(2001)
+    private let next: Mutex<Int>
+
+    init(startingAt start: Int = 2001) { next = Mutex(start) }
 
     func make() -> UUID {
         next.withLock { value in
@@ -57,6 +59,8 @@ struct ServiceHarness {
     let store: ProjectStore
     let service: ConfigurationService
     let fault: FaultPoint
+    let bookmarks = ScriptedBookmarkSystem()
+    var linking: LinkingService { LinkingService(bookmarks: BookmarkAdapter(system: bookmarks), configuration: service) }
 
     init(directory: URL, clock: TestClock = TestClock(startingAt: date(0))) throws {
         url = directory.appending(path: "Fianchetto.store")

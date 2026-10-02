@@ -97,7 +97,7 @@ terms_tree() { # terms_tree <루트> <카탈로그 키 JSON> <Swift 문자열>
   printf '{ "sourceLanguage" : "ko", "strings" : { %s }, "version" : "1.0" }\n' "$2" >"$1/Localizable.xcstrings"
   printf 'import SwiftUI\nlet text = %s\n' "$3" >"$1/Features/View.swift"
 }
-required='"Board 만들기" : {}, "보관된 Board" : {}, "Bishop" : {}, "그룹" : {}, "웹 링크" : {}'
+required='"Board 만들기" : {}, "보관된 Board" : {}, "Bishop" : {}, "Bishop 추가" : {}, "그룹" : {}, "웹 링크" : {}'
 terms_tree "$workdir/terms-ok" "$required" '"Board 만들기"'
 expect "필수 용어가 있고 금지어가 없으면 통과한다" 0 "$SCRIPTS/check-terms.sh" "$workdir/terms-ok"
 terms_tree "$workdir/terms-missing" '"Board 만들기" : {}' '"Board 만들기"'

@@ -76,3 +76,52 @@ final class FakeScopedResource: SecurityScopedResource, Sendable {
         counts.withLock { $0.stops += 1 }
     }
 }
+
+/// 실제 Foundation 북마크 호출을 쓰되, 지정한 이름의 대상은 북마크 생성을 실패시키고 호출 스레드를 기록한다.
+final class ScriptedBookmarkSystem: BookmarkSystem {
+    private let real = FoundationBookmarkSystem()
+    private let state = Mutex((failNames: Set<String>(), failuresLeft: Int.max, onMain: [Bool]()))
+
+    /// names의 대상 생성을 times번까지 실패시킨다.
+    func fail(_ names: Set<String>, times: Int = .max) {
+        state.withLock { $0.failNames = names; $0.failuresLeft = times }
+    }
+
+    var creationOnMainThread: [Bool] { state.withLock { $0.onMain } }
+
+    func bookmarkData(for url: URL, options: URL.BookmarkCreationOptions) throws -> Data {
+        let fails = state.withLock { state -> Bool in
+            state.onMain.append(Thread.isMainThread)
+            guard state.failNames.contains(url.lastPathComponent), state.failuresLeft > 0 else { return false }
+            state.failuresLeft -= 1
+            return true
+        }
+        if fails { throw NSError(domain: NSCocoaErrorDomain, code: NSFileReadUnknownError) }
+        return try real.bookmarkData(for: url, options: options)
+    }
+
+    func resolve(_ data: Data, options: URL.BookmarkResolutionOptions) throws -> (url: URL, isStale: Bool) {
+        try real.resolve(data, options: options)
+    }
+
+    func bookmarkedPath(of data: Data) -> String? { real.bookmarkedPath(of: data) }
+    func volumePath(of data: Data) throws -> String? { try real.volumePath(of: data) }
+    func itemKind(at url: URL) throws -> LinkedTarget.Kind { try real.itemKind(at: url) }
+    func fileExists(atPath path: String) -> Bool { real.fileExists(atPath: path) }
+}
+
+/// 임시 디렉토리에 파일·폴더를 만든다.
+enum TargetFiles {
+    static func file(_ directory: URL, _ relative: String, contents: String? = nil) throws -> URL {
+        let url = directory.appending(path: relative)
+        try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try Data((contents ?? "내용 \(relative)").utf8).write(to: url)
+        return url
+    }
+
+    static func folder(_ directory: URL, _ relative: String) throws -> URL {
+        let url = directory.appending(path: relative, directoryHint: .isDirectory)
+        try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+        return url
+    }
+}

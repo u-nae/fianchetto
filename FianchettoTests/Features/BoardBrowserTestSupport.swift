@@ -37,6 +37,18 @@ final class OpenScript: Sendable {
 }
 
 /// 화면 상태 모델 테스트 묶음: 임시 디렉토리의 실제 저장소, 주입된 시계·UUID·실패 지점·마지막 Board 기록·Finder·종료.
+/// 파일 선택 창 결과를 차례로 돌려준다. nil은 취소다.
+@MainActor
+final class PickerScript {
+    var results: [[URL]?] = []
+    var calls = 0
+
+    func pick() -> [URL]? {
+        defer { calls += 1 }
+        return calls < results.count ? results[calls] : nil
+    }
+}
+
 @MainActor
 struct BrowserHarness {
     let directory: URL
@@ -45,6 +57,8 @@ struct BrowserHarness {
     let lastBoard: InMemoryLastBoard
     let actions = RecordedActions()
     let script: OpenScript
+    let picker = PickerScript()
+    let bookmarks = ScriptedBookmarkSystem()
     let model: BoardBrowserModel
 
     init(directory: URL, lastBoard: InMemoryLastBoard = InMemoryLastBoard(), script: OpenScript = OpenScript(), storeKnown: Bool = true) {
@@ -52,19 +66,24 @@ struct BrowserHarness {
         url = directory.appending(path: "Fianchetto.store")
         self.lastBoard = lastBoard
         self.script = script
-        let fault = self.fault, clock = TestClock(startingAt: date(0)), ids = TestIDs()
-        let actions = self.actions
+        let fault = self.fault, clock = TestClock(startingAt: date(0)), ids = TestIDs(startingAt: 30001)
+        let actions = self.actions, picker = self.picker, bookmarks = self.bookmarks
         let openStore: @Sendable (URL) throws(StoreOpenError) -> OpenedStore = { url throws(StoreOpenError) in
             if let category = script.next() { throw StoreOpenError(category: category, url: url) }
             let store = ProjectStore(container: try StoreOpener.open(at: url), beforeSave: { try fault.check() })
-            return OpenedStore(store: store, service: ConfigurationService(store: store, now: { clock.now() }, makeID: { ids.make() }))
+            let service = ConfigurationService(store: store, now: { clock.now() }, makeID: { ids.make() })
+            return OpenedStore(
+                store: store, service: service,
+                linking: LinkingService(bookmarks: BookmarkAdapter(system: bookmarks), configuration: service)
+            )
         }
         model = BoardBrowserModel(dependencies: .init(
             storeURL: storeKnown ? url : nil,
             openStore: openStore,
             lastBoard: lastBoard,
             revealInFinder: { actions.revealed.append($0) },
-            quit: { actions.quits += 1 }
+            quit: { actions.quits += 1 },
+            pickTargets: { picker.pick() }
         ))
     }
 }

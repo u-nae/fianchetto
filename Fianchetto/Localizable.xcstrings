@@ -5,6 +5,12 @@
       "comment": "로컬 파일·폴더 연결 항목의 화면 용어(0006). 영문 고유 용어 그대로 쓴다.",
       "extractionState": "manual"
     },
+    "Bishop 추가": {
+      "extractionState": "manual"
+    },
+    "Bishop 추가…": {
+      "extractionState": "manual"
+    },
     "Bishop(파일)": {
       "extractionState": "manual"
     },
@@ -49,6 +55,9 @@
     "다시 시도": {
       "extractionState": "manual"
     },
+    "닫기": {
+      "extractionState": "manual"
+    },
     "대상": {
       "extractionState": "manual"
     },
@@ -70,7 +79,13 @@
     "보관된 Board": {
       "extractionState": "manual"
     },
+    "보관된 Board는 바꿀 수 없습니다.": {
+      "extractionState": "manual"
+    },
     "보관됨": {
+      "extractionState": "manual"
+    },
+    "연결하지 못한 항목이 있어 아무것도 추가하지 않았습니다: %@": {
       "extractionState": "manual"
     },
     "웹 링크": {
