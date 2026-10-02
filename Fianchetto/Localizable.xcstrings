@@ -70,6 +70,9 @@
     "구성이 비어 있습니다": {
       "extractionState": "manual"
     },
+    "그 항목 안으로는 옮길 수 없습니다.": {
+      "extractionState": "manual"
+    },
     "그룹": {
       "extractionState": "manual"
     },
@@ -77,6 +80,9 @@
       "extractionState": "manual"
     },
     "그룹 추가…": {
+      "extractionState": "manual"
+    },
+    "그룹을 자기 안으로 옮길 수 없습니다.": {
       "extractionState": "manual"
     },
     "기존": {
@@ -127,6 +133,9 @@
     "새 대상": {
       "extractionState": "manual"
     },
+    "아래로 이동": {
+      "extractionState": "manual"
+    },
     "연결 대상 변경": {
       "extractionState": "manual"
     },
@@ -148,7 +157,19 @@
     "웹 링크 추가…": {
       "extractionState": "manual"
     },
+    "위로 이동": {
+      "extractionState": "manual"
+    },
     "이 버전의 앱이 읽을 수 없는 형식입니다. 더 새로운 버전의 앱이 만들었을 수 있습니다.": {
+      "extractionState": "manual"
+    },
+    "이동": {
+      "extractionState": "manual"
+    },
+    "이동…": {
+      "extractionState": "manual"
+    },
+    "이동할 위치": {
       "extractionState": "manual"
     },
     "이름": {
@@ -176,6 +197,9 @@
       "extractionState": "manual"
     },
     "종류": {
+      "extractionState": "manual"
+    },
+    "최상위": {
       "extractionState": "manual"
     },
     "취소": {

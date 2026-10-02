@@ -11,6 +11,12 @@ struct BoardCommands: Commands {
             Divider()
             Button("이름 변경…") { model?.beginRenameNode() }
             Button("URL 변경…") { model?.beginChangeURL() }
+            Divider()
+            Button("위로 이동") { Task { await model?.moveSelectedUp() } }
+                .keyboardShortcut(.upArrow, modifiers: [.command, .option])
+            Button("아래로 이동") { Task { await model?.moveSelectedDown() } }
+                .keyboardShortcut(.downArrow, modifiers: [.command, .option])
+            Button("이동…") { model?.beginMove() }
         }
         CommandGroup(replacing: .newItem) {
             Button("Board 만들기…") { model?.beginCreate() }
