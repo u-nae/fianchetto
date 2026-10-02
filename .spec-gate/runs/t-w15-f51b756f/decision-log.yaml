@@ -1,0 +1,11 @@
+schema_version: "1.0"
+run_id: t-w15-f51b756f
+decisions:
+  - question_id: Q-W15-1
+    task_id: W15
+    question: 보관된 Board에서 "다시 선택…"으로 같은 대상의 접근을 복구하는 것을 허용할까요?
+    recommended_default: A
+    answer: A
+    followed_recommendation: true
+    answer_source: AskUserQuestion
+    answered_at: "2026-10-03T10:40:00+09:00"

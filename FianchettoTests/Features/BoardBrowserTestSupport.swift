@@ -135,14 +135,16 @@ struct BrowserHarness {
             let store = ProjectStore(container: try StoreOpener.open(at: url), beforeSave: { try fault.check() })
             let service = ConfigurationService(store: store, now: { clock.now() }, makeID: { ids.make() })
             let adapter = BookmarkAdapter(system: bookmarks)
+            let links = LinkStatusService(store: store, bookmarks: adapter)
             return OpenedStore(
                 store: store, service: service,
                 linking: LinkingService(bookmarks: adapter, configuration: service),
                 replacement: TargetReplacementService(bookmarks: adapter, configuration: service),
                 lifecycle: ProjectLifecycleService(store: store, now: { clock.now() }),
                 opening: TargetOpeningService(
-                    store: store, bookmarks: adapter, launcher: launcher, accessScope: { _ in RecordedScope(events: events) }
-                )
+                    store: store, links: links, launcher: launcher, accessScope: { _ in RecordedScope(events: events) }
+                ),
+                links: links
             )
         }
         model = BoardBrowserModel(dependencies: .init(

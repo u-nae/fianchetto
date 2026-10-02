@@ -15,7 +15,7 @@ struct BookmarkResolution: Equatable, Sendable {
     var refreshFailed: Bool
 }
 
-enum BookmarkFailureCause: Equatable, Sendable {
+enum BookmarkFailureCause: Error, Equatable, Sendable {
     case volumeUnavailable
     case missing
     case accessDenied
@@ -107,6 +107,15 @@ struct BookmarkAdapter: Sendable {
         } catch {
             return BookmarkFailureRule.errorKind(error)
         }
+    }
+
+    /// 같은 대상 판정(0004)에 쓸 위치. 보안 범위 해석이 실패하면 식별자 확인용으로만 범위 없이 다시 해석한다.
+    /// 이 위치로 파일에 접근하지 않는다. 둘 다 실패하면 nil(식별자 없음 → 판정 불가).
+    func identityURL(of data: Data) -> URL? {
+        if let resolved = try? system.resolve(data, options: Self.resolutionOptions) { return resolved.url }
+        var options = Self.resolutionOptions
+        options.remove(.withSecurityScope)
+        return try? system.resolve(data, options: options).url
     }
 
     func volumeState(of data: Data) -> BookmarkFailureRule.VolumeState {

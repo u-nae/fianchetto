@@ -21,6 +21,15 @@ enum ReplacementRejection: Error, Equatable, Sendable {
     case unreachableTarget
 }
 
+/// 다시 선택(W15) 결과.
+enum ReselectOutcome: Equatable, Sendable {
+    /// 같은 대상이라 같은 참조의 접근 정보만 새로 저장했다. revision은 없다.
+    case recovered
+    /// 다른 대상이거나 같은지 알 수 없다. 연결 대상 변경 확인으로 넘긴다.
+    case needsConfirmation(ReplacementPreview)
+    case rejected(ReplacementRejection)
+}
+
 enum ReplacementOutcome: Equatable, Sendable {
     case committed(RevisionSummary, ConfigurationSnapshot)
     case unchanged
@@ -84,11 +93,61 @@ struct TargetReplacementService: Sendable {
         }
     }
 
+    /// 다시 선택: 같은 대상이면 접근을 복구하고(보관된 Board 포함, Q-W15-1), 아니면 연결 대상 변경 확인으로 넘긴다.
+    /// 보관된 Board에서 다른 대상·판정 불가면 archived로 거부한다(0009). 접근 복구 저장이 실패하면 saveFailed를 던진다.
+    func reselect(
+        projectID: UUID, nodeID: UUID, newURL: URL
+    ) async throws(ConfigurationServiceError) -> ReselectOutcome {
+        let node: ConfigurationNode
+        let archived: Bool
+        switch try await linkedNode(projectID: projectID, nodeID: nodeID, allowArchived: true) {
+        case let .success(found): (node, archived) = found
+        case let .failure(rejection): return .rejected(rejection)
+        }
+        let kind: LinkedTarget.Kind
+        do {
+            kind = try bookmarks.kind(of: newURL)
+        } catch {
+            return .rejected(.unreachableTarget)
+        }
+        guard kind.nodeKind == node.kind else { return .rejected(.commit(.edit(.targetKindMismatch))) }
+        let identity = try await identity(of: node, newURL: newURL)
+        guard identity == .sameTarget else {
+            if archived { return .rejected(.commit(.archived)) }
+            return .needsConfirmation(ReplacementPreview(
+                projectID: projectID, nodeID: nodeID, kind: kind, oldPath: node.recordedPath ?? "",
+                newURL: newURL, newPath: newURL.standardizedFileURL.path, identity: identity
+            ))
+        }
+        guard let referenceID = node.referenceID else { return .rejected(.commit(.edit(.notLinkedItem))) }
+        let creation: BookmarkCreation
+        do {
+            creation = try bookmarks.createBookmark(for: newURL)
+        } catch {
+            return .rejected(.unreachableTarget)
+        }
+        do {
+            try await configuration.store.updateReferenceAccess(referenceID, bookmarkData: creation.bookmarkData, lastResolvedPath: creation.path)
+        } catch {
+            throw .saveFailed
+        }
+        return .recovered
+    }
+
     // MARK: 내부
 
     private func linkedNode(
         projectID: UUID, nodeID: UUID
     ) async throws(ConfigurationServiceError) -> Result<ConfigurationNode, ReplacementRejection> {
+        switch try await linkedNode(projectID: projectID, nodeID: nodeID, allowArchived: false) {
+        case let .success(found): .success(found.node)
+        case let .failure(rejection): .failure(rejection)
+        }
+    }
+
+    private func linkedNode(
+        projectID: UUID, nodeID: UUID, allowArchived: Bool
+    ) async throws(ConfigurationServiceError) -> Result<(node: ConfigurationNode, archived: Bool), ReplacementRejection> {
         let store = configuration.store
         let project: ProjectRecord?
         do {
@@ -97,7 +156,7 @@ struct TargetReplacementService: Sendable {
             throw .storeUnavailable
         }
         guard let project else { return .failure(.commit(.projectNotFound)) }
-        guard project.archivedAt == nil else { return .failure(.commit(.archived)) }
+        guard allowArchived || project.archivedAt == nil else { return .failure(.commit(.archived)) }
         let snapshot: ConfigurationSnapshot
         do {
             snapshot = try await store.currentSnapshot(projectID: projectID)
@@ -106,10 +165,11 @@ struct TargetReplacementService: Sendable {
         }
         guard let node = snapshot.nodes.first(where: { $0.id == nodeID }) else { return .failure(.commit(.edit(.nodeNotFound))) }
         guard node.kind == .file || node.kind == .folder else { return .failure(.commit(.edit(.notLinkedItem))) }
-        return .success(node)
+        return .success((node, project.archivedAt != nil))
     }
 
-    /// 기존 대상 식별자는 기존 참조의 북마크를 해석한 위치에서 구한다. 해석하지 못하면 식별자가 없는 것으로 본다(판정 불가).
+    /// 기존 대상 식별자는 기존 참조의 북마크를 해석한 위치에서 구한다. 보안 범위 해석이 거부되면 식별자 확인용으로만 범위 없이
+    /// 해석한다(0012). 둘 다 못 하면 식별자가 없는 것으로 본다(판정 불가).
     private func identity(of node: ConfigurationNode, newURL: URL) async throws(ConfigurationServiceError) -> TargetIdentity {
         var old = FileSystemIdentity(file: nil, volume: nil)
         if let referenceID = node.referenceID {
@@ -119,8 +179,8 @@ struct TargetReplacementService: Sendable {
             } catch {
                 throw .storeUnavailable
             }
-            if let reference, let resolved = try? bookmarks.resolve(reference.bookmarkData) {
-                old = bookmarks.identity(of: resolved.url)
+            if let reference, let url = bookmarks.identityURL(of: reference.bookmarkData) {
+                old = bookmarks.identity(of: url)
             }
         }
         return TargetIdentityRule.identity(old: old, new: bookmarks.identity(of: newURL))

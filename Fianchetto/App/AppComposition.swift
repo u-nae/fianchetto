@@ -40,12 +40,14 @@ enum AppComposition {
                 let store = ProjectStore(container: try StoreOpener.open(at: url))
                 let service = ConfigurationService(store: store, now: { Date() }, makeID: { UUID() })
                 let bookmarks = BookmarkAdapter(system: FoundationBookmarkSystem())
+                let links = LinkStatusService(store: store, bookmarks: bookmarks)
                 return OpenedStore(
                     store: store, service: service,
                     linking: LinkingService(bookmarks: bookmarks, configuration: service),
                     replacement: TargetReplacementService(bookmarks: bookmarks, configuration: service),
                     lifecycle: ProjectLifecycleService(store: store, now: { Date() }),
-                    opening: TargetOpeningService(store: store, bookmarks: bookmarks, launcher: WorkspaceLauncher())
+                    opening: TargetOpeningService(store: store, links: links, launcher: WorkspaceLauncher()),
+                    links: links
                 )
             },
             lastBoard: lastBoard,

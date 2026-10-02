@@ -328,14 +328,14 @@ items:
       상태 분류는 입력(해석 결과·오류)을 받는 순수 함수 단위 테스트. 서비스 테스트: 임시 디렉토리 대상
       삭제 후 Node·이력 유지와 "대상 없음", 같은 대상 재선택 시 revision 불변, 다른 대상은 새 reference.
       볼륨 분리는 W27 실제 환경 검증.
-    status: pending
+    status: done
     priority: high
     dependencies: [W06, W09]
     source_refs:
       - docs/PRD.md#h-연결-오류와-재연결
       - docs/TECH_STACK.md#파일-접근과-권한
       - docs/PRD.md#경량화
-    acceptance_refs: [A12]
+    acceptance_refs: [A12, A02]
     subtasks: []
 
   # ── 단계 3: 이력 ────────────────────────────────────────────────
