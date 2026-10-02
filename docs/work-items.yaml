@@ -139,7 +139,7 @@ items:
     test_strategy: >-
       테스트마다 임시 디렉토리를 만들어 북마크 생성·해석·이동 후 해석·삭제 후 실패 원인을 검증한다.
       읽기 전용 옵션 사용을 검증한다. 실제 sandbox 재실행 접근은 W27에서 Release 앱으로 확인한다.
-    status: pending
+    status: done
     priority: high
     dependencies: [W01]
     source_refs:
