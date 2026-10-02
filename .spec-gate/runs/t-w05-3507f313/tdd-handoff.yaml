@@ -1,0 +1,195 @@
+schema_version: "1.0"
+run_id: t-w05-3507f313
+verdict: READY
+source:
+  baseline:
+    - path: docs/PRD.md
+      fingerprint: 5d8c45fd91830695e3f8f90fb49be3f9d8be64e0ca0256d382a31d0af4a4ae0a
+    - path: docs/TECH_STACK.md
+      fingerprint: 9cba18e5f7490fe1c39a658ed3485d17fe782060c588b429d6db923c23d55fbe
+  decision_records:
+    path: docs/decisions
+    fingerprint: 343f661197a778ad3c4d5f2c8371031c3c1c45337ac2f1b8f5d59641e812e38f
+  work_items_artifact: docs/work-items.yaml
+  work_items_fingerprint: 239d75c0367d84254d89d573cb477c607f6e71285c900b1f3221acfc8ba9f7f4
+  normalized_artifact: .spec-gate/runs/t-w05-3507f313/normalized-tasks.yaml
+source_tasks:
+  - task_id: W05
+    title: 구성 변경 커밋 서비스와 Board 만들기
+    route: GHERKIN
+    acceptance_refs:
+      - A01
+      - A13
+accepted_specifications:
+  - task_id: W05
+    route: GHERKIN
+    path: .spec-gate/runs/t-w05-3507f313/specs/revision-1/task-W05.feature
+test_obligations:
+  - obligation_id: W05-create-board-first-revision
+    task_id: W05
+    kind: scenario
+    description: Board 만들기는 정리한 이름의 빈 구성으로 순번 1 created revision을 기록하고 현재 revision으로 두며 생성 시각은 첫 revision 시각과 같다
+    source: .spec-gate/runs/t-w05-3507f313/specs/revision-1/task-W05.feature#Board를 만들면 빈 초기 구성의 첫 revision이 기록된다
+    acceptance_refs:
+      - A01
+  - obligation_id: W05-create-board-no-filesystem-change
+    task_id: W05
+    kind: scenario
+    description: Board 만들기와 중첩 그룹 추가는 저장소 파일 묶음 외에 파일·디렉토리를 만들지 않는다
+    source: .spec-gate/runs/t-w05-3507f313/specs/revision-1/task-W05.feature#Board를 만들고 그룹을 추가해도 파일 시스템에 디렉토리나 파일이 생기지 않는다
+    acceptance_refs:
+      - A01
+  - obligation_id: W05-create-board-blank-rejected
+    task_id: W05
+    kind: scenario
+    description: 빈 이름 Board 만들기는 blank_name 거부이고 아무것도 저장하지 않는다
+    source: .spec-gate/runs/t-w05-3507f313/specs/revision-1/task-W05.feature#빈 이름으로는 Board를 만들 수 없다
+  - obligation_id: W05-create-board-same-name-allowed
+    task_id: W05
+    kind: scenario
+    description: 같은 이름 Board는 서로 다른 Project로 만들어진다
+    source: .spec-gate/runs/t-w05-3507f313/specs/revision-1/task-W05.feature#같은 이름의 Board를 여러 개 만들 수 있다
+  - obligation_id: W05-commit-revision-and-current
+    task_id: W05
+    kind: scenario
+    description: changed 편집은 다음 순번 revision과 현재 revision 이동을 함께 저장하고 재오픈 후에도 같으며 이전 revision은 그대로다
+    source: .spec-gate/runs/t-w05-3507f313/specs/revision-1/task-W05.feature#변경을 확정하면 새 revision과 현재 구성이 함께 저장된다
+    acceptance_refs:
+      - A01
+  - obligation_id: W05-commit-cause-per-edit
+    task_id: W05
+    kind: scenario
+    description: 편집 9종이 각자의 revision 원인으로 기록된다(0005)
+    source: .spec-gate/runs/t-w05-3507f313/specs/revision-1/task-W05.feature#편집 종류는 revision 원인으로 기록된다
+  - obligation_id: W05-linked-items-save-references
+    task_id: W05
+    kind: scenario
+    description: 연결 대상 추가는 새 referenceID마다 최초 경로·종류·북마크 바이트를 가진 참조 레코드를 같은 저장 단위로 저장하고, 참조 레코드 없는 referenceID를 남기지 않는다
+    source: .spec-gate/runs/t-w05-3507f313/specs/revision-1/task-W05.feature#연결 대상 추가는 새 참조 레코드를 revision과 함께 저장한다
+  - obligation_id: W05-replace-target-saves-reference
+    task_id: W05
+    kind: scenario
+    description: 대상 교체는 새 참조 레코드를 저장하고 이전 참조 레코드는 남긴다(불변식 3)
+    source: .spec-gate/runs/t-w05-3507f313/specs/revision-1/task-W05.feature#대상 교체는 새 참조 레코드를 저장하고 이전 참조 레코드는 그대로 둔다
+    acceptance_refs:
+      - A13
+  - obligation_id: W05-same-target-no-reference
+    task_id: W05
+    kind: scenario
+    description: 같은 대상 재선택 교체는 참조 레코드도 만들지 않는다
+    source: .spec-gate/runs/t-w05-3507f313/specs/revision-1/task-W05.feature#같은 대상을 다시 고른 교체는 참조 레코드도 만들지 않는다
+  - obligation_id: W05-linked-items-failure-rolls-back-references
+    task_id: W05
+    kind: scenario
+    description: 연결 대상 추가 저장 실패 시 revision·현재 revision·참조 레코드가 서비스 안과 재오픈 후 모두 실패 전과 같다
+    source: .spec-gate/runs/t-w05-3507f313/specs/revision-1/task-W05.feature#연결 대상 추가의 저장이 실패하면 Node·revision·참조 레코드가 모두 남지 않는다
+    acceptance_refs:
+      - A13
+  - obligation_id: W05-access-mismatch-rejected
+    task_id: W05
+    kind: scenario
+    description: 북마크 바이트 수가 대상 수와 맞지 않는 요청은 access_mismatch 거부이고 저장하지 않는다
+    source: .spec-gate/runs/t-w05-3507f313/specs/revision-1/task-W05.feature#북마크 바이트 수가 대상 수와 맞지 않는 요청은 거부한다
+  - obligation_id: W05-archived-before-edit-reason
+    task_id: W05
+    kind: scenario
+    description: 보관 거부는 편집 자체의 거부 사유보다 먼저 판정한다
+    source: .spec-gate/runs/t-w05-3507f313/specs/revision-1/task-W05.feature#보관된 Board의 거부 사유는 편집 자체의 사유보다 먼저다
+  - obligation_id: W05-unreadable-current-errors
+    task_id: W05
+    kind: scenario
+    description: 현재 revision 스냅샷을 읽을 수 없으면 오류를 내고 저장하지 않으며 빈 구성으로 대신하지 않는다
+    source: .spec-gate/runs/t-w05-3507f313/specs/revision-1/task-W05.feature#현재 구성을 읽을 수 없으면 오류를 내고 빈 구성으로 대신하지 않는다
+  - obligation_id: W05-retry-after-failure
+    task_id: W05
+    kind: scenario
+    description: 저장 실패 뒤 같은 편집을 다시 보내면 순번 2로 한 번만 기록된다
+    source: .spec-gate/runs/t-w05-3507f313/specs/revision-1/task-W05.feature#저장 실패 뒤 같은 편집을 다시 보내면 한 번만 기록된다
+    acceptance_refs:
+      - A13
+  - obligation_id: W05-unchanged-not-saved
+    task_id: W05
+    kind: scenario
+    description: unchanged는 revision을 만들지 않고 현재 revision을 바꾸지 않는다
+    source: .spec-gate/runs/t-w05-3507f313/specs/revision-1/task-W05.feature#무변경 결과는 저장하지 않는다
+  - obligation_id: W05-rejected-not-saved
+    task_id: W05
+    kind: scenario
+    description: rejected 편집은 revision을 만들지 않는다
+    source: .spec-gate/runs/t-w05-3507f313/specs/revision-1/task-W05.feature#거부된 편집은 저장하지 않는다
+  - obligation_id: W05-archived-rejected
+    task_id: W05
+    kind: scenario
+    description: 보관된 Board의 편집은 archived 거부이고 저장하지 않는다(0005)
+    source: .spec-gate/runs/t-w05-3507f313/specs/revision-1/task-W05.feature#보관된 Board의 구성은 바꿀 수 없다
+  - obligation_id: W05-missing-project-rejected
+    task_id: W05
+    kind: scenario
+    description: 없는 Project 편집은 project_not_found 거부이고 아무것도 저장하지 않는다
+    source: .spec-gate/runs/t-w05-3507f313/specs/revision-1/task-W05.feature#없는 Board는 바꿀 수 없다
+  - obligation_id: W05-save-failure-rolls-back
+    task_id: W05
+    kind: scenario
+    description: 저장 실패는 오류이고 committed가 돌아오지 않으며 서비스 안과 재오픈 후 모두 실패 전 상태다
+    source: .spec-gate/runs/t-w05-3507f313/specs/revision-1/task-W05.feature#저장이 실패하면 오류를 돌려주고 새 revision과 현재 구성 변경이 모두 남지 않는다
+    acceptance_refs:
+      - A13
+  - obligation_id: W05-sequence-after-failure
+    task_id: W05
+    kind: scenario
+    description: 실패한 커밋은 순번을 쓰지 않아 다음 성공 커밋이 이어지는 순번을 받는다
+    source: .spec-gate/runs/t-w05-3507f313/specs/revision-1/task-W05.feature#저장 실패 뒤의 다음 변경은 순번을 건너뛰지 않는다
+    acceptance_refs:
+      - A13
+  - obligation_id: W05-create-board-failure-rolls-back
+    task_id: W05
+    kind: scenario
+    description: Board 만들기 저장 실패 시 서비스 안에서도 실패한 Project가 보이지 않고, 이어진 성공 커밋에 섞여 저장되지 않는다
+    source: .spec-gate/runs/t-w05-3507f313/specs/revision-1/task-W05.feature#Board 만들기 중 저장이 실패하면 Project와 revision이 모두 남지 않는다
+    acceptance_refs:
+      - A13
+  - obligation_id: W05-concurrent-commits-serialized
+    task_id: W05
+    kind: scenario
+    description: 동시 요청 20개가 직렬화되어 순번이 1~21로 연속되고 모든 변경이 반영된다
+    source: .spec-gate/runs/t-w05-3507f313/specs/revision-1/task-W05.feature#같은 Board에 동시에 들어온 변경은 하나씩 커밋되어 순번이 연속된다
+  - obligation_id: W05-sequence-independent-of-clock
+    task_id: W05
+    kind: scenario
+    description: 기록 시각이 뒤로 가도 순번은 증가하고 목록은 순번 순서다
+    source: .spec-gate/runs/t-w05-3507f313/specs/revision-1/task-W05.feature#시계가 뒤로 가도 순번은 계속 증가한다
+  - obligation_id: W05-sequence-per-project
+    task_id: W05
+    kind: scenario
+    description: 순번은 Board마다 따로 증가한다
+    source: .spec-gate/runs/t-w05-3507f313/specs/revision-1/task-W05.feature#Board마다 순번을 따로 센다
+acceptance_coverage:
+  A01:
+    - W05-create-board-first-revision
+    - W05-create-board-no-filesystem-change
+    - W05-commit-revision-and-current
+  A13:
+    - W05-replace-target-saves-reference
+    - W05-linked-items-failure-rolls-back-references
+    - W05-retry-after-failure
+    - W05-save-failure-rolls-back
+    - W05-sequence-after-failure
+    - W05-create-board-failure-rolls-back
+decision_log: null
+critic_report: .spec-gate/runs/t-w05-3507f313/critic-pass-2.yaml
+non_blocking_notes:
+  - finding_id: F-W05-R2-1
+    task_id: W05
+    note: access_mismatch가 거부 순서 목록에 없다. 그래서 두 가지가 정해지지 않는다. 첫째, 같은 대상 재선택 교체에 북마크 바이트가 없을 때 결과가 unchanged인지 access_mismatch인지 갈린다. W03 결과를 먼저 보면 unchanged이고, 요청 형태를 먼저 보면 access_mismatch다. 같은 대상 시나리오의 When은 바이트를 주는지 말하지 않는다. 둘째, 보관된 Board나 없는 Board에 바이트 수가 어긋난 요청이 오면 어느 사유가 나오는지 정해지지 않는다. assumption의 규칙("대상 수"는 요청의 대상 수)을 그대로 읽으면 같은 대상 교체에도 바이트 하나가 필요하다. 따라서 두 시나리오가 직접 충돌하지는 않는다. 다만 테스트 작성자가 입력을 고르는 방식에 따라 기대값이 달라질 수 있다.
+  - finding_id: F-W05-R2-2
+    task_id: W05
+    note: 이 시나리오는 정상 저장 경로에서 새 참조 레코드가 생기고 이전 레코드가 보존되는지를 본다. 저장 실패 조건은 없다. 내용상 A03과 불변식 3에 해당하지만, A03은 W05의 acceptance_refs에 없다. A13 태그 때문에 acceptance_coverage가 A13 증거를 실제보다 넓게 보고한다. A13은 다른 실패 시나리오들이 이미 충분히 덮는다.
+  - finding_id: F-W05-R2-3
+    task_id: W05
+    note: 우선순위 문장은 생겼다. 하지만 시나리오는 보관된 Board에 W03이 거부할 편집을 보내는 경우만 다룬다. 보관된 Board에 무변경 편집(같은 이름으로 바꾸기)을 보내면 문장대로는 archived 거부다. 이 경우를 고정하는 시나리오는 없다. W03 결과를 먼저 계산하고 changed일 때만 보관 여부를 확인하는 구현도 이 시나리오를 통과한다.
+  - finding_id: F-W05-R2-4
+    task_id: W05
+    note: W03은 undetermined를 different_target처럼 처리해 새 referenceID를 만든다. W05의 참조 레코드 저장 규칙은 새 referenceID를 기준으로 하므로 같은 경로로 처리된다. 따로 고칠 것은 없다. 원하면 교체 시나리오를 identity 두 값 (different_target, undetermined)의 Outline으로 둘 수 있다.
+  - finding_id: F-W05-R2-5
+    task_id: W05
+    note: 이전 major 두 건은 source 근거로 닫혔다. F-W05-1은 참조 레코드를 같은 저장 단위로 저장하는 방식으로, F-W05-2는 같은 서비스 안의 Project 목록과 이어진 성공 커밋, 재오픈 후 상태를 함께 단언하는 방식으로 닫혔다. minor F-W05-3·5·6·7과 note F-W05-8도 반영됐다. F-W05-4는 일부만 반영됐다(F-W05-R2-3 참고). 남은 항목은 acceptance 경계를 바꾸지 않는다.

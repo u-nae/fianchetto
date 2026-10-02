@@ -136,6 +136,23 @@ struct StoreAdapter {
         }
     }
 
+    /// 프로젝트의 가장 큰 revision 순번. revision이 없으면 nil.
+    func latestSequence(projectID: UUID) throws(StoreReadError) -> Int? {
+        var descriptor = FetchDescriptor<SchemaV1.RevisionModel>(
+            predicate: #Predicate { $0.projectID == projectID }, sortBy: [SortDescriptor(\.sequence, order: .reverse)]
+        )
+        descriptor.fetchLimit = 1
+        return try read(descriptor).first?.sequence
+    }
+
+    func referenceCount() throws(StoreReadError) -> Int {
+        do {
+            return try context.fetchCount(FetchDescriptor<SchemaV1.ResourceReferenceModel>())
+        } catch {
+            throw .storeUnavailable
+        }
+    }
+
     func reference(_ id: UUID) throws(StoreReadError) -> ResourceReferenceRecord? {
         try read(FetchDescriptor<SchemaV1.ResourceReferenceModel>(predicate: #Predicate { $0.id == id })).first.map(Self.record)
     }
