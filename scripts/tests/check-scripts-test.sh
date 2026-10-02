@@ -144,5 +144,24 @@ expect "sandbox가 없으면 실패한다" nonzero "$SCRIPTS/check-entitlements.
   "$(sign nosandbox com.apple.security.files.user-selected.read-write com.apple.security.files.bookmarks.app-scope)"
 expect "경로가 없으면 실패한다" nonzero "$SCRIPTS/check-entitlements.sh" "$workdir/does-not-exist"
 
+# check-warnings.sh: 컴파일러·빌드 경고는 실패, XCTest 런타임 내부 진단([Internal])은 따로 보고만 한다.
+log() { # log <이름> <내용>
+  printf '%s\n' "$2" >"$workdir/$1.log"
+  echo "$workdir/$1.log"
+}
+expect "경고가 없으면 통과한다" 0 "$SCRIPTS/check-warnings.sh" "$(log clean 'Build succeeded')"
+expect "컴파일러 경고가 있으면 실패한다" nonzero "$SCRIPTS/check-warnings.sh" \
+  "$(log compiler '/src/App.swift:12:5: warning: variable was never used')"
+expect "빌드 시스템 경고가 있으면 실패한다" nonzero "$SCRIPTS/check-warnings.sh" \
+  "$(log buildsystem 'warning: The app icon set has no images')"
+expect "XCTest 내부 진단만 있으면 통과한다" 0 "$SCRIPTS/check-warnings.sh" \
+  "$(log internal "<unknown>:0: warning: -[FianchettoUITests.BoardBrowserUITests test_W11] : [Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread")"
+expect "XCTest 내부 진단과 컴파일러 경고가 함께 있으면 실패한다" nonzero "$SCRIPTS/check-warnings.sh" \
+  "$(log mixed "<unknown>:0: warning: -[A test] : [Internal] Thread running
+/src/App.swift:3:1: warning: deprecated")"
+expect "테스트 이름이 붙은 다른 런타임 경고는 실패한다" nonzero "$SCRIPTS/check-warnings.sh" \
+  "$(log runtime "<unknown>:0: warning: -[FianchettoUITests.LaunchTests test_W01] : Main thread checker: UI API called on a background thread")"
+expect "로그 파일이 없으면 실패한다" nonzero "$SCRIPTS/check-warnings.sh" "$workdir/no-such.log"
+
 echo "check-scripts-test: $passed passed, $failed failed"
 ((failed == 0))
