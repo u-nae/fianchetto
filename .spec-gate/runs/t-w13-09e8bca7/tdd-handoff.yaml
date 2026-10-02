@@ -1,0 +1,106 @@
+schema_version: "1.0"
+run_id: t-w13-09e8bca7
+verdict: READY
+source:
+  baseline:
+    - path: docs/PRD.md
+      fingerprint: 5d8c45fd91830695e3f8f90fb49be3f9d8be64e0ca0256d382a31d0af4a4ae0a
+    - path: docs/TECH_STACK.md
+      fingerprint: 9cba18e5f7490fe1c39a658ed3485d17fe782060c588b429d6db923c23d55fbe
+  decision_records:
+    path: docs/decisions
+    fingerprint: a8ce81a9b21f644e2b123b2c61603477034123977e2bc71e9bdd916adc7a4202
+  work_items_artifact: docs/work-items.yaml
+  work_items_fingerprint: d300cb6d36b4539c87bbce5efac3a6ed505b9de7af1095b9bb5bf67aff904688
+  normalized_artifact: .spec-gate/runs/t-w13-09e8bca7/normalized-tasks.yaml
+source_tasks:
+  - task_id: W13
+    title: Bishop·그룹 제거
+    route: GHERKIN
+    acceptance_refs:
+      - A14
+accepted_specifications:
+  - task_id: W13
+    route: GHERKIN
+    path: .spec-gate/runs/t-w13-09e8bca7/specs/revision-0/task-W13.feature
+test_obligations:
+  - obligation_id: W13-confirm-dialog
+    task_id: W13
+    kind: scenario
+    description: 제거 확인 창은 종류별 제목과 그룹의 포함 항목 수(빈 그룹 포함)를 보여 주고 대상이 남는다는 문장이 있으며 열기만으로 기록하지 않는다
+    source: .spec-gate/runs/t-w13-09e8bca7/specs/revision-0/task-W13.feature#제거 확인 창은 항목 종류와 함께 제거될 범위를 보여 준다
+    acceptance_refs:
+      - A14
+  - obligation_id: W13-remove-group
+    task_id: W13
+    kind: scenario
+    description: 그룹과 모든 자손을 remove revision 하나로 빼고 남은 형제를 다시 매기며 선택을 지운다
+    source: .spec-gate/runs/t-w13-09e8bca7/specs/revision-0/task-W13.feature#그룹 제거를 확정하면 그룹과 모든 자손이 revision 하나로 빠진다
+    acceptance_refs:
+      - A14
+  - obligation_id: W13-history-keeps-removed
+    task_id: W13
+    kind: scenario
+    description: 제거 직전 revision에 제거된 항목이 같은 UUID·부모·순서·경로로 남고 참조도 읽힌다
+    source: .spec-gate/runs/t-w13-09e8bca7/specs/revision-0/task-W13.feature#제거된 항목은 과거 revision에 그대로 남는다
+    acceptance_refs:
+      - A14
+  - obligation_id: W13-remove-leaf
+    task_id: W13
+    kind: scenario
+    description: Bishop·웹 링크 제거는 그 항목만 빼고 형제 순서를 빈틈없이 다시 매긴다
+    source: .spec-gate/runs/t-w13-09e8bca7/specs/revision-0/task-W13.feature#Bishop·웹 링크 제거를 확정하면 그 항목만 빠진다
+  - obligation_id: W13-targets-untouched
+    task_id: W13
+    kind: scenario
+    description: 제거 후 실제 대상의 목록·내용·수정 시각이 그대로다
+    source: .spec-gate/runs/t-w13-09e8bca7/specs/revision-0/task-W13.feature#제거는 연결 대상 파일과 폴더를 지우거나 바꾸지 않는다
+  - obligation_id: W13-cancel
+    task_id: W13
+    kind: scenario
+    description: 취소는 기록하지 않고 선택을 유지한다
+    source: .spec-gate/runs/t-w13-09e8bca7/specs/revision-0/task-W13.feature#확인 창에서 취소하면 기록하지 않는다
+    acceptance_refs:
+      - A14
+  - obligation_id: W13-save-failure
+    task_id: W13
+    kind: scenario
+    description: 제거 저장 실패는 안내하고 화면·저장소 구성과 revision 수가 그대로다
+    source: .spec-gate/runs/t-w13-09e8bca7/specs/revision-0/task-W13.feature#제거 저장이 실패하면 안내하고 구성은 그대로다
+  - obligation_id: W13-archived-or-no-selection
+    task_id: W13
+    kind: scenario
+    description: 보관된 Board는 확인 창 없이 안내하고, 선택 없음은 아무 일도 하지 않는다(0009)
+    source: .spec-gate/runs/t-w13-09e8bca7/specs/revision-0/task-W13.feature#보관된 Board나 선택 없음에서는 제거하지 않는다
+  - obligation_id: W13-commands-and-terms
+    task_id: W13
+    kind: scenario
+    description: 편집 메뉴에 제거…(⌘⌫)가 있고 필수 문구가 String Catalog에 있으며 파일 삭제 표현이 없다
+    source: .spec-gate/runs/t-w13-09e8bca7/specs/revision-0/task-W13.feature#제거 명령이 메뉴에 있고 금지 문구가 없다
+acceptance_coverage:
+  A14:
+    - W13-confirm-dialog
+    - W13-remove-group
+    - W13-history-keeps-removed
+    - W13-cancel
+decision_log: null
+critic_report: .spec-gate/runs/t-w13-09e8bca7/critic-pass-1.yaml
+non_blocking_notes:
+  - finding_id: F-W13-1
+    task_id: W13
+    note: The manifest assumes a concrete behavior for a stale target (the selected item no longer exists in the current configuration when the user confirms), but no scenario or test obligation makes it testable. The service already rejects with node_not_found (Domain/ConfigurationEditor.swift EditRejection), so the screen-state mapping is the untested part. TDD would leave this branch unspecified.
+  - finding_id: F-W13-2
+    task_id: W13
+    note: Every removal scenario uses reachable targets. Removing a Bishop whose target is missing or unreachable must still succeed without needing file access; no scenario pins that removal does not depend on resolving the target.
+  - finding_id: F-W13-3
+    task_id: W13
+    note: The persistence-failure scenario only removes a single Bishop and does not state the selection after failure. Group removal (multi-node) is the case PRD §7 calls out as one revision, and the success/cancel scenarios specify selection, so the failure path is the only one left ambiguous.
+  - finding_id: F-W13-4
+    task_id: W13
+    note: The fixture names an empty group "보관함" in the same feature that uses "보관된 Board" for the archive state (0009). The shared word invites misreading the empty-group rows as archive behavior when turning scenarios into tests.
+  - finding_id: F-W13-5
+    task_id: W13
+    note: The PRD requires confirmation only for group removal; the spec extends confirmation to Bishop and web-link removal, justified by the absence of Undo (PRD §4). This is a reversible UX choice recorded as an assumption with evidence and does not contradict a baseline rule or decision record. No change requested; the caller may surface it to the user as an informational note.
+  - finding_id: F-W13-6
+    task_id: W13
+    note: A14's cycle-prevention clause is proven by W12 (move), not W13. W13's obligations cover the removal clauses (scope confirmation, history retention). Acceptance coverage in the handoff for A14 should be read together with W12. Counting all descendants (4 for "개발") as "포함된 가상 항목 수" is a reasonable reading consistent with PRD §7 (그룹과 자손 제거).
