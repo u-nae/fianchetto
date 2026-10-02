@@ -1,3 +1,4 @@
+import AppKit
 import XCTest
 
 /// 테스트마다 앱 컨테이너 안의 전용 저장소·마지막 Board 기록을 쓰도록 실행한다. 실사용 데이터를 건드리지 않기 위해서다.
@@ -16,6 +17,30 @@ struct UITestApp {
 
     func launch() {
         app.launch()
+        ensureWindow()
+    }
+
+    /// 사용자가 다른 앱을 쓰는 중이면 macOS가 활성화 요청을 거절해 앱이 백그라운드로 실행될 수 있다. 그렇게 실행된 SwiftUI 앱은
+    /// 활성화만으로는 창을 만들지 않고, Dock 아이콘을 누를 때와 같은 다시 열기(reopen) 이벤트를 받아야 창을 연다.
+    /// 그래서 창이 없으면 테스트가 띄운 바로 그 인스턴스(같은 실행 파일 경로)에 다시 열기를 보낸다.
+    /// 번들 ID로 앱을 찾으면 다른 빌드 경로의 같은 앱이 열릴 수 있어 쓰지 않는다.
+    private func ensureWindow() {
+        guard !app.windows.firstMatch.waitForExistence(timeout: 3) else { return }
+        // 테스트 러너와 같은 빌드 폴더의 앱이 테스트 대상이다.
+        let url = Bundle.main.bundleURL.deletingLastPathComponent().appending(path: "Fianchetto.app")
+        let isRunning = NSRunningApplication.runningApplications(withBundleIdentifier: "io.github.u-nae.Fianchetto")
+            .contains { $0.bundleURL?.standardizedFileURL == url.standardizedFileURL }
+        guard isRunning else {
+            XCTFail("테스트 대상 앱이 실행 중이 아니다: \(url.path)")
+            return
+        }
+        let configuration = NSWorkspace.OpenConfiguration()
+        configuration.activates = true
+        configuration.createsNewApplicationInstance = false
+        let reopened = XCTestExpectation(description: "reopen")
+        NSWorkspace.shared.openApplication(at: url, configuration: configuration) { _, _ in reopened.fulfill() }
+        _ = XCTWaiter().wait(for: [reopened], timeout: 10)
+        XCTAssertTrue(app.windows.firstMatch.waitForExistence(timeout: 10), "다시 열기 후에도 창이 없다")
     }
 
     /// 같은 테스트 저장소로 다시 실행한다(정리하지 않음).
@@ -23,6 +48,7 @@ struct UITestApp {
         app.terminate()
         app.launchEnvironment["FIANCHETTO_UI_TEST_RESET"] = "0"
         app.launch()
+        ensureWindow()
     }
 
     /// macOS 14부터 다른 프로세스의 활성화 요청은 협조적이라 무시될 수 있다. 앱의 메뉴 막대를 직접 열었다 닫아

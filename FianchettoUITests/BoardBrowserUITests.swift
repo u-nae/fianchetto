@@ -60,8 +60,17 @@ final class BoardBrowserUITests: XCTestCase {
         // Return이 시트를 닫으므로 입력과 분리해, 사라진 입력 칸을 다시 확인하지 않게 한다.
         app.typeKey(.return, modifierFlags: [])
 
-        XCTAssertTrue(app.descendants(matching: .any)["node-row-Core"].waitForExistence(timeout: 5))
+        let core = app.descendants(matching: .any)["node-row-Core"]
+        XCTAssertTrue(core.waitForExistence(timeout: 5))
         XCTAssertFalse(app.descendants(matching: .any)["node-row-Dev"].exists)
+
+        // 회귀: 선택한(접힌) 그룹 안에 그룹을 추가하면 그 그룹이 펼쳐져 새 항목이 보인다.
+        core.click()
+        app.menuBars.menuBarItems["파일"].click()
+        app.menuBars.menuBarItems["파일"].menuItems["그룹 추가…"].click()
+        test.type("Data", into: field)
+        app.typeKey(.return, modifierFlags: [])
+        XCTAssertTrue(app.descendants(matching: .any)["node-row-Data"].waitForExistence(timeout: 5))
     }
 
     /// W07-ui-menu-command: 파일 메뉴에 ⌘N의 "Board 만들기…"가 있다.
