@@ -387,6 +387,31 @@ final class BoardBrowserModel {
     // MARK: 그룹·웹 링크·이름·URL 편집
 
     /// 편집을 시작할 수 있는 Board. 선택한 Board가 없으면 nil, 보관돼 있으면 안내하고 nil(보관 안내가 다른 조건보다 먼저다).
+    // MARK: 메뉴 켜짐 판단 값
+    // 각 값은 해당 동작이 실제로 창을 열거나 기록하는 조건과 같다(MenuCapabilityModelTests). 보관된 Board는 편집 동작이 모두 거짓이다(0009).
+
+    private var canEditSelectedBoard: Bool { selectedBoardID != nil && openedStore != nil && !selectedBoardIsArchived }
+
+    /// Bishop 추가·Wing 추가·웹 링크 추가.
+    var canAddToBoard: Bool { canEditSelectedBoard }
+    var canRenameSelectedNode: Bool { canEditSelectedBoard && selectedNode != nil }
+    var canChangeURLOfSelected: Bool { canEditSelectedBoard && selectedNode?.kind == .webLink }
+    var canMoveSelected: Bool { canEditSelectedBoard && selectedNode != nil }
+    var canRemoveSelected: Bool { canEditSelectedBoard && selectedNode != nil }
+    var canMoveSelectedUp: Bool { canEditSelectedBoard && siblingPosition.map { $0.index > 0 } == true }
+    var canMoveSelectedDown: Bool { canEditSelectedBoard && siblingPosition.map { $0.index < $0.count - 1 } == true }
+    /// 상태 확인은 조회라 보관된 Board에서도 한다.
+    var canRefreshStatuses: Bool { selectedBoardID != nil && openedStore != nil }
+    var canRenameSelectedBoard: Bool { canEditSelectedBoard }
+
+    /// 선택한 항목의 형제 안 위치.
+    private var siblingPosition: (index: Int, count: Int)? {
+        guard let node = selectedNode else { return nil }
+        let siblings = children(of: node.parentID)
+        guard let index = siblings.firstIndex(where: { $0.id == node.id }) else { return nil }
+        return (index, siblings.count)
+    }
+
     private func editableBoard() -> UUID? {
         guard let boardID = selectedBoardID, openedStore != nil else { return nil }
         guard !selectedBoardIsArchived else {
