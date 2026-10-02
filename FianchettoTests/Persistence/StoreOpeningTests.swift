@@ -123,16 +123,6 @@ struct StoreOpeningTests {
 
     // MARK: 도우미
 
-    /// fixture를 만든 연결이 같은 프로세스에 살아 있으면 보조 파일이 계속 바뀐다.
-    /// 그래서 다른 위치에서 만든 저장소 파일 묶음을 복사해, 열린 연결이 없는 저장소로 검사한다.
-    private func copyStoreFiles(from source: URL, to destination: URL) throws {
-        for suffix in ["", "-wal", "-shm"] {
-            let file = URL(filePath: source.path + suffix)
-            if FileManager.default.fileExists(atPath: file.path) {
-                try FileManager.default.copyItem(at: file, to: URL(filePath: destination.path + suffix))
-            }
-        }
-    }
 
     private func createNewerSchemaStore(at url: URL) throws {
         let container = try StoreOpener.open(at: url, migrationPlan: TestNewerOnlyPlan.self)
