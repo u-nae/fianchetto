@@ -29,8 +29,12 @@
 scripts/verify.sh                    # 전체 검증: 구조·빌드 설정·Debug test(UI 포함)·Release build·entitlement·경고 0개
 SKIP_UI_TESTS=1 scripts/verify.sh    # UI 테스트 제외
 xcodebuild -project Fianchetto.xcodeproj -scheme Fianchetto -destination 'platform=macOS,arch=arm64' \
-  -derivedDataPath build/DerivedData test -skip-testing:FianchettoUITests   # 단위 테스트만
+  -derivedDataPath ~/Library/Developer/Xcode/DerivedData/Fianchetto-verify \
+  test -skip-testing:FianchettoUITests   # 단위 테스트만
 ```
+
+- 빌드 산출물(DerivedData)은 `~/Documents` 밖에 둔다. 저장소가 `~/Documents` 아래라서, 안에 두면 UI 테스트 러너가
+  문서 폴더 접근 승인 창을 띄워 키 입력을 가로채고 테스트가 멈춘다.
 
 - 보고할 때 빌드 성공·테스트 통과·macOS 15 실기 실행을 구분한다. `verify.sh` 통과는 macOS 15 실기 검증이 아니다.
 

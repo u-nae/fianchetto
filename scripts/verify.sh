@@ -8,7 +8,9 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 SCHEME="Fianchetto"
 PROJECT="Fianchetto.xcodeproj"
-DERIVED="build/DerivedData"
+# 빌드 산출물은 ~/Documents 밖에 둔다. 저장소가 ~/Documents 아래에 있으면 UI 테스트 러너가 자기 파일을 읽을 때마다
+# macOS 문서 폴더 접근 승인 창이 떠 키 입력을 가로채고 테스트가 멈춘다.
+DERIVED="${FIANCHETTO_DERIVED_DATA:-$HOME/Library/Developer/Xcode/DerivedData/Fianchetto-verify}"
 LOGS="build/logs"
 DESTINATION="platform=macOS,arch=arm64"
 mkdir -p "$LOGS"
@@ -32,6 +34,7 @@ scripts/tests/check-scripts-test.sh
 
 step "구조와 빌드 설정"
 scripts/check-structure.sh
+scripts/check-terms.sh
 scripts/check-build-settings.sh
 
 step "Debug build + test"
