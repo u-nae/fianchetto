@@ -127,14 +127,16 @@ Asset Catalog(`Fianchetto/Assets.xcassets`)의 Color Set으로 정의한다. 코
   트리 행은 기본 굵기만 쓰므로 지금은 문제가 없다. 굵기 대응이 필요해지면 Ultralight·Black 기준 굵기를 같은 점 구조로 추가한다.
 - 렌더링: 한 레이어(Monochrome)다. 색은 넣지 않고 사용처의 `foregroundStyle`을 따른다.
 
-## 6. 앱 아이콘
+## 6. 앱 아이콘 (0014 확정)
 
-- 도구: Apple **Icon Composer**(Xcode 26 시대의 레이어드 아이콘 도구). 결과 `.icon` 파일을 프로젝트에 넣고 앱 target의
-  아이콘 이름으로 지정한다. macOS 15에서 보일 이전 형식 이미지가 함께 만들어지는지 반드시 확인하고, 안 되면 Asset Catalog의
-  `AppIcon` 세트(16–1024px, @1x/@2x)를 따로 둔다.
-- 모양: macOS 표준 둥근 사각형 격자를 따른다(Apple Design Resources의 macOS 아이콘 템플릿). 아이콘 안에 글자를 넣지 않는다.
-- 모티프 후보: (a) 비숍 실루엣 + 대각선, (b) 체스판 일부를 대각선으로 가로지르는 경로, (c) 월넛·아이보리 두 색 면 분할.
-- 16px·32px에서 알아볼 수 있는지 확인한다(Finder 목록·Spotlight 크기).
+- 모티프: 월넛(왼쪽 위)과 아이보리(오른쪽 아래) 면을 긴 대각선으로 나누고, 가운데 미트라(Bishop 심볼과 같은 모양)의 색이
+  양쪽에서 뒤바뀐다. 아이콘 안에 글자를 넣지 않는다. 색은 `AccentColor`·`ThemeSurface` 라이트 값과 같다.
+- 자산: Asset Catalog의 `AppIcon` 세트(16–512pt, @1x/@2x). 앱 target 빌드 설정은 `ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon`이다.
+  PNG는 `scripts/design/generate-app-icon.swift`가 만든다. 모양을 고칠 때는 PNG를 직접 고치지 않고 스크립트를 고쳐 다시 만든다.
+- 모양: macOS 격자를 따른다(1024 캔버스, 본체 824, 여백 100, 모서리 반경 185, 아래쪽 그림자). macOS 15는 이 그림을 그대로 쓴다.
+  개발 기기(macOS 27)는 같은 그림에 시스템 유리 효과와 모양 처리를 입혀 보여 준다.
+- Icon Composer(`.icon`)는 아직 쓰지 않는다. 새 OS에서 밝기·색조 변형(다크·틴트 아이콘)이 필요해지면 같은 모티프로 `.icon`을 만들고,
+  macOS 15용으로는 이 `AppIcon` 세트를 유지한다.
 
 ## 7. 상태 표현 (W15, 0010 확정)
 
@@ -225,7 +227,7 @@ W15에서 연결 상태를 트리에 표시한다. 상태 이름은 W14 안내 �
 - [x] `AccentColor` 라이트·다크·고대비 값(3.2의 긴장 해소) — 0011
 - [ ] `ThemeSurface`를 상세 영역에 쓸지, 빈 화면에만 쓸지
 - [x] Bishop 커스텀 심볼 채택 여부와 모양(파일/폴더 구분 방식) — 0013
-- [ ] 앱 아이콘 모티프와 macOS 15 이전 형식 처리
+- [x] 앱 아이콘 모티프와 macOS 15 이전 형식 처리 — 0014
 - [ ] Board 제목 세리프 사용 여부
 - [ ] 빈 화면 일러스트 사용 여부와 범위
 - [x] W15 상태 기호(7장) 확정 — 0010
