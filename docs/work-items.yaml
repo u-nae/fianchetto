@@ -117,7 +117,7 @@ items:
       실제 in-memory/임시 디렉토리 SwiftData로: 생성 후 첫 revision 순번 1, 주입 실패 시 현재 구성·
       revision 모두 이전 상태, 동시 요청 직렬화 후 순번 연속, 무변경 시 revision 수 불변, 보관 프로젝트
       편집 거부, 생성 과정에서 파일 시스템에 디렉토리가 생기지 않음.
-    status: pending
+    status: done
     priority: high
     dependencies: [W03, W04]
     source_refs:

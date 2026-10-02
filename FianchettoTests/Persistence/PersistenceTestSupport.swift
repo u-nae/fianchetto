@@ -16,6 +16,19 @@ func withTemporaryDirectory<T>(_ body: (URL) throws -> T) throws -> T {
     return try body(directory)
 }
 
+/// 비동기 테스트용 임시 디렉토리.
+func withTemporaryDirectoryAsync(_ body: (URL) async throws -> Void) async throws {
+    let directory = try FileManager.default.url(
+        for: .itemReplacementDirectory, in: .userDomainMask,
+        appropriateFor: FileManager.default.temporaryDirectory, create: true
+    )
+    defer {
+        restorePermissions(under: directory)
+        try? FileManager.default.removeItem(at: directory)
+    }
+    try await body(directory)
+}
+
 private func restorePermissions(under directory: URL) {
     let paths = FileManager.default.enumerator(atPath: directory.path)?.compactMap { $0 as? String } ?? []
     for path in paths {
@@ -94,4 +107,16 @@ func storeFileBytes(_ url: URL) -> [String: Data?] {
         result[suffix] = try? Data(contentsOf: file)
     }
     return result
+}
+
+/// fixture를 만든 연결이 같은 프로세스에 살아 있으면 보조 파일이 계속 바뀐다.
+/// 그래서 다른 위치의 저장소 파일 묶음을 복사해, 열린 연결이 없는 저장소로 검사하거나 "다시 연" 상태를 만든다.
+func copyStoreFiles(from source: URL, to destination: URL) throws {
+    try FileManager.default.createDirectory(at: destination.deletingLastPathComponent(), withIntermediateDirectories: true)
+    for suffix in ["", "-wal", "-shm"] {
+        let file = URL(filePath: source.path + suffix)
+        if FileManager.default.fileExists(atPath: file.path) {
+            try FileManager.default.copyItem(at: file, to: URL(filePath: destination.path + suffix))
+        }
+    }
 }
