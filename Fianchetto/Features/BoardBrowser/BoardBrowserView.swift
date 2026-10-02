@@ -8,6 +8,7 @@ struct BoardBrowserView: View {
         // Observation은 body에서 읽은 값만 추적하므로 Binding 클로저 밖에서 먼저 읽는다.
         let isCreating = model.creation != nil
         let notice = model.linkNotice
+        let replacement = model.replacement
         Group {
             switch model.phase {
             case .loading:
@@ -33,6 +34,9 @@ struct BoardBrowserView: View {
         .frame(minWidth: 820, minHeight: 480)
         .sheet(isPresented: Binding(get: { isCreating }, set: { if !$0 { model.cancelCreate() } })) {
             CreateBoardSheet(model: model)
+        }
+        .sheet(item: Binding(get: { replacement.map(PreviewItem.init) }, set: { if $0 == nil { model.cancelReplacement() } })) { item in
+            ReplacementSheet(model: model, preview: item.preview)
         }
         .alert(
             "Bishop 추가",
@@ -189,6 +193,43 @@ private struct NodeRow: View {
     }
 }
 
+private struct PreviewItem: Identifiable {
+    var preview: ReplacementPreview
+    var id: String { "\(preview.nodeID)-\(preview.newPath)" }
+}
+
+/// 연결 대상 변경 확인 창: 기존·새 경로와 판정에 따른 안내.
+private struct ReplacementSheet: View {
+    let model: BoardBrowserModel
+    let preview: ReplacementPreview
+
+    var body: some View {
+        let presentation = model.replacementPresentation(preview)
+        VStack(alignment: .leading, spacing: 12) {
+            Text("연결 대상 변경").font(.headline)
+            LabeledContent("기존", value: preview.oldPath)
+            LabeledContent("새 대상", value: preview.newPath)
+            if let warning = presentation.warning {
+                Label(warning, systemImage: "exclamationmark.triangle")
+            }
+            HStack {
+                Spacer()
+                if presentation.canConfirm {
+                    Button("취소", role: .cancel) { model.cancelReplacement() }
+                        .keyboardShortcut(.cancelAction)
+                    Button("변경") { Task { await model.confirmReplacement() } }
+                        .keyboardShortcut(.defaultAction)
+                } else {
+                    Button("닫기") { model.cancelReplacement() }
+                        .keyboardShortcut(.defaultAction)
+                }
+            }
+        }
+        .padding()
+        .frame(width: 460)
+    }
+}
+
 private struct NodeInspectorView: View {
     let model: BoardBrowserModel
 
@@ -199,6 +240,9 @@ private struct NodeInspectorView: View {
                 LabeledContent("종류", value: inspection.kind)
                 if let target = inspection.target {
                     LabeledContent("대상", value: target)
+                }
+                if model.canReplaceSelectedTarget {
+                    Button("연결 대상 변경") { Task { await model.beginReplaceTarget() } }
                 }
             }
             .padding()

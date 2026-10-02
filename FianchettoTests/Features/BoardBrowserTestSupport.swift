@@ -42,10 +42,19 @@ final class OpenScript: Sendable {
 final class PickerScript {
     var results: [[URL]?] = []
     var calls = 0
+    /// 연결 대상 변경용 선택 창 결과와, 그 창에 요청된 종류.
+    var replacementResults: [URL?] = []
+    var replacementKinds: [LinkedTarget.Kind] = []
 
     func pick() -> [URL]? {
         defer { calls += 1 }
         return calls < results.count ? results[calls] : nil
+    }
+
+    func pickReplacement(_ kind: LinkedTarget.Kind) -> URL? {
+        defer { replacementKinds.append(kind) }
+        let index = replacementKinds.count
+        return index < replacementResults.count ? replacementResults[index] : nil
     }
 }
 
@@ -72,9 +81,11 @@ struct BrowserHarness {
             if let category = script.next() { throw StoreOpenError(category: category, url: url) }
             let store = ProjectStore(container: try StoreOpener.open(at: url), beforeSave: { try fault.check() })
             let service = ConfigurationService(store: store, now: { clock.now() }, makeID: { ids.make() })
+            let adapter = BookmarkAdapter(system: bookmarks)
             return OpenedStore(
                 store: store, service: service,
-                linking: LinkingService(bookmarks: BookmarkAdapter(system: bookmarks), configuration: service)
+                linking: LinkingService(bookmarks: adapter, configuration: service),
+                replacement: TargetReplacementService(bookmarks: adapter, configuration: service)
             )
         }
         model = BoardBrowserModel(dependencies: .init(
@@ -83,7 +94,8 @@ struct BrowserHarness {
             lastBoard: lastBoard,
             revealInFinder: { actions.revealed.append($0) },
             quit: { actions.quits += 1 },
-            pickTargets: { picker.pick() }
+            pickTargets: { picker.pick() },
+            pickReplacement: { picker.pickReplacement($0) }
         ))
     }
 }

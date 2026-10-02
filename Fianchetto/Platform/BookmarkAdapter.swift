@@ -66,6 +66,15 @@ struct BookmarkAdapter: Sendable {
         }
     }
 
+    /// 대상의 종류(패키지는 파일). 대상이 없거나 읽을 수 없으면 생성 실패로 본다.
+    func kind(of url: URL) throws(BookmarkError) -> LinkedTarget.Kind {
+        do {
+            return try system.itemKind(at: url.standardizedFileURL)
+        } catch {
+            throw .creationFailed
+        }
+    }
+
     func resolve(_ data: Data) throws(BookmarkError) -> BookmarkResolution {
         let resolved: (url: URL, isStale: Bool)
         do {
