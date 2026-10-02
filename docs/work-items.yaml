@@ -163,7 +163,7 @@ items:
     test_strategy: >-
       화면 상태 단위 테스트(선택·마지막 Board 복원·빈 상태·저장소 열기 실패 상태). XCUITest 핵심 흐름: 첫 실행에서 Board를
       만들고 트리에 표시되는지, 메뉴·키보드로 같은 동작이 가능한지.
-    status: pending
+    status: done
     priority: high
     dependencies: [W05]
     source_refs:

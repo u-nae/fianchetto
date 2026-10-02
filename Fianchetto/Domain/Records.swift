@@ -90,3 +90,11 @@ struct CheckpointRecord: Hashable, Sendable {
     var createdAt: Date
     var attachments: [AttachmentRecord]
 }
+
+/// Board 목록 한 줄. 이름은 현재 revision이 가진다(0007).
+struct ProjectListing: Hashable, Sendable, Identifiable {
+    var id: UUID
+    var name: String
+    var createdAt: Date
+    var archivedAt: Date?
+}
