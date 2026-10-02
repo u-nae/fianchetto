@@ -9,6 +9,7 @@ struct BoardBrowserView: View {
         let isCreating = model.creation != nil
         let isRenaming = model.rename != nil
         let hasNodeForm = model.nodeForm != nil
+        let moveDialog = model.moveDialog
         let notice = model.linkNotice
         let replacement = model.replacement
         Group {
@@ -43,11 +44,16 @@ struct BoardBrowserView: View {
         .sheet(isPresented: Binding(get: { hasNodeForm }, set: { if !$0 { model.cancelNodeForm() } })) {
             NodeFormSheet(model: model)
         }
+        .sheet(isPresented: Binding(get: { moveDialog != nil }, set: { if !$0 { model.cancelMove() } })) {
+            if let moveDialog {
+                MoveSheet(model: model, dialog: moveDialog)
+            }
+        }
         .sheet(item: Binding(get: { replacement.map(PreviewItem.init) }, set: { if $0 == nil { model.cancelReplacement() } })) { item in
             ReplacementSheet(model: model, preview: item.preview)
         }
         .alert(
-            "Bishop 추가",
+            notice.map(model.noticeTitle) ?? "",
             isPresented: Binding(get: { notice != nil }, set: { if !$0 { model.dismissLinkNotice() } }),
             presenting: notice
         ) { notice in
@@ -157,31 +163,39 @@ private struct ConfigurationTreeView: View {
             ContentUnavailableView("현재 구성을 읽지 못했습니다", systemImage: "exclamationmark.triangle")
         case let .loaded(snapshot) where snapshot.nodes.isEmpty:
             ContentUnavailableView("구성이 비어 있습니다", systemImage: "tray")
-                .dropDestination(for: URL.self) { urls, _ in
-                    accept(urls, on: nil)
+                .dropDestination(for: TreeDropItem.self) { items, _ in
+                    accept(items, on: nil)
                 }
         case .loaded:
             let selectedNode = model.selectedNodeID
             List(selection: Binding(get: { selectedNode }, set: { model.selectedNodeID = $0 })) {
                 OutlineGroup(model.tree, children: \.children) { item in
                     NodeRow(model: model, node: item.node)
-                        .dropDestination(for: URL.self) { urls, _ in
-                            accept(urls, on: item.node.id)
+                        .draggable(NodeDragItem(nodeID: item.node.id))
+                        .dropDestination(for: TreeDropItem.self) { items, _ in
+                            accept(items, on: item.node.id)
                         }
                 }
             }
-            .dropDestination(for: URL.self) { urls, _ in
-                accept(urls, on: nil)
+            .dropDestination(for: TreeDropItem.self) { items, _ in
+                accept(items, on: nil)
             }
         }
     }
 }
 
 private extension ConfigurationTreeView {
-    /// 드롭은 받을 수 있는 곳에서만 받아들이고, 연결은 비동기로 진행한다.
-    func accept(_ urls: [URL], on nodeID: UUID?) -> Bool {
-        guard model.canAcceptDrop(on: nodeID), !urls.isEmpty, urls.allSatisfy(\.isFileURL) else { return false }
-        Task { await model.drop(urls, on: nodeID) }
+    /// 드롭은 받을 수 있는 곳에서만 받아들이고, 연결·이동은 비동기로 진행한다.
+    /// Finder의 파일은 연결하고, 앱 안에서 끈 항목 하나는 옮긴다. 둘이 섞이거나 알 수 없는 것은 받지 않는다.
+    func accept(_ items: [TreeDropItem], on nodeID: UUID?) -> Bool {
+        let urls = items.compactMap(\.fileURL)
+        if !urls.isEmpty, urls.count == items.count {
+            guard model.canAcceptDrop(on: nodeID), urls.allSatisfy(\.isFileURL) else { return false }
+            Task { await model.drop(urls, on: nodeID) }
+            return true
+        }
+        guard items.count == 1, let moved = items.first?.nodeID, model.canAcceptNodeDrop(moved, on: nodeID) else { return false }
+        Task { await model.dropNode(moved, on: nodeID) }
         return true
     }
 }
@@ -213,6 +227,38 @@ private struct NodeRow: View {
         case .folder: "folder.badge.gearshape"
         case .webLink: "link"
         }
+    }
+}
+
+/// "이동…" 창: 최상위와 옮길 수 있는 그룹을 트리 순서로 보여 준다.
+private struct MoveSheet: View {
+    let model: BoardBrowserModel
+    let dialog: BoardBrowserModel.MoveDialog
+    @State private var selection: BoardBrowserModel.MoveTarget?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("이동할 위치").font(.headline)
+            List(dialog.destinations, selection: $selection) { destination in
+                Label(destination.name, systemImage: destination.target == .root ? "square.stack" : "folder")
+                    .padding(.leading, CGFloat(max(destination.depth - 1, 0)) * 16)
+                    .accessibilityIdentifier("move-destination-\(destination.name)")
+            }
+            .frame(minHeight: 200)
+            HStack {
+                Spacer()
+                Button("취소", role: .cancel) { model.cancelMove() }
+                    .keyboardShortcut(.cancelAction)
+                Button("이동") {
+                    guard let selection else { return }
+                    Task { await model.confirmMove(to: selection) }
+                }
+                .keyboardShortcut(.defaultAction)
+                .disabled(selection == nil)
+            }
+        }
+        .padding()
+        .frame(width: 360)
     }
 }
 

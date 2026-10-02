@@ -269,7 +269,7 @@ items:
     test_strategy: >-
       서비스 테스트: 이동·순서 변경 revision과 과거 배치 불변, 순환 이동 거부 시 구성·revision 불변,
       같은 위치 무변경, 원본 파일 경로 불변.
-    status: pending
+    status: done
     priority: high
     dependencies: [W11]
     source_refs:

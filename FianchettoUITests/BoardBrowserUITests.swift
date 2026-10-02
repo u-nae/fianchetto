@@ -95,6 +95,10 @@ final class BoardBrowserUITests: XCTestCase {
         editMenu.click()
         XCTAssertTrue(editMenu.menuItems["이름 변경…"].waitForExistence(timeout: 5))
         XCTAssertTrue(editMenu.menuItems["URL 변경…"].exists)
+        // W12-commands: 이동 명령도 편집 메뉴에 있다.
+        for title in ["위로 이동", "아래로 이동", "이동…"] {
+            XCTAssertTrue(editMenu.menuItems[title].exists, title)
+        }
         // 단축키는 XCUITest가 노출하지 않으므로, 메뉴를 닫고 ⌘N이 이 명령을 실행하는지로 확인한다.
         app.typeKey(.escape, modifierFlags: [])
         app.typeKey("n", modifierFlags: .command)

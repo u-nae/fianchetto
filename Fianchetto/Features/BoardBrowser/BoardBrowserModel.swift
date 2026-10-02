@@ -43,10 +43,21 @@ final class BoardBrowserModel {
             case alreadyLinked
             /// 그 밖의 이유로 바꾸지 못했다(항목이 없어졌거나 종류가 다름).
             case changeFailed
+            /// 그룹을 자기 자신이나 자손 안으로 옮기려 했다.
+            case moveIntoItself
+            /// 그룹이 아닌 항목 안으로 옮기려 했다.
+            case moveIntoNonGroup
+        }
+
+        /// 안내를 띄운 동작. 알림 제목을 정한다.
+        enum Action: Equatable {
+            case link
+            case move
         }
 
         var kind: Kind
         var request: LinkRequest?
+        var action: Action = .link
         var canRetry: Bool { request != nil }
     }
 
@@ -94,6 +105,31 @@ final class BoardBrowserModel {
         var boardID: UUID
     }
 
+    /// 이동 창의 목적지.
+    enum MoveTarget: Hashable {
+        case root
+        case group(UUID)
+
+        var parentID: UUID? {
+            if case let .group(id) = self { id } else { nil }
+        }
+    }
+
+    struct MoveDestination: Identifiable, Equatable {
+        var target: MoveTarget
+        var name: String
+        /// 트리 깊이. 최상위는 0, 최상위의 그룹은 1이다.
+        var depth: Int
+        var id: MoveTarget { target }
+    }
+
+    /// "이동…" 창. 목적지는 최상위와, 옮길 항목 자신·자손을 뺀 그룹이다.
+    struct MoveDialog: Equatable {
+        var nodeID: UUID
+        var currentParent: MoveTarget
+        var destinations: [MoveDestination]
+    }
+
     struct Creation: Equatable {
         var name = ""
         var message: CreationMessage?
@@ -110,6 +146,9 @@ final class BoardBrowserModel {
     /// Board 이름 변경 입력. Board 만들기 입력과 같은 모양이다.
     var rename: Creation?
     var nodeForm: NodeForm?
+    private(set) var moveDialog: MoveDialog?
+    /// 이동을 저장하는 중이다. 그동안 들어온 이동은 옛 구성 기준이라 무시한다.
+    private var isMoving = false
     private(set) var openedStore: OpenedStore?
     private(set) var linkNotice: LinkNotice?
     /// 연결 대상 변경 확인 창.
@@ -505,6 +544,13 @@ final class BoardBrowserModel {
         linkNotice = nil
     }
 
+    func noticeTitle(_ notice: LinkNotice) -> String {
+        switch notice.action {
+        case .link: String(localized: "Bishop 추가")
+        case .move: String(localized: "이동")
+        }
+    }
+
     func noticeText(_ notice: LinkNotice) -> String {
         switch notice.kind {
         case let .unreachable(names):
@@ -517,6 +563,120 @@ final class BoardBrowserModel {
             String(localized: "이미 연결된 대상이라 바꾸지 않았습니다.")
         case .changeFailed:
             String(localized: "연결 대상을 바꾸지 못했습니다.")
+        case .moveIntoItself:
+            String(localized: "그룹을 자기 안으로 옮길 수 없습니다.")
+        case .moveIntoNonGroup:
+            String(localized: "그 항목 안으로는 옮길 수 없습니다.")
+        }
+    }
+
+    // MARK: 이동
+
+    var rootDestinationName: String { String(localized: "최상위") }
+
+    func moveSelectedUp() async {
+        await moveSelected(by: -1)
+    }
+
+    func moveSelectedDown() async {
+        await moveSelected(by: 1)
+    }
+
+    /// 형제 안에서 한 칸 옮긴다. 이미 끝이면 아무것도 하지 않는다.
+    private func moveSelected(by offset: Int) async {
+        guard let node = selectedNode, editableBoard() != nil else { return }
+        let others = children(of: node.parentID).map(\.id).filter { $0 != node.id }
+        let current = children(of: node.parentID).firstIndex { $0.id == node.id } ?? 0
+        let position = current + offset
+        guard (0...others.count).contains(position) else { return }
+        await requestMove(node.id, toParent: node.parentID, position: position)
+    }
+
+    func beginMove() {
+        guard let node = selectedNode, editableBoard() != nil else { return }
+        var destinations = [MoveDestination(target: .root, name: rootDestinationName, depth: 0)]
+        func collect(under parentID: UUID?, depth: Int) {
+            for child in children(of: parentID) where child.kind == .group && child.id != node.id {
+                destinations.append(MoveDestination(target: .group(child.id), name: child.displayName, depth: depth))
+                collect(under: child.id, depth: depth + 1)
+            }
+        }
+        collect(under: nil, depth: 1)
+        moveDialog = MoveDialog(
+            nodeID: node.id,
+            currentParent: node.parentID.map(MoveTarget.group) ?? .root,
+            destinations: destinations
+        )
+    }
+
+    func cancelMove() {
+        moveDialog = nil
+    }
+
+    /// 고른 목적지의 끝으로 옮긴다. 현재 부모를 고르면 기록하지 않고 닫는다.
+    func confirmMove(to target: MoveTarget) async {
+        guard let dialog = moveDialog else { return }
+        moveDialog = nil
+        guard target != dialog.currentParent, dialog.destinations.contains(where: { $0.target == target }) else { return }
+        await requestMove(dialog.nodeID, toParent: target.parentID, position: nil)
+    }
+
+    /// 앱 안에서 끌어온 항목을 받을 수 있는지: 보관되지 않은 Board의 현재 구성에 있는 항목이고,
+    /// 놓은 곳이 빈 곳(nil)이거나 연결 폴더가 아닌 이 Board의 항목이어야 한다(PRD §6-C).
+    func canAcceptNodeDrop(_ nodeID: UUID, on targetID: UUID?) -> Bool {
+        guard selectedBoardID != nil, !selectedBoardIsArchived, case let .loaded(snapshot) = current,
+              snapshot.nodes.contains(where: { $0.id == nodeID })
+        else { return false }
+        guard let targetID else { return true }
+        guard let target = snapshot.nodes.first(where: { $0.id == targetID }) else { return false }
+        return target.kind != .folder
+    }
+
+    /// 그룹 위면 그 안 끝, Bishop 파일·웹 링크 위면 그 앞, 빈 곳이면 최상위 끝으로 옮긴다. 자기 자신 위는 무변경이다.
+    @discardableResult
+    func dropNode(_ nodeID: UUID, on targetID: UUID?) async -> Bool {
+        guard canAcceptNodeDrop(nodeID, on: targetID), case let .loaded(snapshot) = current else { return false }
+        guard targetID != nodeID else { return true }
+        guard let targetID, let target = snapshot.nodes.first(where: { $0.id == targetID }) else {
+            await requestMove(nodeID, toParent: nil, position: nil)
+            return true
+        }
+        if target.kind == .group {
+            await requestMove(nodeID, toParent: target.id, position: nil)
+        } else {
+            let others = children(of: target.parentID).map(\.id).filter { $0 != nodeID }
+            await requestMove(nodeID, toParent: target.parentID, position: others.firstIndex(of: target.id))
+        }
+        return true
+    }
+
+    /// 이동 요청 하나를 저장한다. 성공하면 옮긴 항목을 선택한다.
+    func requestMove(_ nodeID: UUID, toParent parentID: UUID?, position: Int?) async {
+        guard !isMoving, let boardID = editableBoard(), let service = openedStore?.service else { return }
+        isMoving = true
+        defer { isMoving = false }
+        let outcome: ConfigurationCommitOutcome
+        do {
+            outcome = try await service.apply(.move(nodeID, toParent: parentID, position: position), to: boardID)
+        } catch {
+            linkNotice = LinkNotice(kind: .saveFailed, request: nil, action: .move)
+            return
+        }
+        switch outcome {
+        case let .committed(_, snapshot):
+            guard selectedBoardID == boardID else { return }
+            current = .loaded(snapshot)
+            selectedNodeID = nodeID
+        case .unchanged:
+            break
+        case .rejected(.edit(.cycle)):
+            linkNotice = LinkNotice(kind: .moveIntoItself, request: nil, action: .move)
+        case .rejected(.edit(.parentNotGroup)):
+            linkNotice = LinkNotice(kind: .moveIntoNonGroup, request: nil, action: .move)
+        case .rejected(.archived):
+            linkNotice = LinkNotice(kind: .archived, request: nil, action: .move)
+        case .rejected:
+            linkNotice = LinkNotice(kind: .saveFailed, request: nil, action: .move)
         }
     }
 
