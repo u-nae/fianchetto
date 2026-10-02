@@ -1,0 +1,22 @@
+schema_version: "1.0"
+run_id: t-w15-f51b756f
+questions:
+  - question_id: Q-W15-1
+    task_id: W15
+    blocking: true
+    ambiguity: >-
+      0009는 보관된 Board를 읽기 전용(조회·내보내기·새 Board 만들기만 허용)으로 정했고, PRD §6-H는 읽기 전용인 과거 화면에서도 같은 대상의
+      접근 복구를 허용한다. 보관된 Board의 "다시 선택"을 통한 같은 대상 접근 복구가 0009가 막는 편집인지 정하지 않았다.
+    evidence: docs/decisions/0009-archived-board-read-only.md; docs/PRD.md#h-연결-오류와-재연결
+    question: 보관된 Board에서 "다시 선택…"으로 같은 대상의 접근을 복구하는 것을 허용할까요?
+    options:
+      - id: A
+        label: 같은 대상 복구만 허용
+        detail: 같은 대상이면 접근 정보만 갱신하고 기록하지 않는다. 다른 대상·판정 불가면 보관 안내를 보인다. PRD §6-H 과거 화면 규칙과 같다.
+      - id: B
+        label: 다시 선택 전체를 막기
+        detail: 보관 해제 후 다시 선택한다. 단순하지만 자동 접근 정보 갱신과 비대칭이고 W18 규칙과 다르다.
+    recommended_default: A
+    recommendation_rationale: 접근 정보는 구성 이력 밖(불변식 8)이고 PRD §6-H가 읽기 전용 화면의 같은 대상 복구를 이미 허용한다.
+    answer: A
+    answer_source: AskUserQuestion

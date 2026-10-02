@@ -1,0 +1,174 @@
+schema_version: "1.0"
+run_id: t-w15-f51b756f
+verdict: READY
+source:
+  baseline:
+    - path: docs/PRD.md
+      fingerprint: 5d8c45fd91830695e3f8f90fb49be3f9d8be64e0ca0256d382a31d0af4a4ae0a
+    - path: docs/TECH_STACK.md
+      fingerprint: 9cba18e5f7490fe1c39a658ed3485d17fe782060c588b429d6db923c23d55fbe
+  decision_records:
+    path: docs/decisions
+    fingerprint: a8ce81a9b21f644e2b123b2c61603477034123977e2bc71e9bdd916adc7a4202
+  work_items_artifact: docs/work-items.yaml
+  work_items_fingerprint: 4f5af908a3c153b1bdbab0f5be8c0832e6cabcec9a1ffc8c7fcc1044c15ddfad
+  normalized_artifact: .spec-gate/runs/t-w15-f51b756f/normalized-tasks.yaml
+source_tasks:
+  - task_id: W15
+    title: 연결 상태 표시와 재연결
+    route: GHERKIN
+    acceptance_refs:
+      - A12
+      - A02
+accepted_specifications:
+  - task_id: W15
+    route: GHERKIN
+    path: .spec-gate/runs/t-w15-f51b756f/specs/revision-1/task-W15.feature
+test_obligations:
+  - obligation_id: W15-no-check-on-open
+    task_id: W15
+    kind: scenario
+    description: 저장소 열기·Board 선택만으로는 접근 정보를 해석하지 않고 상태 표시가 없다(경량화)
+    source: .spec-gate/runs/t-w15-f51b756f/specs/revision-1/task-W15.feature#Board를 열거나 고르기만 해서는 연결 상태를 확인하지 않는다
+  - obligation_id: W15-check-on-select
+    task_id: W15
+    kind: scenario
+    description: Bishop 선택 시 상태를 확인해 대상 없음·권한 필요·볼륨 연결 필요·확인 실패를 기호와 문구(접근성 라벨 포함)로 보이고 항목·revision·구성·참조를 유지한다
+    source: .spec-gate/runs/t-w15-f51b756f/specs/revision-1/task-W15.feature#Bishop을 선택하면 그 항목의 상태를 확인해 기호와 문구로 보여 준다
+    acceptance_refs:
+      - A12
+      - A02
+  - obligation_id: W15-healthy-no-badge
+    task_id: W15
+    kind: scenario
+    description: 정상인 Bishop은 한 번 해석하고 상태 표시와 접근성 상태 문구가 없다
+    source: .spec-gate/runs/t-w15-f51b756f/specs/revision-1/task-W15.feature#정상인 Bishop은 상태 표시를 하지 않는다
+  - obligation_id: W15-non-bishop-not-checked
+    task_id: W15
+    kind: scenario
+    description: 그룹·웹 링크 선택은 해석하지 않는다
+    source: .spec-gate/runs/t-w15-f51b756f/specs/revision-1/task-W15.feature#그룹·웹 링크를 선택하면 확인하지 않는다
+  - obligation_id: W15-open-updates-status
+    task_id: W15
+    kind: scenario
+    description: 열기 실패 원인은 상태 표시로 남고, 열기에 성공하면 보이던 상태 표시가 사라진다
+    source: .spec-gate/runs/t-w15-f51b756f/specs/revision-1/task-W15.feature#열기 결과가 상태에 반영된다
+  - obligation_id: W15-refresh-all
+    task_id: W15
+    kind: scenario
+    description: 상태 새로고침은 Board의 Bishop마다 한 번씩만 해석하고 웹 링크·그룹은 확인하지 않으며 기록하지 않는다
+    source: .spec-gate/runs/t-w15-f51b756f/specs/revision-1/task-W15.feature#상태 새로고침은 Board의 모든 Bishop을 한 번씩 확인하고 기록하지 않는다
+    acceptance_refs:
+      - A12
+  - obligation_id: W15-status-clears
+    task_id: W15
+    kind: scenario
+    description: 다시 확인해 정상이면 이전 상태 표시가 사라진다
+    source: .spec-gate/runs/t-w15-f51b756f/specs/revision-1/task-W15.feature#문제가 해결된 뒤 다시 확인하면 상태 표시가 사라진다
+  - obligation_id: W15-status-per-board
+    task_id: W15
+    kind: scenario
+    description: Board를 바꾸면 상태 표시를 비우고 다시 확인 전 상태로 둔다
+    source: .spec-gate/runs/t-w15-f51b756f/specs/revision-1/task-W15.feature#다른 Board를 고르면 이전 Board의 상태 표시는 남지 않는다
+  - obligation_id: W15-late-result-discarded
+    task_id: W15
+    kind: scenario
+    description: Board를 바꾼 뒤 끝난 이전 확인 결과는 어느 Board에도 상태로 남기지 않는다
+    source: .spec-gate/runs/t-w15-f51b756f/specs/revision-1/task-W15.feature#다른 Board로 바꾼 뒤 늦게 도착한 확인 결과는 버린다
+  - obligation_id: W15-refresh-access-info
+    task_id: W15
+    kind: scenario
+    description: 옮겨진 대상을 선택·열기로 확인하면(보관된 Board 포함) 같은 참조에 새 접근 정보와 마지막 확인 위치를 저장하고 참조 식별자·처음 경로·기록 당시 경로·revision 수를 유지한다
+    source: .spec-gate/runs/t-w15-f51b756f/specs/revision-1/task-W15.feature#옮겨진 대상을 확인하면 접근 정보를 갱신하되 기록하지 않는다
+    acceptance_refs:
+      - A02
+  - obligation_id: W15-refresh-failed-keeps-reference
+    task_id: W15
+    kind: scenario
+    description: 새 접근 정보 생성 실패(refreshFailed)면 상태는 정상이고 참조와 revision을 바꾸지 않는다
+    source: .spec-gate/runs/t-w15-f51b756f/specs/revision-1/task-W15.feature#옮겨진 대상의 새 접근 정보를 만들지 못하면 참조를 그대로 둔다
+  - obligation_id: W15-access-info-save-failure
+    task_id: W15
+    kind: scenario
+    description: 접근 정보 갱신 저장 실패는 상태 표시와 기록에 영향을 주지 않고 참조를 바꾸지 않는다
+    source: .spec-gate/runs/t-w15-f51b756f/specs/revision-1/task-W15.feature#접근 정보 갱신 저장이 실패해도 상태는 확인 결과대로 보이고 기록은 그대로다
+  - obligation_id: W15-reselect-same-target
+    task_id: W15
+    kind: scenario
+    description: 범위 없는 해석으로 기존 식별자를 얻을 수 있을 때 같은 대상 다시 선택은 같은 참조의 접근 정보만 바꾸고 기록하지 않으며 상태 표시를 지운다
+    source: .spec-gate/runs/t-w15-f51b756f/specs/revision-1/task-W15.feature#같은 대상을 다시 선택하면 접근을 복구하고 기록하지 않는다
+    acceptance_refs:
+      - A12
+      - A02
+  - obligation_id: W15-reselect-goes-to-replacement
+    task_id: W15
+    kind: scenario
+    description: 다른 대상은 경고 없이, 기존 식별자를 얻지 못하는 경우(대상 없음·해석 모두 실패)는 판정 불가 안내와 함께 연결 대상 변경 확인 창을 연다
+    source: .spec-gate/runs/t-w15-f51b756f/specs/revision-1/task-W15.feature#다른 대상이거나 같은지 알 수 없으면 연결 대상 변경 확인 창이 열린다
+    acceptance_refs:
+      - A12
+  - obligation_id: W15-replacement-confirm
+    task_id: W15
+    kind: scenario
+    description: 다시 선택에서 이어진 대상 변경 확인은 새 참조와 replaceTarget revision 하나를 만들고 상태 표시를 지운다
+    source: .spec-gate/runs/t-w15-f51b756f/specs/revision-1/task-W15.feature#연결 대상 변경 확인 창에서 확인하면 새 참조로 바뀌고 상태 표시가 사라진다
+    acceptance_refs:
+      - A12
+  - obligation_id: W15-replacement-cancel
+    task_id: W15
+    kind: scenario
+    description: 다시 선택에서 이어진 대상 변경 취소는 아무것도 바꾸지 않는다
+    source: .spec-gate/runs/t-w15-f51b756f/specs/revision-1/task-W15.feature#연결 대상 변경 확인 창에서 취소하면 아무것도 바뀌지 않는다
+  - obligation_id: W15-reselect-cancel
+    task_id: W15
+    kind: scenario
+    description: 다시 선택 창 취소는 아무것도 바꾸지 않는다
+    source: .spec-gate/runs/t-w15-f51b756f/specs/revision-1/task-W15.feature#다시 선택 창을 취소하면 아무것도 바뀌지 않는다
+  - obligation_id: W15-reselect-save-failure
+    task_id: W15
+    kind: scenario
+    description: 접근 복구 저장 실패는 안내하고 참조·revision을 유지한다
+    source: .spec-gate/runs/t-w15-f51b756f/specs/revision-1/task-W15.feature#같은 대상 접근 복구 저장이 실패하면 안내하고 그대로 둔다
+  - obligation_id: W15-archived
+    task_id: W15
+    kind: scenario
+    description: 보관된 Board에서 상태 확인·새로고침·같은 대상 복구는 허용하고, 다른 대상·판정 불가는 확인 창 없이 보관 안내로 막는다(Q-W15-1 A, 0009)
+    source: .spec-gate/runs/t-w15-f51b756f/specs/revision-1/task-W15.feature#보관된 Board에서는 확인과 같은 대상 복구는 되고 대상 변경은 막는다
+  - obligation_id: W15-reselect-not-applicable
+    task_id: W15
+    kind: scenario
+    description: 선택 없음·그룹·웹 링크의 다시 선택은 아무 일도 하지 않는다
+    source: .spec-gate/runs/t-w15-f51b756f/specs/revision-1/task-W15.feature#다시 선택할 수 없는 선택에서는 아무 일도 일어나지 않는다
+  - obligation_id: W15-commands
+    task_id: W15
+    kind: scenario
+    description: 파일 메뉴에 다시 선택…·상태 새로고침이 있고 상태 있는 Bishop의 상세 영역에 상태 문구와 두 버튼이 있으며 문구가 String Catalog에 있다
+    source: .spec-gate/runs/t-w15-f51b756f/specs/revision-1/task-W15.feature#재연결 명령이 메뉴와 상세 영역에 있다
+    acceptance_refs:
+      - A12
+      - A02
+acceptance_coverage:
+  A12:
+    - W15-check-on-select
+    - W15-refresh-all
+    - W15-reselect-same-target
+    - W15-reselect-goes-to-replacement
+    - W15-replacement-confirm
+    - W15-commands
+  A02:
+    - W15-check-on-select
+    - W15-refresh-access-info
+    - W15-reselect-same-target
+    - W15-commands
+decision_log: .spec-gate/runs/t-w15-f51b756f/decision-log.yaml
+critic_report: .spec-gate/runs/t-w15-f51b756f/critic-pass-2.yaml
+non_blocking_notes:
+  - finding_id: F-W15-10
+    task_id: W15
+    note: The late-result rule covers only a Board switch. Inside one Board, a check (selection or "상태 새로고침") that is still resolving the old reference can finish after a same-target recovery or a confirmed replacement has cleared the status. If that result is applied, the row shows a stale "권한 필요"/"대상 없음" for a Bishop that was just fixed, and an access-info refresh from the old check could also be written after the recovery wrote the new bookmark. This does not break a history invariant (access info is outside history), so it is minor.
+  - finding_id: F-W15-11
+    task_id: W15
+    note: After a failed same-target recovery save, the spec doesn't say whether the "권한 필요" status remains, and "그대로 둔다" suggests it should. For a successful same-target recovery, the spec doesn't say whether lastResolvedPath is also updated, as it is for the automatic refresh. Either reading is reversible, but a TDD cycle has to guess both.
+  - finding_id: F-W15-12
+    task_id: W15
+    note: 'The row "권한 필요 + 다른 파일 → 경고 없이" passes only if the shared identity lookup that W09 preview and confirm use also gets the unscoped fallback. Then the existing W09 "연결 대상 변경" flow changes too: for a scope-denied Bishop it moves from 판정 불가 to 다름/같음. That is consistent with 0004, which does not prescribe how identifiers are obtained, and it is planned for record 0012. Whether an unscoped URL yields fileResourceIdentifier/volumeIdentifier under a real sandbox is not shown by injected tests. No change requested. Implement it in the shared lookup, record it in 0012, and include it in the W27 real-environment check.'

@@ -335,7 +335,7 @@ items:
       - docs/PRD.md#h-연결-오류와-재연결
       - docs/TECH_STACK.md#파일-접근과-권한
       - docs/PRD.md#경량화
-    acceptance_refs: [A12]
+    acceptance_refs: [A12, A02]
     subtasks: []
 
   # ── 단계 3: 이력 ────────────────────────────────────────────────
