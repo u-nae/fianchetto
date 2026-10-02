@@ -163,6 +163,24 @@
     "연결하지 못한 항목이 있어 아무것도 추가하지 않았습니다: %@": {
       "extractionState": "manual"
     },
+    "열기": {
+      "extractionState": "manual"
+    },
+    "열지 못했습니다.": {
+      "extractionState": "manual"
+    },
+    "열지 못했습니다. 상태: 권한 필요": {
+      "extractionState": "manual"
+    },
+    "열지 못했습니다. 상태: 대상 없음": {
+      "extractionState": "manual"
+    },
+    "열지 못했습니다. 상태: 볼륨 연결 필요": {
+      "extractionState": "manual"
+    },
+    "열지 못했습니다. 상태: 확인 실패": {
+      "extractionState": "manual"
+    },
     "웹 링크": {
       "extractionState": "manual"
     },

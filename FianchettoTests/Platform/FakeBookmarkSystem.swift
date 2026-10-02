@@ -80,7 +80,14 @@ final class FakeScopedResource: SecurityScopedResource, Sendable {
 /// 실제 Foundation 북마크 호출을 쓰되, 지정한 이름의 대상은 북마크 생성을 실패시키고 호출 스레드를 기록한다.
 final class ScriptedBookmarkSystem: BookmarkSystem {
     private let real = FoundationBookmarkSystem()
-    private let state = Mutex((failNames: Set<String>(), failuresLeft: Int.max, onMain: [Bool]()))
+    private let state = Mutex((failNames: Set<String>(), failuresLeft: Int.max, onMain: [Bool](), resolveError: NSError?.none, volumeUnmounted: false))
+
+    /// 이후 모든 해석(범위 있음·없음)을 이 오류로 실패시킨다. volumeUnmounted면 기록된 볼륨도 연결돼 있지 않은 것으로 보인다.
+    func failResolution(with error: NSError, volumeUnmounted: Bool = false) {
+        state.withLock { $0.resolveError = error; $0.volumeUnmounted = volumeUnmounted }
+    }
+
+    private static let missingVolume = "/Volumes/fianchetto-test-missing-volume"
 
     /// names의 대상 생성을 times번까지 실패시킨다.
     func fail(_ names: Set<String>, times: Int = .max) {
@@ -101,13 +108,16 @@ final class ScriptedBookmarkSystem: BookmarkSystem {
     }
 
     func resolve(_ data: Data, options: URL.BookmarkResolutionOptions) throws -> (url: URL, isStale: Bool) {
-        try real.resolve(data, options: options)
+        if let error = state.withLock({ $0.resolveError }) { throw error }
+        return try real.resolve(data, options: options)
     }
 
     func bookmarkedPath(of data: Data) -> String? { real.bookmarkedPath(of: data) }
-    func volumePath(of data: Data) throws -> String? { try real.volumePath(of: data) }
+    func volumePath(of data: Data) throws -> String? {
+        state.withLock { $0.volumeUnmounted } ? Self.missingVolume : try real.volumePath(of: data)
+    }
     func itemKind(at url: URL) throws -> LinkedTarget.Kind { try real.itemKind(at: url) }
-    func fileExists(atPath path: String) -> Bool { real.fileExists(atPath: path) }
+    func fileExists(atPath path: String) -> Bool { path == Self.missingVolume ? false : real.fileExists(atPath: path) }
 }
 
 /// 임시 디렉토리에 파일·폴더를 만든다.

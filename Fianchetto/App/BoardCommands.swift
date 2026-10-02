@@ -33,6 +33,11 @@ struct BoardCommands: Commands {
             Button("웹 링크 추가…") { model?.beginAddWebLink() }
                 .keyboardShortcut("l", modifiers: [.command, .option])
             Divider()
+            Button("열기") { Task { await model?.openSelected() } }
+                .keyboardShortcut("o")
+            Button("Finder에서 보기") { Task { await model?.revealSelected() } }
+                .keyboardShortcut("r")
+            Divider()
             Button("Board 이름 변경…") { model?.beginRename() }
             Button("Board 보관") { Task { await model?.archiveSelected() } }
             Button("보관 해제") { Task { await model?.unarchiveSelected() } }

@@ -307,7 +307,7 @@ items:
     test_strategy: >-
       어댑터를 주입한 서비스 테스트로 올바른 해석 URL 전달과 revision 수 불변을 검증한다. 실제 Finder·
       기본 앱 동작은 W27 실제 환경 검증으로 보고한다.
-    status: pending
+    status: done
     priority: high
     dependencies: [W08, W11]
     source_refs:

@@ -17,6 +17,55 @@ final class RecordedActions {
     var quits = 0
 }
 
+/// 접근 범위 시작·종료와 열기 요청의 순서 기록. 접근 범위 시작 결과를 정할 수 있다.
+final class AccessEvents: Sendable {
+    private let state = Mutex((events: [String](), startSucceeds: true))
+
+    var events: [String] { state.withLock { $0.events } }
+    var startSucceeds: Bool {
+        get { state.withLock { $0.startSucceeds } }
+        set { state.withLock { $0.startSucceeds = newValue } }
+    }
+
+    func record(_ event: String) { state.withLock { $0.events.append(event) } }
+}
+
+/// 시작·종료를 AccessEvents에 남기는 접근 범위.
+struct RecordedScope: SecurityScopedResource, Sendable {
+    let events: AccessEvents
+
+    func startAccessingSecurityScopedResource() -> Bool {
+        events.record("start")
+        return events.startSucceeds
+    }
+
+    func stopAccessingSecurityScopedResource() {
+        events.record("stop")
+    }
+}
+
+/// 기본 앱 열기·Finder 표시 요청을 기록한다. 열기 결과를 정할 수 있다.
+@MainActor
+final class RecordingLauncher: TargetLauncher {
+    var opened: [URL] = []
+    var revealed: [URL] = []
+    var openSucceeds = true
+    let events: AccessEvents
+
+    init(events: AccessEvents) { self.events = events }
+
+    func open(_ url: URL) -> Bool {
+        events.record("open")
+        opened.append(url)
+        return openSucceeds
+    }
+
+    func reveal(_ url: URL) {
+        events.record("reveal")
+        revealed.append(url)
+    }
+}
+
 /// 저장소 열기 호출 기록과 결과 순서.
 final class OpenScript: Sendable {
     private let state: Mutex<(results: [StoreOpenError.Category?], calls: Int, onMain: [Bool])>
@@ -68,6 +117,7 @@ struct BrowserHarness {
     let script: OpenScript
     let picker = PickerScript()
     let bookmarks = ScriptedBookmarkSystem()
+    let launcher: RecordingLauncher
     let model: BoardBrowserModel
 
     init(directory: URL, lastBoard: InMemoryLastBoard = InMemoryLastBoard(), script: OpenScript = OpenScript(), storeKnown: Bool = true) {
@@ -76,6 +126,9 @@ struct BrowserHarness {
         self.lastBoard = lastBoard
         self.script = script
         let fault = self.fault, clock = TestClock(startingAt: date(0)), ids = TestIDs(startingAt: 30001)
+        let events = AccessEvents()
+        let launcher = RecordingLauncher(events: events)
+        self.launcher = launcher
         let actions = self.actions, picker = self.picker, bookmarks = self.bookmarks
         let openStore: @Sendable (URL) throws(StoreOpenError) -> OpenedStore = { url throws(StoreOpenError) in
             if let category = script.next() { throw StoreOpenError(category: category, url: url) }
@@ -86,7 +139,10 @@ struct BrowserHarness {
                 store: store, service: service,
                 linking: LinkingService(bookmarks: adapter, configuration: service),
                 replacement: TargetReplacementService(bookmarks: adapter, configuration: service),
-                lifecycle: ProjectLifecycleService(store: store, now: { clock.now() })
+                lifecycle: ProjectLifecycleService(store: store, now: { clock.now() }),
+                opening: TargetOpeningService(
+                    store: store, bookmarks: adapter, launcher: launcher, accessScope: { _ in RecordedScope(events: events) }
+                )
             )
         }
         model = BoardBrowserModel(dependencies: .init(

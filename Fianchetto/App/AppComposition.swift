@@ -44,7 +44,8 @@ enum AppComposition {
                     store: store, service: service,
                     linking: LinkingService(bookmarks: bookmarks, configuration: service),
                     replacement: TargetReplacementService(bookmarks: bookmarks, configuration: service),
-                    lifecycle: ProjectLifecycleService(store: store, now: { Date() })
+                    lifecycle: ProjectLifecycleService(store: store, now: { Date() }),
+                    opening: TargetOpeningService(store: store, bookmarks: bookmarks, launcher: WorkspaceLauncher())
                 )
             },
             lastBoard: lastBoard,
