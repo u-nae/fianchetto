@@ -104,8 +104,8 @@ Asset Catalog(`Fianchetto/Assets.xcassets`)의 Color Set으로 정의한다. 코
 | 쓰임 | 현재 기호 | 위치 |
 |---|---|---|
 | 그룹 | `folder` | 트리 행(`NodeRow`) |
-| Bishop(파일) | `doc` | 트리 행 |
-| Bishop(폴더) | `folder.badge.gearshape` | 트리 행 |
+| Bishop(파일) | `fianchetto.bishop`(커스텀, 0012) | 트리 행 |
+| Bishop(폴더) | `fianchetto.bishop.folder`(커스텀, 0012) | 트리 행 |
 | 웹 링크 | `link` | 트리 행 |
 | 최상위(이동 창) | `square.stack` | 이동 창 |
 | 보관된 Board 표시 | `archivebox` | 읽기 전용 띠 |
@@ -115,14 +115,17 @@ Asset Catalog(`Fianchetto/Assets.xcassets`)의 Color Set으로 정의한다. 코
 | 저장소 복구 | `externaldrive.badge.exclamationmark` | 복구 화면 |
 | 오류 일반 | `exclamationmark.triangle` | 목록 오류·경고 |
 
-### 5.2 Bishop 커스텀 심볼 (후보)
+### 5.2 Bishop 커스텀 심볼 (0012 확정)
 
-- 이름: `fianchetto.bishop`(파일), `fianchetto.bishop.folder`(폴더). 그룹(`folder`)과 한눈에 구분돼야 한다.
-- 만드는 법: SF Symbols 앱에서 비슷한 기호(예: `doc`)를 **Export Template**로 내보내 SVG 템플릿의 Ultralight·Regular·Black
-  세 기준 굵기를 그린 뒤 Asset Catalog에 **Symbol Image Set**으로 넣는다. 다른 굵기는 SF Symbols가 보간한다.
-- 렌더링: Monochrome과 Hierarchical을 지원한다. 색은 넣지 않고(템플릿) 사용처의 `foregroundStyle`을 따른다.
-- 파일/폴더 구분은 모양 차이(배지 등)로 한다. 색으로 구분하지 않는다.
-- 참조: `Image(.fianchettoBishop)`(생성 심볼). 문자열 이름 금지.
+- 모양: 비숍의 머리(미트라)를 크게 그린다. 위에 구슬, 몸통에 대각선 홈(피앙케토의 긴 대각선), 아래에 받침띠가 있다.
+  폴더 Bishop은 미트라를 줄이고 오른쪽 아래에 폴더 배지를 붙인다. 파일과 폴더는 색이 아닌 배지 모양으로 구분한다.
+- 이름: `fianchetto.bishop`(파일), `fianchetto.bishop.folder`(폴더). 참조는 `Image(.fianchettoBishop)`, `Image(.fianchettoBishopFolder)`
+  (생성 심볼). 문자열 이름 금지.
+- 자산: `Fianchetto/Assets.xcassets`의 Symbol Image Set. 템플릿은 `scripts/design/generate-bishop-symbols.swift`가 만든다.
+  24 격자의 선 디자인(선 굵기 1.6)을 채운 윤곽선으로 바꿔 넣는다. 모양을 고칠 때는 SVG를 직접 고치지 않고 스크립트를 고쳐 다시 만든다.
+- 한계: 템플릿에는 Regular-M 하나만 있다. 그래서 굵기(weight)를 바꿔도 모양이 같고, 크기(scale)는 시스템이 비율로만 조정한다.
+  트리 행은 기본 굵기만 쓰므로 지금은 문제가 없다. 굵기 대응이 필요해지면 Ultralight·Black 기준 굵기를 같은 점 구조로 추가한다.
+- 렌더링: 한 레이어(Monochrome)다. 색은 넣지 않고 사용처의 `foregroundStyle`을 따른다.
 
 ## 6. 앱 아이콘
 
@@ -221,7 +224,7 @@ W15에서 연결 상태를 트리에 표시한다. 상태 이름은 W14 안내 �
 
 - [x] `AccentColor` 라이트·다크·고대비 값(3.2의 긴장 해소) — 0011
 - [ ] `ThemeSurface`를 상세 영역에 쓸지, 빈 화면에만 쓸지
-- [ ] Bishop 커스텀 심볼 채택 여부와 모양(파일/폴더 구분 방식)
+- [x] Bishop 커스텀 심볼 채택 여부와 모양(파일/폴더 구분 방식) — 0012
 - [ ] 앱 아이콘 모티프와 macOS 15 이전 형식 처리
 - [ ] Board 제목 세리프 사용 여부
 - [ ] 빈 화면 일러스트 사용 여부와 범위
