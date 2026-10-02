@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# W07-terms-in-catalog, W08-menu-command(Bishop 추가), W09-commands(연결 대상 변경), W10-commands-no-delete(이름 변경·보관)
+# W07-terms-in-catalog, W08-menu-command(Bishop 추가), W09-commands(연결 대상 변경), W10-commands-no-delete(이름 변경·보관), W11-commands(그룹·웹 링크·이름·URL)
 # 화면 용어(0006)가 String Catalog에 있고, 화면 문구(카탈로그와 Features·App의 문자열 리터럴)에 구현 용어가 없는지 검사한다.
 # 사용법: check-terms.sh [앱 소스 루트]   (기본값: 저장소의 Fianchetto/)
 set -euo pipefail
 
 ROOT="${1:-$(cd "$(dirname "$0")/.." && pwd)/Fianchetto}"
 CATALOG="$ROOT/Localizable.xcstrings"
-REQUIRED=("Board 만들기" "보관된 Board" "Bishop" "Bishop 추가" "연결 대상 변경" "Board 이름 변경" "Board 보관" "보관 해제" "그룹" "웹 링크")
+REQUIRED=("Board 만들기" "보관된 Board" "Bishop" "Bishop 추가" "연결 대상 변경" "Board 이름 변경" "Board 보관" "보관 해제" "그룹 추가" "웹 링크 추가" "이름 변경" "URL 변경" "그룹" "웹 링크")
 # 대소문자를 구분하는 금지어와 구분하지 않는 금지어.
 FORBIDDEN_EXACT=("DB" "JSON")
 FORBIDDEN_ANYCASE=("bookmark" "북마크" "파일 삭제")

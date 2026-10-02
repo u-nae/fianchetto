@@ -71,6 +71,29 @@ final class BoardBrowserModel {
         case saveFailed
     }
 
+    enum FormMessage: Equatable {
+        case nameRequired
+        case invalidURL
+        case saveFailed
+    }
+
+    /// 그룹 추가·웹 링크 추가·항목 이름 변경·URL 변경 입력 창.
+    struct NodeForm: Equatable {
+        enum Purpose: Equatable {
+            case addGroup(parentID: UUID?)
+            case addWebLink(parentID: UUID?)
+            case rename(UUID)
+            case changeURL(UUID)
+        }
+
+        var purpose: Purpose
+        var name = ""
+        var url = ""
+        var message: FormMessage?
+        var isSaving = false
+        var boardID: UUID
+    }
+
     struct Creation: Equatable {
         var name = ""
         var message: CreationMessage?
@@ -86,6 +109,7 @@ final class BoardBrowserModel {
     var creation: Creation?
     /// Board 이름 변경 입력. Board 만들기 입력과 같은 모양이다.
     var rename: Creation?
+    var nodeForm: NodeForm?
     private(set) var openedStore: OpenedStore?
     private(set) var linkNotice: LinkNotice?
     /// 연결 대상 변경 확인 창.
@@ -260,6 +284,97 @@ final class BoardBrowserModel {
         case .rejected, .unchanged:
             finishCreate(with: .saveFailed)
         }
+    }
+
+    // MARK: 그룹·웹 링크·이름·URL 편집
+
+    /// 편집을 시작할 수 있는 Board. 선택한 Board가 없으면 nil, 보관돼 있으면 안내하고 nil(보관 안내가 다른 조건보다 먼저다).
+    private func editableBoard() -> UUID? {
+        guard let boardID = selectedBoardID, openedStore != nil else { return nil }
+        guard !selectedBoardIsArchived else {
+            linkNotice = LinkNotice(kind: .archived, request: nil)
+            return nil
+        }
+        return boardID
+    }
+
+    private var selectedNode: ConfigurationNode? {
+        guard case let .loaded(snapshot) = current, let id = selectedNodeID else { return nil }
+        return snapshot.nodes.first { $0.id == id }
+    }
+
+    func beginAddGroup() {
+        guard let boardID = editableBoard() else { return }
+        nodeForm = NodeForm(purpose: .addGroup(parentID: insertionParent), boardID: boardID)
+    }
+
+    func beginAddWebLink() {
+        guard let boardID = editableBoard() else { return }
+        nodeForm = NodeForm(purpose: .addWebLink(parentID: insertionParent), boardID: boardID)
+    }
+
+    func beginRenameNode() {
+        guard let boardID = editableBoard(), let node = selectedNode else { return }
+        nodeForm = NodeForm(purpose: .rename(node.id), name: node.displayName, boardID: boardID)
+    }
+
+    func beginChangeURL() {
+        guard let boardID = editableBoard(), let node = selectedNode, node.kind == .webLink else { return }
+        nodeForm = NodeForm(purpose: .changeURL(node.id), url: node.url ?? "", boardID: boardID)
+    }
+
+    func cancelNodeForm() {
+        guard nodeForm?.isSaving != true else { return }
+        nodeForm = nil
+    }
+
+    func confirmNodeForm() async {
+        guard var form = nodeForm, !form.isSaving, let service = openedStore?.service else { return }
+        form.isSaving = true
+        form.message = nil
+        nodeForm = form
+        let edit: ConfigurationEdit = switch form.purpose {
+        case let .addGroup(parentID): .addGroup(name: form.name, parentID: parentID, position: nil)
+        case let .addWebLink(parentID): .addWebLink(name: form.name, url: form.url, parentID: parentID, position: nil)
+        case let .rename(id): .renameNode(id, form.name)
+        case let .changeURL(id): .changeURL(id, form.url)
+        }
+        let outcome: ConfigurationCommitOutcome
+        do {
+            outcome = try await service.apply(edit, to: form.boardID)
+        } catch {
+            finishNodeForm(with: .saveFailed)
+            return
+        }
+        switch outcome {
+        case let .committed(_, snapshot):
+            nodeForm = nil
+            if selectedBoardID == form.boardID { current = .loaded(snapshot) }
+        case .unchanged:
+            nodeForm = nil
+        case .rejected(.edit(.blankName)):
+            finishNodeForm(with: .nameRequired)
+        case .rejected(.edit(.invalidURL)):
+            finishNodeForm(with: .invalidURL)
+        case .rejected(.archived):
+            nodeForm = nil
+            linkNotice = LinkNotice(kind: .archived, request: nil)
+        case .rejected:
+            finishNodeForm(with: .saveFailed)
+        }
+    }
+
+    func formMessageText(_ message: FormMessage) -> String {
+        switch message {
+        case .nameRequired: String(localized: "이름을 입력하세요.")
+        case .invalidURL: String(localized: "http 또는 https로 시작하는 주소를 입력하세요.")
+        case .saveFailed: String(localized: "저장하지 못했습니다. 다시 시도하세요.")
+        }
+    }
+
+    private func finishNodeForm(with message: FormMessage) {
+        nodeForm?.isSaving = false
+        nodeForm?.message = message
     }
 
     // MARK: Board 이름 변경·보관

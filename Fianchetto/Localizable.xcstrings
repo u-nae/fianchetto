@@ -55,6 +55,15 @@
     "Finder에서 보기": {
       "extractionState": "manual"
     },
+    "URL 변경": {
+      "extractionState": "manual"
+    },
+    "URL 변경…": {
+      "extractionState": "manual"
+    },
+    "http 또는 https로 시작하는 주소를 입력하세요.": {
+      "extractionState": "manual"
+    },
     "같은 대상인지 확인할 수 없어 연결 대상 변경으로 기록됩니다.": {
       "extractionState": "manual"
     },
@@ -62,6 +71,12 @@
       "extractionState": "manual"
     },
     "그룹": {
+      "extractionState": "manual"
+    },
+    "그룹 추가": {
+      "extractionState": "manual"
+    },
+    "그룹 추가…": {
       "extractionState": "manual"
     },
     "기존": {
@@ -127,10 +142,22 @@
     "웹 링크": {
       "extractionState": "manual"
     },
+    "웹 링크 추가": {
+      "extractionState": "manual"
+    },
+    "웹 링크 추가…": {
+      "extractionState": "manual"
+    },
     "이 버전의 앱이 읽을 수 없는 형식입니다. 더 새로운 버전의 앱이 만들었을 수 있습니다.": {
       "extractionState": "manual"
     },
+    "이름": {
+      "extractionState": "manual"
+    },
     "이름 변경": {
+      "extractionState": "manual"
+    },
+    "이름 변경…": {
       "extractionState": "manual"
     },
     "이름을 입력하세요.": {
@@ -161,6 +188,9 @@
       "extractionState": "manual"
     },
     "현재 구성을 읽지 못했습니다": {
+      "extractionState": "manual"
+    },
+    "확인": {
       "extractionState": "manual"
     }
   },

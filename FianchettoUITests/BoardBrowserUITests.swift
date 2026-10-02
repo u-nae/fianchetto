@@ -16,9 +16,8 @@ final class BoardBrowserUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Board가 없습니다"].waitForExistence(timeout: 10))
         test.activateForKeyboard()
         app.typeKey("n", modifierFlags: .command)
-        let nameField = app.textFields["board-name-field"]
-        XCTAssertTrue(nameField.waitForExistence(timeout: 5))
-        nameField.typeText("Service A\r")
+        test.type("Service A", into: app.textFields["board-name-field"])
+        app.typeKey(.return, modifierFlags: [])
 
         let row = app.descendants(matching: .any)["board-row-Service A"]
         XCTAssertTrue(row.waitForExistence(timeout: 5))
@@ -30,6 +29,39 @@ final class BoardBrowserUITests: XCTestCase {
         let restored = app.descendants(matching: .any)["board-row-Service A"]
         XCTAssertTrue(restored.waitForExistence(timeout: 10))
         XCTAssertTrue(restored.isSelected)
+    }
+
+    /// W11-ui-create-group-and-rename (A01): 메뉴로 그룹을 만들고 이름을 바꾼다.
+    @MainActor
+    func test_W11_createGroupAndRenameIt() {
+        let test = UITestApp(name: "group")
+        test.launch()
+        defer { test.terminate() }
+        let app = test.app
+        XCTAssertTrue(app.staticTexts["Board가 없습니다"].waitForExistence(timeout: 10))
+        test.activateForKeyboard()
+        app.typeKey("n", modifierFlags: .command)
+        test.type("Service A", into: app.textFields["board-name-field"])
+        app.typeKey(.return, modifierFlags: [])
+        XCTAssertTrue(app.descendants(matching: .any)["board-row-Service A"].waitForExistence(timeout: 5))
+
+        app.menuBars.menuBarItems["파일"].click()
+        app.menuBars.menuBarItems["파일"].menuItems["그룹 추가…"].click()
+        let field = app.textFields["node-name-field"]
+        test.type("Dev", into: field)
+        app.typeKey(.return, modifierFlags: [])
+        let dev = app.descendants(matching: .any)["node-row-Dev"]
+        XCTAssertTrue(dev.waitForExistence(timeout: 5))
+
+        dev.click()
+        app.menuBars.menuBarItems["편집"].click()
+        app.menuBars.menuBarItems["편집"].menuItems["이름 변경…"].click()
+        test.replaceText(in: field, with: "Core")
+        // Return이 시트를 닫으므로 입력과 분리해, 사라진 입력 칸을 다시 확인하지 않게 한다.
+        app.typeKey(.return, modifierFlags: [])
+
+        XCTAssertTrue(app.descendants(matching: .any)["node-row-Core"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.descendants(matching: .any)["node-row-Dev"].exists)
     }
 
     /// W07-ui-menu-command: 파일 메뉴에 ⌘N의 "Board 만들기…"가 있다.
@@ -55,6 +87,14 @@ final class BoardBrowserUITests: XCTestCase {
             XCTAssertTrue(fileMenu.menuItems[title].exists, title)
         }
         XCTAssertFalse(fileMenu.menuItems.allElementsBoundByIndex.contains { $0.title.contains("삭제") })
+        // W11-commands: 그룹 추가·웹 링크 추가는 파일 메뉴, 이름 변경·URL 변경은 편집 메뉴에 있다.
+        XCTAssertTrue(fileMenu.menuItems["그룹 추가…"].exists)
+        XCTAssertTrue(fileMenu.menuItems["웹 링크 추가…"].exists)
+        app.typeKey(.escape, modifierFlags: [])
+        let editMenu = app.menuBars.menuBarItems["편집"]
+        editMenu.click()
+        XCTAssertTrue(editMenu.menuItems["이름 변경…"].waitForExistence(timeout: 5))
+        XCTAssertTrue(editMenu.menuItems["URL 변경…"].exists)
         // 단축키는 XCUITest가 노출하지 않으므로, 메뉴를 닫고 ⌘N이 이 명령을 실행하는지로 확인한다.
         app.typeKey(.escape, modifierFlags: [])
         app.typeKey("n", modifierFlags: .command)
