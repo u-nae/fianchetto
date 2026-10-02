@@ -249,7 +249,7 @@ items:
     test_strategy: >-
       서비스 테스트: 중첩 그룹 생성 revision, 웹 링크 URL 검증 거부 시 무변경, 이름 변경 후 과거
       revision 표시 이름 불변, 같은 값 확정 무변경. XCUITest: 그룹 만들고 이름 변경.
-    status: pending
+    status: done
     priority: high
     dependencies: [W07]
     source_refs:

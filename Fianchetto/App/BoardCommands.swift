@@ -7,6 +7,11 @@ struct BoardCommands: Commands {
     let model: BoardBrowserModel?
 
     var body: some Commands {
+        CommandGroup(after: .pasteboard) {
+            Divider()
+            Button("이름 변경…") { model?.beginRenameNode() }
+            Button("URL 변경…") { model?.beginChangeURL() }
+        }
         CommandGroup(replacing: .newItem) {
             Button("Board 만들기…") { model?.beginCreate() }
                 .keyboardShortcut("n")
@@ -14,6 +19,10 @@ struct BoardCommands: Commands {
                 .keyboardShortcut("a", modifiers: [.command, .shift])
             Button("연결 대상 변경…") { Task { await model?.beginReplaceTarget() } }
                 .keyboardShortcut("r", modifiers: [.command, .shift])
+            Button("그룹 추가…") { model?.beginAddGroup() }
+                .keyboardShortcut("n", modifiers: [.command, .option])
+            Button("웹 링크 추가…") { model?.beginAddWebLink() }
+                .keyboardShortcut("l", modifiers: [.command, .option])
             Divider()
             Button("Board 이름 변경…") { model?.beginRename() }
             Button("Board 보관") { Task { await model?.archiveSelected() } }

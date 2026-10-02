@@ -8,6 +8,7 @@ struct BoardBrowserView: View {
         // Observation은 body에서 읽은 값만 추적하므로 Binding 클로저 밖에서 먼저 읽는다.
         let isCreating = model.creation != nil
         let isRenaming = model.rename != nil
+        let hasNodeForm = model.nodeForm != nil
         let notice = model.linkNotice
         let replacement = model.replacement
         Group {
@@ -38,6 +39,9 @@ struct BoardBrowserView: View {
         }
         .sheet(isPresented: Binding(get: { isRenaming }, set: { if !$0 { model.cancelRename() } })) {
             RenameBoardSheet(model: model)
+        }
+        .sheet(isPresented: Binding(get: { hasNodeForm }, set: { if !$0 { model.cancelNodeForm() } })) {
+            NodeFormSheet(model: model)
         }
         .sheet(item: Binding(get: { replacement.map(PreviewItem.init) }, set: { if $0 == nil { model.cancelReplacement() } })) { item in
             ReplacementSheet(model: model, preview: item.preview)
@@ -198,6 +202,7 @@ private struct NodeRow: View {
         .tag(node.id)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(model.accessibilityLabel(for: node))
+        .accessibilityIdentifier("node-row-\(node.displayName)")
         .accessibilityAddTraits(model.selectedNodeID == node.id ? .isSelected : [])
     }
 
@@ -267,6 +272,67 @@ private struct NodeInspectorView: View {
         } else {
             ContentUnavailableView("항목을 고르세요", systemImage: "sidebar.right")
         }
+    }
+}
+
+/// 그룹 추가·웹 링크 추가·이름 변경·URL 변경 입력 창.
+private struct NodeFormSheet: View {
+    @Bindable var model: BoardBrowserModel
+
+    var body: some View {
+        let form = model.nodeForm
+        VStack(alignment: .leading, spacing: 12) {
+            Text(title(form?.purpose)).font(.headline)
+            if showsName(form?.purpose) {
+                TextField("이름", text: Binding(get: { model.nodeForm?.name ?? "" }, set: { model.nodeForm?.name = $0 }))
+                    .accessibilityIdentifier("node-name-field")
+                    .onSubmit { confirm() }
+            }
+            if showsURL(form?.purpose) {
+                TextField("https://", text: Binding(get: { model.nodeForm?.url ?? "" }, set: { model.nodeForm?.url = $0 }))
+                    .accessibilityIdentifier("node-url-field")
+                    .onSubmit { confirm() }
+            }
+            if let message = form?.message {
+                Text(model.formMessageText(message)).foregroundStyle(.red)
+            }
+            HStack {
+                Spacer()
+                Button("취소", role: .cancel) { model.cancelNodeForm() }
+                    .keyboardShortcut(.cancelAction)
+                Button("확인") { confirm() }
+                    .keyboardShortcut(.defaultAction)
+                    .disabled(form?.isSaving == true)
+            }
+        }
+        .padding()
+        .frame(width: 380)
+    }
+
+    private func title(_ purpose: BoardBrowserModel.NodeForm.Purpose?) -> String {
+        switch purpose {
+        case .addGroup: String(localized: "그룹 추가")
+        case .addWebLink: String(localized: "웹 링크 추가")
+        case .rename: String(localized: "이름 변경")
+        case .changeURL: String(localized: "URL 변경")
+        case nil: ""
+        }
+    }
+
+    private func showsName(_ purpose: BoardBrowserModel.NodeForm.Purpose?) -> Bool {
+        if case .changeURL = purpose { return false }
+        return true
+    }
+
+    private func showsURL(_ purpose: BoardBrowserModel.NodeForm.Purpose?) -> Bool {
+        switch purpose {
+        case .addWebLink, .changeURL: true
+        default: false
+        }
+    }
+
+    private func confirm() {
+        Task { await model.confirmNodeForm() }
     }
 }
 
