@@ -12,6 +12,8 @@ struct BoardCommands: Commands {
                 .keyboardShortcut("n")
             Button("Bishop 추가…") { Task { await model?.addBishops() } }
                 .keyboardShortcut("a", modifiers: [.command, .shift])
+            Button("연결 대상 변경…") { Task { await model?.beginReplaceTarget() } }
+                .keyboardShortcut("r", modifiers: [.command, .shift])
         }
     }
 }

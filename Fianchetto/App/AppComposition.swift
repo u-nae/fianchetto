@@ -39,15 +39,18 @@ enum AppComposition {
             openStore: { url throws(StoreOpenError) in
                 let store = ProjectStore(container: try StoreOpener.open(at: url))
                 let service = ConfigurationService(store: store, now: { Date() }, makeID: { UUID() })
+                let bookmarks = BookmarkAdapter(system: FoundationBookmarkSystem())
                 return OpenedStore(
                     store: store, service: service,
-                    linking: LinkingService(bookmarks: BookmarkAdapter(system: FoundationBookmarkSystem()), configuration: service)
+                    linking: LinkingService(bookmarks: bookmarks, configuration: service),
+                    replacement: TargetReplacementService(bookmarks: bookmarks, configuration: service)
                 )
             },
             lastBoard: lastBoard,
             revealInFinder: WorkspaceActions.revealInFinder,
             quit: WorkspaceActions.quit,
-            pickTargets: TargetPicker.pick
+            pickTargets: TargetPicker.pick,
+            pickReplacement: TargetPicker.pickReplacement
         ))
     }
 

@@ -48,6 +48,8 @@ final class BoardBrowserUITests: XCTestCase {
         XCTAssertTrue(item.isEnabled)
         // W08-menu-command: Bishop 추가(⇧⌘A)도 파일 메뉴에 있다.
         XCTAssertTrue(fileMenu.menuItems["Bishop 추가…"].exists)
+        // W09-commands: 연결 대상 변경(⇧⌘R)도 파일 메뉴에 있다.
+        XCTAssertTrue(fileMenu.menuItems["연결 대상 변경…"].exists)
         // 단축키는 XCUITest가 노출하지 않으므로, 메뉴를 닫고 ⌘N이 이 명령을 실행하는지로 확인한다.
         app.typeKey(.escape, modifierFlags: [])
         app.typeKey("n", modifierFlags: .command)

@@ -29,6 +29,8 @@ final class BoardBrowserModel {
         var quit: () -> Void
         /// 파일 선택 창. 취소하면 nil.
         var pickTargets: () -> [URL]?
+        /// 연결 대상 변경 선택 창(종류에 맞는 것 하나). 취소하면 nil.
+        var pickReplacement: (LinkedTarget.Kind) -> URL?
     }
 
     /// Bishop 연결 결과 안내. 다시 시도는 처음 요청 그대로 실행한다.
@@ -37,6 +39,10 @@ final class BoardBrowserModel {
             case unreachable([String])
             case saveFailed
             case archived
+            /// 확정 시점에 같은 대상이라 바꾸지 않았다.
+            case alreadyLinked
+            /// 그 밖의 이유로 바꾸지 못했다(항목이 없어졌거나 종류가 다름).
+            case changeFailed
         }
 
         var kind: Kind
@@ -80,6 +86,8 @@ final class BoardBrowserModel {
     var creation: Creation?
     private(set) var openedStore: OpenedStore?
     private(set) var linkNotice: LinkNotice?
+    /// 연결 대상 변경 확인 창.
+    private(set) var replacement: ReplacementPreview?
 
     private let dependencies: Dependencies
 
@@ -311,6 +319,90 @@ final class BoardBrowserModel {
             String(localized: "저장하지 못했습니다. 다시 시도하세요.")
         case .archived:
             String(localized: "보관된 Board는 바꿀 수 없습니다.")
+        case .alreadyLinked:
+            String(localized: "이미 연결된 대상이라 바꾸지 않았습니다.")
+        case .changeFailed:
+            String(localized: "연결 대상을 바꾸지 못했습니다.")
+        }
+    }
+
+    // MARK: 연결 대상 변경
+
+    struct ReplacementPresentation: Equatable {
+        var canConfirm: Bool
+        var warning: String?
+    }
+
+    var alreadyLinkedText: String { String(localized: "이미 연결된 대상입니다.") }
+    var undeterminedText: String {
+        String(localized: "같은 대상인지 확인할 수 없어 연결 대상 변경으로 기록됩니다.")
+    }
+
+    var canReplaceSelectedTarget: Bool {
+        guard case let .loaded(snapshot) = current, let id = selectedNodeID,
+              let node = snapshot.nodes.first(where: { $0.id == id })
+        else { return false }
+        return node.kind == .file || node.kind == .folder
+    }
+
+    func beginReplaceTarget() async {
+        guard let boardID = selectedBoardID, let service = openedStore?.replacement,
+              canReplaceSelectedTarget, case let .loaded(snapshot) = current,
+              let node = snapshot.nodes.first(where: { $0.id == selectedNodeID })
+        else { return }
+        guard !selectedBoardIsArchived else {
+            linkNotice = LinkNotice(kind: .archived, request: nil)
+            return
+        }
+        let kind: LinkedTarget.Kind = node.kind == .folder ? .folder : .file
+        guard let url = dependencies.pickReplacement(kind) else { return }
+        do {
+            switch try await service.preview(projectID: boardID, nodeID: node.id, newURL: url) {
+            case let .success(preview): replacement = preview
+            case let .failure(rejection): linkNotice = notice(for: rejection, url: url)
+            }
+        } catch {
+            linkNotice = LinkNotice(kind: .changeFailed, request: nil)
+        }
+    }
+
+    func replacementPresentation(_ preview: ReplacementPreview) -> ReplacementPresentation {
+        switch preview.identity {
+        case .sameTarget: ReplacementPresentation(canConfirm: false, warning: alreadyLinkedText)
+        case .undetermined: ReplacementPresentation(canConfirm: true, warning: undeterminedText)
+        case .differentTarget: ReplacementPresentation(canConfirm: true, warning: nil)
+        }
+    }
+
+    func cancelReplacement() {
+        replacement = nil
+    }
+
+    func confirmReplacement() async {
+        guard let preview = replacement, let service = openedStore?.replacement else { return }
+        replacement = nil
+        let outcome: ReplacementOutcome
+        do {
+            outcome = try await service.confirm(preview)
+        } catch {
+            linkNotice = LinkNotice(kind: .saveFailed, request: nil)
+            return
+        }
+        switch outcome {
+        case let .committed(_, snapshot):
+            if selectedBoardID == preview.projectID { current = .loaded(snapshot) }
+        case .unchanged:
+            linkNotice = LinkNotice(kind: .alreadyLinked, request: nil)
+        case let .rejected(rejection):
+            linkNotice = notice(for: rejection, url: preview.newURL)
+        }
+    }
+
+    private func notice(for rejection: ReplacementRejection, url: URL) -> LinkNotice {
+        switch rejection {
+        case .unreachableTarget: LinkNotice(kind: .unreachable([url.lastPathComponent]), request: nil)
+        case .commit(.archived): LinkNotice(kind: .archived, request: nil)
+        case .commit: LinkNotice(kind: .changeFailed, request: nil)
         }
     }
 

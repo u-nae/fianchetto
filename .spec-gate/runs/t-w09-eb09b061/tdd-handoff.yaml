@@ -1,0 +1,146 @@
+schema_version: "1.0"
+run_id: t-w09-eb09b061
+verdict: READY
+source:
+  baseline:
+    - path: docs/PRD.md
+      fingerprint: 5d8c45fd91830695e3f8f90fb49be3f9d8be64e0ca0256d382a31d0af4a4ae0a
+    - path: docs/TECH_STACK.md
+      fingerprint: 9cba18e5f7490fe1c39a658ed3485d17fe782060c588b429d6db923c23d55fbe
+  decision_records:
+    path: docs/decisions
+    fingerprint: d4f8e85d8e29f349273fde02a25e81c3277efd6ceef08978ecc2e94e830ef170
+  work_items_artifact: docs/work-items.yaml
+  work_items_fingerprint: 73ff38de99942174fe7ebacb30ccc71630297d3342d1bd40dea2440f38ad98cb
+  normalized_artifact: .spec-gate/runs/t-w09-eb09b061/normalized-tasks.yaml
+source_tasks:
+  - task_id: W09
+    title: 연결 대상 변경
+    route: GHERKIN
+    acceptance_refs:
+      - A03
+accepted_specifications:
+  - task_id: W09
+    route: GHERKIN
+    path: .spec-gate/runs/t-w09-eb09b061/specs/revision-1/task-W09.feature
+test_obligations:
+  - obligation_id: W09-replace-keeps-identity
+    task_id: W09
+    kind: scenario
+    description: 다른 대상 교체는 확인 정보(기존·새 경로, different_target) 후 replaceTarget revision 하나로 커밋하고, UUID·이름·부모·순서를 유지하며 새 referenceID·기록 당시 경로·해석되는 새 참조를 저장한다
+    source: .spec-gate/runs/t-w09-eb09b061/specs/revision-1/task-W09.feature#다른 폴더로 교체하면 이름·UUID·배치는 유지하고 새 참조를 쓴다
+    acceptance_refs:
+      - A03
+  - obligation_id: W09-previous-revision-keeps-target
+    task_id: W09
+    kind: scenario
+    description: 교체 직전 revision은 기존 referenceID·기록 당시 경로를 갖고 기존 참조 레코드는 남아 여전히 해석된다
+    source: .spec-gate/runs/t-w09-eb09b061/specs/revision-1/task-W09.feature#교체 전 revision은 기존 대상을 그대로 가진다
+    acceptance_refs:
+      - A03
+  - obligation_id: W09-same-target-unchanged
+    task_id: W09
+    kind: scenario
+    description: 같은 대상 재선택은 same_target으로 알리고 확정해도 unchanged다
+    source: .spec-gate/runs/t-w09-eb09b061/specs/revision-1/task-W09.feature#같은 대상을 다시 고르면 같은 대상이라고 알리고 아무것도 기록하지 않는다
+    acceptance_refs:
+      - A03
+  - obligation_id: W09-renamed-original-same-target
+    task_id: W09
+    kind: scenario
+    description: 이름을 바꾼 기존 대상을 고르면 경로가 달라도 same_target이다(0004)
+    source: .spec-gate/runs/t-w09-eb09b061/specs/revision-1/task-W09.feature#같은 볼륨 안에서 이름을 바꾼 기존 대상을 고르면 같은 대상이다
+    acceptance_refs:
+      - A03
+  - obligation_id: W09-undetermined-warns-then-replaces
+    task_id: W09
+    kind: scenario
+    description: 기존 대상을 해석할 수 없으면 undetermined로 교체 기록을 미리 알리고 확정하면 새 참조로 교체한다(PRD §6-B)
+    source: .spec-gate/runs/t-w09-eb09b061/specs/revision-1/task-W09.feature#기존 대상을 찾을 수 없으면 판정 불가로 알리고, 확정하면 교체로 기록한다
+    acceptance_refs:
+      - A03
+  - obligation_id: W09-invalid-requests-record-nothing
+    task_id: W09
+    kind: scenario
+    description: 종류 불일치·그룹·확인 뒤 새 대상 삭제(unreachable_target)·보관·항목 제거는 거부되고 revision·참조가 늘지 않는다
+    source: .spec-gate/runs/t-w09-eb09b061/specs/revision-1/task-W09.feature#교체할 수 없는 요청은 아무것도 기록하지 않는다
+  - obligation_id: W09-identity-rechecked-on-confirm
+    task_id: W09
+    kind: scenario
+    description: 확인 때 different_target이어도 확정 시점에 같은 대상이 되면 unchanged다(확정 시 재판정, 0004)
+    source: .spec-gate/runs/t-w09-eb09b061/specs/revision-1/task-W09.feature#확정할 때 같은 대상인지 다시 판정한다
+  - obligation_id: W09-save-failure-no-change
+    task_id: W09
+    kind: scenario
+    description: 저장 실패 시 revision 수·referenceID·기록 당시 경로·참조 레코드 수가 그대로다(A13 경로)
+    source: .spec-gate/runs/t-w09-eb09b061/specs/revision-1/task-W09.feature#저장이 실패하면 교체가 남지 않는다
+  - obligation_id: W09-replace-with-target-linked-elsewhere
+    task_id: W09
+    kind: scenario
+    description: 다른 Bishop이 연결한 대상으로도 교체할 수 있고 별도 referenceID를 가지며 다른 Bishop은 그대로다(불변식 2·3·10)
+    source: .spec-gate/runs/t-w09-eb09b061/specs/revision-1/task-W09.feature#다른 Bishop이 이미 연결한 대상으로도 교체할 수 있고 서로 영향을 주지 않는다
+  - obligation_id: W09-targets-untouched
+    task_id: W09
+    kind: scenario
+    description: 교체 후 기존·새 대상 폴더의 목록·수정 시각·권한이 그대로다
+    source: .spec-gate/runs/t-w09-eb09b061/specs/revision-1/task-W09.feature#교체는 기존 대상과 새 대상 파일을 바꾸지 않는다
+  - obligation_id: W09-picker-matches-kind
+    task_id: W09
+    kind: scenario
+    description: 폴더 Bishop은 폴더만, 파일 Bishop은 파일만 하나 고르게 한다(PRD §5 종류 전환은 새 항목)
+    source: .spec-gate/runs/t-w09-eb09b061/specs/revision-1/task-W09.feature#연결 대상 변경은 선택한 Bishop의 종류에 맞는 대상만 고르게 한다
+  - obligation_id: W09-confirmation-before-change
+    task_id: W09
+    kind: scenario
+    description: 대상을 고르면 기존·새 경로 확인 창을 띄우고 확정 전에는 revision이 없으며, 확정 후 트리·상세 영역이 새 경로를 보여 준다
+    source: .spec-gate/runs/t-w09-eb09b061/specs/revision-1/task-W09.feature#대상을 고르면 기존·새 경로를 보여 주는 확인 창을 띄우고, 확정해야 바뀐다
+  - obligation_id: W09-confirmation-by-identity
+    task_id: W09
+    kind: scenario
+    description: 다른 대상은 변경 동작, 같은 대상은 닫기만, 판정 불가는 교체 기록 안내와 변경 동작을 보여 준다
+    source: .spec-gate/runs/t-w09-eb09b061/specs/revision-1/task-W09.feature#확인 창은 판정에 따라 안내와 확정 동작을 다르게 보여 준다
+  - obligation_id: W09-cancel-records-nothing
+    task_id: W09
+    kind: scenario
+    description: 선택 창 취소와 확인 창 취소는 아무것도 기록하지 않는다
+    source: .spec-gate/runs/t-w09-eb09b061/specs/revision-1/task-W09.feature#고르기를 취소하거나 확인 창을 닫으면 아무것도 기록하지 않는다
+  - obligation_id: W09-start-requires-bishop
+    task_id: W09
+    kind: scenario
+    description: 그룹·선택 없음·보관된 Board에서는 선택 창을 열지 않고, 보관된 Board는 안내한다
+    source: .spec-gate/runs/t-w09-eb09b061/specs/revision-1/task-W09.feature#Bishop이 아니거나 보관된 Board면 연결 대상 변경을 시작하지 않는다
+  - obligation_id: W09-failure-notice
+    task_id: W09
+    kind: scenario
+    description: 확정 시 새 대상 연결 실패와 저장 실패는 각각 안내하고 revision 수와 대상을 바꾸지 않는다
+    source: .spec-gate/runs/t-w09-eb09b061/specs/revision-1/task-W09.feature#새 대상에 연결할 수 없거나 저장에 실패하면 안내하고 대상은 그대로다
+  - obligation_id: W09-commands
+    task_id: W09
+    kind: scenario
+    description: 파일 메뉴 ⇧⌘R "연결 대상 변경…"과 상세 영역 버튼이 있고 String Catalog에 문구가 있다
+    source: .spec-gate/runs/t-w09-eb09b061/specs/revision-1/task-W09.feature#연결 대상 변경 명령이 메뉴와 상세 영역에 있다
+acceptance_coverage:
+  A03:
+    - W09-replace-keeps-identity
+    - W09-previous-revision-keeps-target
+    - W09-same-target-unchanged
+    - W09-renamed-original-same-target
+    - W09-undetermined-warns-then-replaces
+decision_log: null
+critic_report: .spec-gate/runs/t-w09-eb09b061/critic-pass-2.yaml
+non_blocking_notes:
+  - finding_id: F-W09-2-1
+    task_id: W09
+    note: 서비스 쪽 재판정 시나리오는 이제 관찰할 수 있다. 확인 때의 판정을 재사용하면 revision이 하나 늘어 테스트가 실패하므로 이전 F-W09-1은 해소됐다. 다만 화면 시나리오는 확인 창에서 "변경"을 골랐는데 재판정 결과가 unchanged인 경우를 다루지 않는다. 확인 창이 닫히는지, 무엇을 안내하는지, 새 경로를 보여 주지 않는지 정해져 있지 않다. 그래서 화면 모델이 unchanged 결과를 성공처럼 처리할 수 있다.
+  - finding_id: F-W09-2-2
+    task_id: W09
+    note: 확인 때 different_target이었는데 확정 시점에 undetermined가 되는 경우가 있다. 이때 다시 확인을 받지 않고 커밋한다는 해석을 지금 명세는 암묵적으로 따른다. 이 해석은 타당하다. 확인 창이 이미 "교체로 기록된다"는 사실을 보여 주므로 PRD §6-B의 알림 취지를 충족하기 때문이다. 하지만 이전 비평에서 요청했는데도 이 해석과 근거가 assumptions에 없다.
+  - finding_id: F-W09-2-3
+    task_id: W09
+    note: 거부 예는 각각 조건을 하나만 쓴다. 새로 생긴 사유 unreachable_target(확정 시 북마크 생성 실패)이 archived·node_not_found· target_kind_mismatch보다 앞서는지 뒤서는지 정해져 있지 않다. W08은 archived를 먼저 판정하고 북마크를 만들지 않으므로, W09도 그 순서를 따른다고 읽는 것이 자연스럽다. 그러나 명세에는 이 순서가 적혀 있지 않다.
+  - finding_id: F-W09-2-4
+    task_id: W09
+    note: 이름이 바뀐 기존 대상의 북마크를 판정 목적으로 해석하면 stale 표시가 나올 수 있다. 판정 과정에서 기존 참조 레코드를 갱신할지는 명세가 정하지 않는다. 다만 assumptions가 이 일을 W15로 넘기고 있고, 어느 쪽이든 revision은 생기지 않는다. 요청하는 변경은 없다.
+  - finding_id: F-W09-2-5
+    task_id: W09
+    note: 이전 지적은 모두 반영됐다. F-W09-1은 재판정 시나리오를 관찰 가능한 unchanged로 바꿔 해소했다. F-W09-2는 임시 디렉토리 표기, F-W09-3은 화면 저장 실패 예와 서비스 revision 수 단언, F-W09-4는 unreachable_target, F-W09-5는 다른 Bishop이 연결한 대상으로 교체하는 시나리오로 해소했다. A03은 W09-replace-keeps-identity와 W09-previous-revision-keeps-target이 직접 증명한다. 두 obligation 모두 A03 조건을 어기면 실패한다.

@@ -46,10 +46,16 @@
     "Finder에서 보기": {
       "extractionState": "manual"
     },
+    "같은 대상인지 확인할 수 없어 연결 대상 변경으로 기록됩니다.": {
+      "extractionState": "manual"
+    },
     "구성이 비어 있습니다": {
       "extractionState": "manual"
     },
     "그룹": {
+      "extractionState": "manual"
+    },
+    "기존": {
       "extractionState": "manual"
     },
     "다시 시도": {
@@ -76,6 +82,9 @@
     "만들기": {
       "extractionState": "manual"
     },
+    "변경": {
+      "extractionState": "manual"
+    },
     "보관된 Board": {
       "extractionState": "manual"
     },
@@ -83,6 +92,18 @@
       "extractionState": "manual"
     },
     "보관됨": {
+      "extractionState": "manual"
+    },
+    "새 대상": {
+      "extractionState": "manual"
+    },
+    "연결 대상 변경": {
+      "extractionState": "manual"
+    },
+    "연결 대상 변경…": {
+      "extractionState": "manual"
+    },
+    "연결 대상을 바꾸지 못했습니다.": {
       "extractionState": "manual"
     },
     "연결하지 못한 항목이 있어 아무것도 추가하지 않았습니다: %@": {
@@ -95,6 +116,12 @@
       "extractionState": "manual"
     },
     "이름을 입력하세요.": {
+      "extractionState": "manual"
+    },
+    "이미 연결된 대상이라 바꾸지 않았습니다.": {
+      "extractionState": "manual"
+    },
+    "이미 연결된 대상입니다.": {
       "extractionState": "manual"
     },
     "저장하지 못했습니다. 다시 시도하세요.": {

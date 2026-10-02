@@ -139,6 +139,11 @@ actor ProjectStore {
         try adapter.revisionSummaries(projectID: projectID)
     }
 
+    /// 한 revision의 구성. 선택한 revision만 디코딩한다(PRD §8 경량화).
+    func snapshot(revisionID: UUID) throws(StoreReadError) -> ConfigurationSnapshot {
+        try adapter.snapshot(revisionID: revisionID)
+    }
+
     func currentSnapshot(projectID: UUID) throws(StoreReadError) -> ConfigurationSnapshot {
         guard let project = try adapter.project(projectID) else { throw .notFound(projectID) }
         return try adapter.snapshot(revisionID: project.currentRevisionID)
