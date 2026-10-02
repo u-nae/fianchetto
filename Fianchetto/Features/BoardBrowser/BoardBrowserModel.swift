@@ -53,6 +53,7 @@ final class BoardBrowserModel {
         enum Action: Equatable {
             case link
             case move
+            case remove
         }
 
         var kind: Kind
@@ -130,6 +131,16 @@ final class BoardBrowserModel {
         var destinations: [MoveDestination]
     }
 
+    /// 제거 확인 창. 포함 항목 수는 창을 연 시점의 현재 구성 기준이다.
+    struct Removal: Equatable {
+        var nodeID: UUID
+        var boardID: UUID
+        var kind: NodeKind
+        var name: String
+        /// 함께 제거될 모든 자손 수.
+        var descendantCount: Int
+    }
+
     struct Creation: Equatable {
         var name = ""
         var message: CreationMessage?
@@ -147,6 +158,7 @@ final class BoardBrowserModel {
     var rename: Creation?
     var nodeForm: NodeForm?
     private(set) var moveDialog: MoveDialog?
+    private(set) var removal: Removal?
     /// 이동을 저장하는 중이다. 그동안 들어온 이동은 옛 구성 기준이라 무시한다.
     private var isMoving = false
     private(set) var openedStore: OpenedStore?
@@ -548,6 +560,7 @@ final class BoardBrowserModel {
         switch notice.action {
         case .link: String(localized: "Bishop 추가")
         case .move: String(localized: "이동")
+        case .remove: String(localized: "제거")
         }
     }
 
@@ -678,6 +691,70 @@ final class BoardBrowserModel {
         case .rejected:
             linkNotice = LinkNotice(kind: .saveFailed, request: nil, action: .move)
         }
+    }
+
+    // MARK: 제거
+
+    /// 첫 버전에는 Undo가 없으므로 종류와 상관없이 확인 창을 연다.
+    func beginRemove() {
+        guard let node = selectedNode, let boardID = editableBoard() else { return }
+        func count(under parentID: UUID) -> Int {
+            children(of: parentID).reduce(0) { $0 + 1 + count(under: $1.id) }
+        }
+        removal = Removal(
+            nodeID: node.id, boardID: boardID, kind: node.kind, name: node.displayName,
+            descendantCount: node.kind == .group ? count(under: node.id) : 0
+        )
+    }
+
+    func cancelRemove() {
+        removal = nil
+    }
+
+    func confirmRemove() async {
+        guard let pending = removal, let service = openedStore?.service else { return }
+        removal = nil
+        let outcome: ConfigurationCommitOutcome
+        do {
+            outcome = try await service.apply(.remove(pending.nodeID), to: pending.boardID)
+        } catch {
+            linkNotice = LinkNotice(kind: .saveFailed, request: nil, action: .remove)
+            return
+        }
+        switch outcome {
+        case let .committed(_, snapshot):
+            guard selectedBoardID == pending.boardID else { return }
+            current = .loaded(snapshot)
+            selectedNodeID = nil
+        case .unchanged:
+            break
+        case .rejected(.archived):
+            linkNotice = LinkNotice(kind: .archived, request: nil, action: .remove)
+        case .rejected:
+            linkNotice = LinkNotice(kind: .saveFailed, request: nil, action: .remove)
+        }
+    }
+
+    func removalTitle(_ removal: Removal) -> String {
+        switch removal.kind {
+        case .group: String(localized: "그룹 제거")
+        case .file, .folder: String(localized: "Bishop 제거")
+        case .webLink: String(localized: "웹 링크 제거")
+        }
+    }
+
+    func removalMessage(_ removal: Removal) -> String {
+        let target = switch removal.kind {
+        case .group where removal.descendantCount == 0:
+            String(localized: "그룹 \"\(removal.name)\"(포함된 항목 없음)")
+        case .group:
+            String(localized: "그룹 \"\(removal.name)\"(포함된 항목 \(removal.descendantCount)개)")
+        case .file, .folder:
+            String(localized: "Bishop \"\(removal.name)\"")
+        case .webLink:
+            String(localized: "웹 링크 \"\(removal.name)\"")
+        }
+        return String(localized: "현재 구성에서 제거합니다: \(target). 연결된 파일과 폴더는 그대로 남습니다.")
     }
 
     // MARK: 연결 대상 변경

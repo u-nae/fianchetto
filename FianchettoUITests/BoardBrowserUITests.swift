@@ -96,6 +96,9 @@ final class BoardBrowserUITests: XCTestCase {
         XCTAssertTrue(editMenu.menuItems["이름 변경…"].waitForExistence(timeout: 5))
         XCTAssertTrue(editMenu.menuItems["URL 변경…"].exists)
         // W12-commands: 이동 명령도 편집 메뉴에 있다.
+        // W13-commands-and-terms: 제거…도 편집 메뉴에 있고, 메뉴 어디에도 삭제 표현이 없다.
+        XCTAssertTrue(editMenu.menuItems["제거…"].exists)
+        XCTAssertFalse(editMenu.menuItems.allElementsBoundByIndex.contains { $0.title.contains("파일 삭제") })
         for title in ["위로 이동", "아래로 이동", "이동…"] {
             XCTAssertTrue(editMenu.menuItems[title].exists, title)
         }

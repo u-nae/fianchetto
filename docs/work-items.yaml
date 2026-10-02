@@ -289,7 +289,7 @@ items:
     test_strategy: >-
       서비스 테스트: 자손 수 계산, 그룹 제거 revision 1개, 이전 revision에 항목 유지, 취소 무변경,
       임시 디렉토리 원본 파일 존재 유지. 문자열 카탈로그에 금지 문구가 없는지 검사.
-    status: pending
+    status: done
     priority: high
     dependencies: [W11]
     source_refs:

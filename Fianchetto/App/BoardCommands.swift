@@ -17,6 +17,9 @@ struct BoardCommands: Commands {
             Button("아래로 이동") { Task { await model?.moveSelectedDown() } }
                 .keyboardShortcut(.downArrow, modifiers: [.command, .option])
             Button("이동…") { model?.beginMove() }
+            Divider()
+            Button("제거…") { model?.beginRemove() }
+                .keyboardShortcut(.delete, modifiers: .command)
         }
         CommandGroup(replacing: .newItem) {
             Button("Board 만들기…") { model?.beginCreate() }

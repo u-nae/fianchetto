@@ -10,6 +10,7 @@ struct BoardBrowserView: View {
         let isRenaming = model.rename != nil
         let hasNodeForm = model.nodeForm != nil
         let moveDialog = model.moveDialog
+        let removal = model.removal
         let notice = model.linkNotice
         let replacement = model.replacement
         Group {
@@ -47,6 +48,11 @@ struct BoardBrowserView: View {
         .sheet(isPresented: Binding(get: { moveDialog != nil }, set: { if !$0 { model.cancelMove() } })) {
             if let moveDialog {
                 MoveSheet(model: model, dialog: moveDialog)
+            }
+        }
+        .sheet(isPresented: Binding(get: { removal != nil }, set: { if !$0 { model.cancelRemove() } })) {
+            if let removal {
+                RemoveSheet(model: model, removal: removal)
             }
         }
         .sheet(item: Binding(get: { replacement.map(PreviewItem.init) }, set: { if $0 == nil { model.cancelReplacement() } })) { item in
@@ -259,6 +265,30 @@ private struct MoveSheet: View {
         }
         .padding()
         .frame(width: 360)
+    }
+}
+
+/// 제거 확인 창: 종류별 제목과 함께 제거될 범위. 연결 대상은 지우지 않는다.
+private struct RemoveSheet: View {
+    let model: BoardBrowserModel
+    let removal: BoardBrowserModel.Removal
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(model.removalTitle(removal)).font(.headline)
+            Text(model.removalMessage(removal))
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityIdentifier("removal-message")
+            HStack {
+                Spacer()
+                Button("취소", role: .cancel) { model.cancelRemove() }
+                    .keyboardShortcut(.cancelAction)
+                Button("제거", role: .destructive) { Task { await model.confirmRemove() } }
+                    .keyboardShortcut(.defaultAction)
+            }
+        }
+        .padding()
+        .frame(width: 400)
     }
 }
 
