@@ -350,7 +350,7 @@ items:
     test_strategy: >-
       Swift Testing: 분류별 사례, 복합 변화, 그룹 이동 시 자손 중복 없음, 앞쪽 삽입 시 형제 순서 변경 없음,
       동일 스냅샷 빈 결과, 빈 구성 대 빈 구성.
-    status: pending
+    status: done
     priority: high
     dependencies: [W02]
     source_refs:

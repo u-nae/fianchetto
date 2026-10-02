@@ -178,7 +178,7 @@ private struct ConfigurationTreeView: View {
         switch model.current {
         case .none:
             ContentUnavailableView {
-                Label("Board가 없습니다", systemImage: "square.grid.2x2")
+                Label { Text("Board가 없습니다") } icon: { ChessboardIllustration() }
             } description: {
                 Text("Board를 만들거나 목록에서 고르세요.")
             } actions: {
@@ -187,7 +187,9 @@ private struct ConfigurationTreeView: View {
         case .unreadable:
             ContentUnavailableView("현재 구성을 읽지 못했습니다", systemImage: "exclamationmark.triangle")
         case let .loaded(snapshot) where snapshot.nodes.isEmpty:
-            ContentUnavailableView("구성이 비어 있습니다", systemImage: "tray")
+            ContentUnavailableView {
+                Label { Text("구성이 비어 있습니다") } icon: { ChessboardIllustration() }
+            }
                 .dropDestination(for: TreeDropItem.self) { items, _ in
                     accept(items, on: nil)
                 }

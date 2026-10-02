@@ -1,0 +1,164 @@
+schema_version: "1.0"
+run_id: t-w16-ce55bf90
+verdict: READY
+source:
+  baseline:
+    - path: docs/PRD.md
+      fingerprint: 5d8c45fd91830695e3f8f90fb49be3f9d8be64e0ca0256d382a31d0af4a4ae0a
+    - path: docs/TECH_STACK.md
+      fingerprint: 9cba18e5f7490fe1c39a658ed3485d17fe782060c588b429d6db923c23d55fbe
+  decision_records:
+    path: docs/decisions
+    fingerprint: 561de98b115519f41b90fa91374574f79e40174701aba27100211ea60806b679
+  work_items_artifact: docs/work-items.yaml
+  work_items_fingerprint: 21ca51b99c604b118098815c18234454f7e1c02791d2d0688e272b11d96445d4
+  normalized_artifact: .spec-gate/runs/t-w16-ce55bf90/normalized-tasks.yaml
+source_tasks:
+  - task_id: W16
+    title: 두 구성의 차이 계산
+    route: GHERKIN
+    acceptance_refs:
+      - A07
+accepted_specifications:
+  - task_id: W16
+    route: GHERKIN
+    path: .spec-gate/runs/t-w16-ce55bf90/specs/revision-1/task-W16.feature
+test_obligations:
+  - obligation_id: W16-empty-result
+    task_id: W16
+    kind: scenario
+    description: 같은 값·Node 배열 순서만 다른 스냅샷·빈 대 빈 구성은 빈 결과다
+    source: .spec-gate/runs/t-w16-ce55bf90/specs/revision-1/task-W16.feature#변화가 없으면 빈 결과다
+    acceptance_refs:
+      - A07
+  - obligation_id: W16-single-kind
+    task_id: W16
+    kind: scenario
+    description: 추가·제거·이름 변경·그룹 이동·대상 교체·URL 변경을 각각 그 분류 하나와 변경 전·후 값으로 보고한다
+    source: .spec-gate/runs/t-w16-ce55bf90/specs/revision-1/task-W16.feature#각 변화는 해당 분류 하나로 보고된다
+    acceptance_refs:
+      - A07
+  - obligation_id: W16-project-rename
+    task_id: W16
+    kind: scenario
+    description: Board 이름 변경은 전·후 이름으로 따로 보고하고 항목 변화로 세지 않는다
+    source: .spec-gate/runs/t-w16-ce55bf90/specs/revision-1/task-W16.feature#Board 이름 변경은 항목 변화와 따로 보고된다
+    acceptance_refs:
+      - A07
+  - obligation_id: W16-combined-changes
+    task_id: W16
+    kind: scenario
+    description: 한 Node의 이름·그룹 이동·대상 교체를 한 항목에 함께 담고 전·후 이름·위치·대상을 준다
+    source: .spec-gate/runs/t-w16-ce55bf90/specs/revision-1/task-W16.feature#한 Node의 여러 변화는 한 항목에 함께 담긴다
+    acceptance_refs:
+      - A07
+  - obligation_id: W16-location-path
+    task_id: W16
+    kind: scenario
+    description: 그룹 위치는 최상위부터의 그룹 이름 경로이고 최상위 Node는 빈 경로다
+    source: .spec-gate/runs/t-w16-ce55bf90/specs/revision-1/task-W16.feature#그룹 위치는 최상위부터의 그룹 이름 경로로 주어진다
+  - obligation_id: W16-same-name-reinsert-is-different
+    task_id: W16
+    kind: scenario
+    description: 제거 후 같은 이름·경로로 새 UUID를 추가하면 제거 하나와 추가 하나다(이름·경로로 병합하지 않음)
+    source: .spec-gate/runs/t-w16-ce55bf90/specs/revision-1/task-W16.feature#제거 후 같은 이름·경로로 다시 추가한 Node는 다른 Node다
+    acceptance_refs:
+      - A07
+  - obligation_id: W16-same-name-siblings
+    task_id: W16
+    kind: scenario
+    description: 이름이 같은 형제 중 실제로 바뀐 UUID의 Node만 보고한다
+    source: .spec-gate/runs/t-w16-ce55bf90/specs/revision-1/task-W16.feature#이름이 같은 형제 중 바뀐 Node만 보고한다
+    acceptance_refs:
+      - A07
+  - obligation_id: W16-insert-and-reorder
+    task_id: W16
+    kind: scenario
+    description: 같은 부모 아래 앞쪽 추가와 실제 순서 변경이 함께 있으면 추가와 실제로 옮긴 Node의 순서 변경만 보고한다
+    source: .spec-gate/runs/t-w16-ce55bf90/specs/revision-1/task-W16.feature#앞쪽 추가와 실제 순서 변경이 함께 있으면 실제로 옮긴 Node만 순서 변경이다
+    acceptance_refs:
+      - A07
+  - obligation_id: W16-invalid-input-terminates
+    task_id: W16
+    kind: scenario
+    description: 고아·순환 Node가 있는 입력에도 비교가 끝나고 각 Node는 결과에 많아야 한 번 나온다
+    source: .spec-gate/runs/t-w16-ce55bf90/specs/revision-1/task-W16.feature#트리 검증을 통과하지 못한 입력에도 멈추지 않는다
+  - obligation_id: W16-group-move-no-descendants
+    task_id: W16
+    kind: scenario
+    description: 그룹 이동은 그 그룹만 보고하고 직접 부모가 그대로인 자손과 주변 형제에는 변화가 없다
+    source: .spec-gate/runs/t-w16-ce55bf90/specs/revision-1/task-W16.feature#그룹을 옮기면 그 그룹만 이동으로 보고하고 자손은 세지 않는다
+    acceptance_refs:
+      - A07
+  - obligation_id: W16-group-removal
+    task_id: W16
+    kind: scenario
+    description: 그룹과 자손 제거는 제거된 Node마다 제거로 보고한다
+    source: .spec-gate/runs/t-w16-ce55bf90/specs/revision-1/task-W16.feature#그룹과 자손을 제거하면 제거된 Node마다 보고한다
+    acceptance_refs:
+      - A07
+  - obligation_id: W16-index-shift-not-reorder
+    task_id: W16
+    kind: scenario
+    description: 앞쪽 추가·제거·다른 그룹으로의 이동으로 인덱스만 밀린 형제는 순서 변경이 아니다
+    source: .spec-gate/runs/t-w16-ce55bf90/specs/revision-1/task-W16.feature#인덱스만 밀린 형제는 순서 변경으로 보고하지 않는다
+    acceptance_refs:
+      - A07
+  - obligation_id: W16-reorder-minimal
+    task_id: W16
+    kind: scenario
+    description: 공통 형제의 최장 증가 부분열 밖 Node만 순서 변경으로 보고하고 전·후 정렬 순서를 준다
+    source: .spec-gate/runs/t-w16-ce55bf90/specs/revision-1/task-W16.feature#실제로 순서가 바뀐 Node만 순서 변경으로 보고한다
+    acceptance_refs:
+      - A07
+  - obligation_id: W16-reorder-tie-break
+    task_id: W16
+    kind: scenario
+    description: 최장 부분열 후보가 여럿이면 구성 A에서 앞선 Node를 제자리로 남긴다
+    source: .spec-gate/runs/t-w16-ce55bf90/specs/revision-1/task-W16.feature#이웃한 두 Node를 맞바꾸면 구성 A에서 뒤에 있던 Node가 순서 변경으로 보고된다
+  - obligation_id: W16-move-excludes-reorder
+    task_id: W16
+    kind: scenario
+    description: 다른 그룹으로 옮긴 Node는 그룹 이동만 보고하고 새 형제에 순서 변경을 만들지 않는다
+    source: .spec-gate/runs/t-w16-ce55bf90/specs/revision-1/task-W16.feature#다른 그룹으로 옮긴 Node는 순서 변경을 함께 보고하지 않는다
+    acceptance_refs:
+      - A07
+  - obligation_id: W16-deterministic-order
+    task_id: W16
+    kind: scenario
+    description: 항목은 B 트리 순서로 B의 Node, 그 뒤 A 트리 순서로 제거된 Node가 온다
+    source: .spec-gate/runs/t-w16-ce55bf90/specs/revision-1/task-W16.feature#결과의 항목 순서는 정해져 있다
+  - obligation_id: W16-pure
+    task_id: W16
+    kind: scenario
+    description: 고정 입력으로 비교해도 입력 스냅샷이 바뀌지 않고 다시 비교하면 같은 결과다
+    source: .spec-gate/runs/t-w16-ce55bf90/specs/revision-1/task-W16.feature#비교는 입력 스냅샷을 바꾸지 않는다
+acceptance_coverage:
+  A07:
+    - W16-empty-result
+    - W16-single-kind
+    - W16-project-rename
+    - W16-combined-changes
+    - W16-same-name-reinsert-is-different
+    - W16-same-name-siblings
+    - W16-insert-and-reorder
+    - W16-group-move-no-descendants
+    - W16-group-removal
+    - W16-index-shift-not-reorder
+    - W16-reorder-minimal
+    - W16-move-excludes-reorder
+decision_log: null
+critic_report: .spec-gate/runs/t-w16-ce55bf90/critic-pass-2.yaml
+non_blocking_notes:
+  - finding_id: F-W16-8
+    task_id: W16
+    note: Then의 "'문서'의 기존 형제에는 순서 변경이 없다"는 구성 A에서 "문서" 아래 Node가 없어 공허하게 참이다. "문서"의 형제(최상위 Node)를 뜻한다면 문구가 모호하다. 이동 대상 부모 쪽 인덱스 밀림은 "다른 그룹으로 옮긴 Node는 순서 변경을 함께 보고하지 않는다" 시나리오가 이미 증명하므로 수용 경계는 유지된다.
+  - finding_id: F-W16-9
+    task_id: W16
+    note: 전제 밖 입력(고아·순환)에서 해당 Node가 추가로 분류되는지는 시나리오가 정하지 않고 종료와 중복 없음만 요구한다. 전제가 명시되어 있고 W03 편집 연산·가져오기 검증이 이를 보장하므로 이전 F-W16-2는 해소된 것으로 본다. 수정 요청 없음.
+  - finding_id: F-W16-10
+    task_id: W16
+    note: '"참조가 같고 기록 당시 경로만 다른 경우는 분류하지 않는다"는 가정을 편집 연산과 0003·0012로 확인했다. 이 경우 스냅샷 동등성(==)은 거짓이어도 차이 결과는 빈 결과가 될 수 있다는 점만 기록해 둔다. 수정 요청 없음.'
+  - finding_id: F-W16-11
+    task_id: W16
+    note: '이전 지적의 해소를 확인했다. F-W16-1: 같은 이름·경로 재추가와 같은 이름 형제 두 시나리오(@A07)와 obligation 추가. F-W16-3: 최상위 "위키"로 빈 경로 관찰 가능. F-W16-4: 고정 구성 B 사용. F-W16-5: 앞쪽 추가와 맞바꿈 결합 예시 추가. 순서 변경 예시 4개, 결합 예시, 맞바꿈 예시, 결과 순서 예시("backend", "위키", "API 명세")를 가정의 최장 증가 부분열·사전순 동점 규칙과 전위 순회 규칙으로 직접 계산해 모두 일치함을 확인했다. A07의 분류 6종과 인덱스 밀림 규칙은 실패할 수 있는 obligation으로 덮인다.'
