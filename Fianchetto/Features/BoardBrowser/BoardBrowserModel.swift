@@ -27,6 +27,21 @@ final class BoardBrowserModel {
         var lastBoard: any LastBoardRecord
         var revealInFinder: (URL) -> Void
         var quit: () -> Void
+        /// 파일 선택 창. 취소하면 nil.
+        var pickTargets: () -> [URL]?
+    }
+
+    /// Bishop 연결 결과 안내. 다시 시도는 처음 요청 그대로 실행한다.
+    struct LinkNotice: Equatable {
+        enum Kind: Equatable {
+            case unreachable([String])
+            case saveFailed
+            case archived
+        }
+
+        var kind: Kind
+        var request: LinkRequest?
+        var canRetry: Bool { request != nil }
     }
 
     enum Phase: Equatable {
@@ -64,6 +79,7 @@ final class BoardBrowserModel {
     var selectedNodeID: UUID?
     var creation: Creation?
     private(set) var openedStore: OpenedStore?
+    private(set) var linkNotice: LinkNotice?
 
     private let dependencies: Dependencies
 
@@ -233,6 +249,92 @@ final class BoardBrowserModel {
             finishCreate(with: .nameRequired)
         case .rejected, .unchanged:
             finishCreate(with: .saveFailed)
+        }
+    }
+
+    // MARK: Bishop 추가와 드롭
+
+    /// 선택한 항목에 따른 연결 위치: 그룹이면 그 안, 그 밖의 항목이면 그 부모, 선택이 없으면 최상위. 모두 끝에 넣는다.
+    private var insertionParent: UUID? {
+        guard case let .loaded(snapshot) = current,
+              let id = selectedNodeID, let node = snapshot.nodes.first(where: { $0.id == id })
+        else { return nil }
+        return node.kind == .group ? node.id : node.parentID
+    }
+
+    private var selectedBoardIsArchived: Bool {
+        selectedBoardID.flatMap(board)?.archivedAt != nil
+    }
+
+    func addBishops() async {
+        guard let boardID = selectedBoardID, openedStore != nil else { return }
+        guard !selectedBoardIsArchived else {
+            linkNotice = LinkNotice(kind: .archived, request: nil)
+            return
+        }
+        let parent = insertionParent
+        guard let urls = dependencies.pickTargets(), !urls.isEmpty else { return }
+        await link(LinkRequest(projectID: boardID, parentID: parent, position: nil, urls: urls))
+    }
+
+    /// 놓은 곳이 최상위(nil)나 그룹이고, 보관되지 않은 Board가 선택돼 있을 때만 받는다.
+    func canAcceptDrop(on nodeID: UUID?) -> Bool {
+        guard selectedBoardID != nil, !selectedBoardIsArchived, case let .loaded(snapshot) = current else { return false }
+        guard let nodeID else { return true }
+        return snapshot.nodes.first { $0.id == nodeID }?.kind == .group
+    }
+
+    /// Finder에서 끌어온 파일·폴더를 연결한다. 파일 URL이 아니거나 받을 수 없는 곳이면 false.
+    @discardableResult
+    func drop(_ urls: [URL], on nodeID: UUID?) async -> Bool {
+        guard canAcceptDrop(on: nodeID), let boardID = selectedBoardID, !urls.isEmpty, urls.allSatisfy(\.isFileURL) else {
+            return false
+        }
+        await link(LinkRequest(projectID: boardID, parentID: nodeID, position: nil, urls: urls))
+        return true
+    }
+
+    func retryLink() async {
+        guard let request = linkNotice?.request else { return }
+        await link(request)
+    }
+
+    func dismissLinkNotice() {
+        linkNotice = nil
+    }
+
+    func noticeText(_ notice: LinkNotice) -> String {
+        switch notice.kind {
+        case let .unreachable(names):
+            String(localized: "연결하지 못한 항목이 있어 아무것도 추가하지 않았습니다: \(names.joined(separator: ", "))")
+        case .saveFailed:
+            String(localized: "저장하지 못했습니다. 다시 시도하세요.")
+        case .archived:
+            String(localized: "보관된 Board는 바꿀 수 없습니다.")
+        }
+    }
+
+    private func link(_ request: LinkRequest) async {
+        guard let linking = openedStore?.linking else { return }
+        linkNotice = nil
+        let outcome: LinkOutcome
+        do {
+            outcome = try await linking.link(request)
+        } catch {
+            linkNotice = LinkNotice(kind: .saveFailed, request: request)
+            return
+        }
+        switch outcome {
+        case let .committed(_, snapshot):
+            if selectedBoardID == request.projectID { current = .loaded(snapshot) }
+        case .unchanged:
+            break
+        case let .rejected(.unreachableTargets(names)):
+            linkNotice = LinkNotice(kind: .unreachable(names), request: request)
+        case .rejected(.commit(.archived)):
+            linkNotice = LinkNotice(kind: .archived, request: nil)
+        case .rejected:
+            linkNotice = LinkNotice(kind: .saveFailed, request: request)
         }
     }
 

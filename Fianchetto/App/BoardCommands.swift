@@ -10,6 +10,8 @@ struct BoardCommands: Commands {
         CommandGroup(replacing: .newItem) {
             Button("Board 만들기…") { model?.beginCreate() }
                 .keyboardShortcut("n")
+            Button("Bishop 추가…") { Task { await model?.addBishops() } }
+                .keyboardShortcut("a", modifiers: [.command, .shift])
         }
     }
 }

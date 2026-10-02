@@ -7,6 +7,7 @@ struct BoardBrowserView: View {
     var body: some View {
         // Observation은 body에서 읽은 값만 추적하므로 Binding 클로저 밖에서 먼저 읽는다.
         let isCreating = model.creation != nil
+        let notice = model.linkNotice
         Group {
             switch model.phase {
             case .loading:
@@ -32,6 +33,18 @@ struct BoardBrowserView: View {
         .frame(minWidth: 820, minHeight: 480)
         .sheet(isPresented: Binding(get: { isCreating }, set: { if !$0 { model.cancelCreate() } })) {
             CreateBoardSheet(model: model)
+        }
+        .alert(
+            "Bishop 추가",
+            isPresented: Binding(get: { notice != nil }, set: { if !$0 { model.dismissLinkNotice() } }),
+            presenting: notice
+        ) { notice in
+            if notice.canRetry {
+                Button("다시 시도") { Task { await model.retryLink() } }
+            }
+            Button("닫기", role: .cancel) { model.dismissLinkNotice() }
+        } message: { notice in
+            Text(model.noticeText(notice))
         }
     }
 }
@@ -118,14 +131,32 @@ private struct ConfigurationTreeView: View {
             ContentUnavailableView("현재 구성을 읽지 못했습니다", systemImage: "exclamationmark.triangle")
         case let .loaded(snapshot) where snapshot.nodes.isEmpty:
             ContentUnavailableView("구성이 비어 있습니다", systemImage: "tray")
+                .dropDestination(for: URL.self) { urls, _ in
+                    accept(urls, on: nil)
+                }
         case .loaded:
             let selectedNode = model.selectedNodeID
             List(selection: Binding(get: { selectedNode }, set: { model.selectedNodeID = $0 })) {
                 OutlineGroup(model.tree, children: \.children) { item in
                     NodeRow(model: model, node: item.node)
+                        .dropDestination(for: URL.self) { urls, _ in
+                            accept(urls, on: item.node.id)
+                        }
                 }
             }
+            .dropDestination(for: URL.self) { urls, _ in
+                accept(urls, on: nil)
+            }
         }
+    }
+}
+
+private extension ConfigurationTreeView {
+    /// 드롭은 받을 수 있는 곳에서만 받아들이고, 연결은 비동기로 진행한다.
+    func accept(_ urls: [URL], on nodeID: UUID?) -> Bool {
+        guard model.canAcceptDrop(on: nodeID), !urls.isEmpty, urls.allSatisfy(\.isFileURL) else { return false }
+        Task { await model.drop(urls, on: nodeID) }
+        return true
     }
 }
 

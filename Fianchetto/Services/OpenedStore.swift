@@ -4,4 +4,5 @@ import Foundation
 struct OpenedStore: Sendable {
     let store: ProjectStore
     let service: ConfigurationService
+    let linking: LinkingService
 }

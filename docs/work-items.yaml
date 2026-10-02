@@ -187,7 +187,7 @@ items:
       서비스 테스트(임시 디렉토리 + 실제 SwiftData): 여러 대상 추가 시 revision 1개와 recordedPath 기록,
       한 개 북마크 실패 주입 시 Node·revision·reference 모두 미생성, 취소 시 무변경, 원본 파일 상태
       불변. 드롭 대상 판정은 단위 테스트.
-    status: pending
+    status: done
     priority: high
     dependencies: [W06, W07]
     source_refs:
