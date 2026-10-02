@@ -5,6 +5,12 @@
       "comment": "로컬 파일·폴더 연결 항목의 화면 용어(0006). 영문 고유 용어 그대로 쓴다.",
       "extractionState": "manual"
     },
+    "Bishop \"%@\"": {
+      "extractionState": "manual"
+    },
+    "Bishop 제거": {
+      "extractionState": "manual"
+    },
     "Bishop 추가": {
       "extractionState": "manual"
     },
@@ -74,6 +80,15 @@
       "extractionState": "manual"
     },
     "그룹": {
+      "extractionState": "manual"
+    },
+    "그룹 \"%@\"(포함된 항목 %lld개)": {
+      "extractionState": "manual"
+    },
+    "그룹 \"%@\"(포함된 항목 없음)": {
+      "extractionState": "manual"
+    },
+    "그룹 제거": {
       "extractionState": "manual"
     },
     "그룹 추가": {
@@ -151,6 +166,12 @@
     "웹 링크": {
       "extractionState": "manual"
     },
+    "웹 링크 \"%@\"": {
+      "extractionState": "manual"
+    },
+    "웹 링크 제거": {
+      "extractionState": "manual"
+    },
     "웹 링크 추가": {
       "extractionState": "manual"
     },
@@ -193,6 +214,12 @@
     "저장하지 못했습니다. 다시 시도하세요.": {
       "extractionState": "manual"
     },
+    "제거": {
+      "extractionState": "manual"
+    },
+    "제거…": {
+      "extractionState": "manual"
+    },
     "종료": {
       "extractionState": "manual"
     },
@@ -209,6 +236,9 @@
       "extractionState": "manual"
     },
     "항목을 고르세요": {
+      "extractionState": "manual"
+    },
+    "현재 구성에서 제거합니다: %@. 연결된 파일과 폴더는 그대로 남습니다.": {
       "extractionState": "manual"
     },
     "현재 구성을 읽지 못했습니다": {
