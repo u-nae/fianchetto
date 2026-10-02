@@ -17,16 +17,9 @@ mkdir -p "$LOGS"
 
 step() { printf '\n== %s\n' "$1"; }
 
-# 컴파일러 경고(파일:줄:열: warning:)와 빌드 시스템 경고(warning: ...)를 센다.
+# 컴파일러·빌드 시스템 경고를 센다. XCTest 내부 진단은 참고로만 출력한다(0015).
 check_warnings() { # check_warnings <로그>
-  local warnings
-  warnings=$(grep -E '^([^ ]+:[0-9]+:([0-9]+:)? )?warning: ' "$1" | sort -u || true)
-  if [[ -n "$warnings" ]]; then
-    echo "$warnings" >&2
-    echo "FAIL: 경고 $(wc -l <<<"$warnings" | tr -d ' ')개 ($1)" >&2
-    return 1
-  fi
-  echo "OK: 경고 0개 ($1)"
+  scripts/check-warnings.sh "$1"
 }
 
 step "검사 스크립트 자체 테스트"
