@@ -1,0 +1,11 @@
+schema_version: "1.0"
+run_id: t-w10-bbcba7a8
+decisions:
+  - question_id: Q-W10-1
+    task_id: W10
+    question: 보관된 Board에서 체크포인트 저장을 허용할까요?
+    recommended_default: A
+    answer: A
+    followed_recommendation: true
+    answer_source: AskUserQuestion
+    answered_at: "2026-10-02T19:50:00+09:00"
