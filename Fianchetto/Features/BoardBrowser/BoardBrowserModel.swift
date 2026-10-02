@@ -47,6 +47,8 @@ final class BoardBrowserModel {
             case moveIntoItself
             /// 그룹이 아닌 항목 안으로 옮기려 했다.
             case moveIntoNonGroup
+            /// 대상을 열거나 Finder에서 보여 주지 못했다.
+            case openFailed(OpenFailure)
         }
 
         /// 안내를 띄운 동작. 알림 제목을 정한다.
@@ -54,6 +56,7 @@ final class BoardBrowserModel {
             case link
             case move
             case remove
+            case open
         }
 
         var kind: Kind
@@ -561,6 +564,7 @@ final class BoardBrowserModel {
         case .link: String(localized: "Bishop 추가")
         case .move: String(localized: "이동")
         case .remove: String(localized: "제거")
+        case .open: String(localized: "열기")
         }
     }
 
@@ -580,6 +584,8 @@ final class BoardBrowserModel {
             String(localized: "그룹을 자기 안으로 옮길 수 없습니다.")
         case .moveIntoNonGroup:
             String(localized: "그 항목 안으로는 옮길 수 없습니다.")
+        case let .openFailed(failure):
+            openFailureText(failure)
         }
     }
 
@@ -690,6 +696,49 @@ final class BoardBrowserModel {
             linkNotice = LinkNotice(kind: .archived, request: nil, action: .move)
         case .rejected:
             linkNotice = LinkNotice(kind: .saveFailed, request: nil, action: .move)
+        }
+    }
+
+    // MARK: 열기와 Finder에서 보기
+
+    /// 기본 앱으로 열 수 있는 선택: Bishop과 웹 링크.
+    var canOpenSelected: Bool { selectedNode.map { $0.kind != .group } ?? false }
+
+    /// Finder에서 보여 줄 수 있는 선택: Bishop.
+    var canRevealSelected: Bool { selectedNode.map { $0.kind == .file || $0.kind == .folder } ?? false }
+
+    func openSelected() async {
+        guard canOpenSelected, let id = selectedNodeID else { return }
+        await perform(.open, on: id)
+    }
+
+    func revealSelected() async {
+        guard canRevealSelected, let id = selectedNodeID else { return }
+        await perform(.reveal, on: id)
+    }
+
+    /// 트리 행 이중 클릭.
+    func open(_ nodeID: UUID) async {
+        selectedNodeID = nodeID
+        await openSelected()
+    }
+
+    /// 열기는 조회라 보관된 Board에서도 한다(0009는 편집만 막는다).
+    private func perform(_ command: OpenCommand, on nodeID: UUID) async {
+        guard let boardID = selectedBoardID, let opening = openedStore?.opening else { return }
+        if case let .failed(failure) = await opening.perform(command, projectID: boardID, nodeID: nodeID) {
+            linkNotice = LinkNotice(kind: .openFailed(failure), request: nil, action: .open)
+        }
+    }
+
+    private func openFailureText(_ failure: OpenFailure) -> String {
+        switch failure {
+        // 상태 이름은 W15의 연결 상태 표시와 같다.
+        case .unreachable(.missing): String(localized: "열지 못했습니다. 상태: 대상 없음")
+        case .unreachable(.accessDenied): String(localized: "열지 못했습니다. 상태: 권한 필요")
+        case .unreachable(.volumeUnavailable): String(localized: "열지 못했습니다. 상태: 볼륨 연결 필요")
+        case .unreachable(.checkFailed): String(localized: "열지 못했습니다. 상태: 확인 실패")
+        case .launchFailed, .unreadable: String(localized: "열지 못했습니다.")
         }
     }
 

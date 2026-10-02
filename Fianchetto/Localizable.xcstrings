@@ -1,252 +1,273 @@
 {
-  "sourceLanguage": "ko",
-  "strings": {
-    "Bishop": {
-      "comment": "로컬 파일·폴더 연결 항목의 화면 용어(0006). 영문 고유 용어 그대로 쓴다.",
-      "extractionState": "manual"
+  "sourceLanguage" : "ko",
+  "strings" : {
+    "Bishop" : {
+      "comment" : "로컬 파일·폴더 연결 항목의 화면 용어(0006). 영문 고유 용어 그대로 쓴다.",
+      "extractionState" : "manual"
     },
-    "Bishop \"%@\"": {
-      "extractionState": "manual"
+    "Bishop \"%@\"" : {
+      "extractionState" : "manual"
     },
-    "Bishop 제거": {
-      "extractionState": "manual"
+    "Bishop 제거" : {
+      "extractionState" : "manual"
     },
-    "Bishop 추가": {
-      "extractionState": "manual"
+    "Bishop 추가" : {
+      "extractionState" : "manual"
     },
-    "Bishop 추가…": {
-      "extractionState": "manual"
+    "Bishop 추가…" : {
+      "extractionState" : "manual"
     },
-    "Bishop(파일)": {
-      "extractionState": "manual"
+    "Bishop(파일)" : {
+      "extractionState" : "manual"
     },
-    "Bishop(폴더)": {
-      "extractionState": "manual"
+    "Bishop(폴더)" : {
+      "extractionState" : "manual"
     },
-    "Board": {
-      "comment": "프로젝트의 화면 용어(0006). 영문 고유 용어 그대로 쓴다.",
-      "extractionState": "manual"
+    "Board" : {
+      "comment" : "프로젝트의 화면 용어(0006). 영문 고유 용어 그대로 쓴다.",
+      "extractionState" : "manual"
     },
-    "Board 만들기": {
-      "extractionState": "manual"
+    "Board 만들기" : {
+      "extractionState" : "manual"
     },
-    "Board 만들기…": {
-      "extractionState": "manual"
+    "Board 만들기…" : {
+      "extractionState" : "manual"
     },
-    "Board 목록을 읽지 못했습니다": {
-      "extractionState": "manual"
+    "Board 목록을 읽지 못했습니다" : {
+      "extractionState" : "manual"
     },
-    "Board 보관": {
-      "extractionState": "manual"
+    "Board 보관" : {
+      "extractionState" : "manual"
     },
-    "Board 이름": {
-      "extractionState": "manual"
+    "Board 이름" : {
+      "extractionState" : "manual"
     },
-    "Board 이름 변경": {
-      "extractionState": "manual"
+    "Board 이름 변경" : {
+      "extractionState" : "manual"
     },
-    "Board 이름 변경…": {
-      "extractionState": "manual"
+    "Board 이름 변경…" : {
+      "extractionState" : "manual"
     },
-    "Board가 없습니다": {
-      "extractionState": "manual"
+    "Board가 없습니다" : {
+      "extractionState" : "manual"
     },
-    "Board를 만들거나 목록에서 고르세요.": {
-      "extractionState": "manual"
+    "Board를 만들거나 목록에서 고르세요." : {
+      "extractionState" : "manual"
     },
-    "Fianchetto": {
-      "comment": "기본 창 제목. 앱 이름이라 번역하지 않는다.",
-      "shouldTranslate": false
+    "Fianchetto" : {
+      "comment" : "기본 창 제목. 앱 이름이라 번역하지 않는다.",
+      "shouldTranslate" : false
     },
-    "Finder에서 보기": {
-      "extractionState": "manual"
+    "Finder에서 보기" : {
+      "extractionState" : "manual"
     },
-    "URL 변경": {
-      "extractionState": "manual"
+    "http 또는 https로 시작하는 주소를 입력하세요." : {
+      "extractionState" : "manual"
     },
-    "URL 변경…": {
-      "extractionState": "manual"
+    "https://" : {
+
     },
-    "http 또는 https로 시작하는 주소를 입력하세요.": {
-      "extractionState": "manual"
+    "URL 변경" : {
+      "extractionState" : "manual"
     },
-    "같은 대상인지 확인할 수 없어 연결 대상 변경으로 기록됩니다.": {
-      "extractionState": "manual"
+    "URL 변경…" : {
+      "extractionState" : "manual"
     },
-    "구성이 비어 있습니다": {
-      "extractionState": "manual"
+    "같은 대상인지 확인할 수 없어 연결 대상 변경으로 기록됩니다." : {
+      "extractionState" : "manual"
     },
-    "그 항목 안으로는 옮길 수 없습니다.": {
-      "extractionState": "manual"
+    "구성이 비어 있습니다" : {
+      "extractionState" : "manual"
     },
-    "그룹": {
-      "extractionState": "manual"
+    "그 항목 안으로는 옮길 수 없습니다." : {
+      "extractionState" : "manual"
     },
-    "그룹 \"%@\"(포함된 항목 %lld개)": {
-      "extractionState": "manual"
+    "그룹" : {
+      "extractionState" : "manual"
     },
-    "그룹 \"%@\"(포함된 항목 없음)": {
-      "extractionState": "manual"
+    "그룹 \"%@\"(포함된 항목 %lld개)" : {
+      "extractionState" : "manual"
     },
-    "그룹 제거": {
-      "extractionState": "manual"
+    "그룹 \"%@\"(포함된 항목 없음)" : {
+      "extractionState" : "manual"
     },
-    "그룹 추가": {
-      "extractionState": "manual"
+    "그룹 제거" : {
+      "extractionState" : "manual"
     },
-    "그룹 추가…": {
-      "extractionState": "manual"
+    "그룹 추가" : {
+      "extractionState" : "manual"
     },
-    "그룹을 자기 안으로 옮길 수 없습니다.": {
-      "extractionState": "manual"
+    "그룹 추가…" : {
+      "extractionState" : "manual"
     },
-    "기존": {
-      "extractionState": "manual"
+    "그룹을 자기 안으로 옮길 수 없습니다." : {
+      "extractionState" : "manual"
     },
-    "다시 시도": {
-      "extractionState": "manual"
+    "기존" : {
+      "extractionState" : "manual"
     },
-    "닫기": {
-      "extractionState": "manual"
+    "다시 시도" : {
+      "extractionState" : "manual"
     },
-    "대상": {
-      "extractionState": "manual"
+    "닫기" : {
+      "extractionState" : "manual"
     },
-    "데이터를 열 수 없습니다": {
-      "extractionState": "manual"
+    "대상" : {
+      "extractionState" : "manual"
     },
-    "데이터를 열지 못했습니다.": {
-      "extractionState": "manual"
+    "데이터를 열 수 없습니다" : {
+      "extractionState" : "manual"
     },
-    "데이터를 읽을 수 없습니다. 파일이 손상되었을 수 있습니다.": {
-      "extractionState": "manual"
+    "데이터를 열지 못했습니다." : {
+      "extractionState" : "manual"
     },
-    "데이터에 접근할 권한이 없습니다.": {
-      "extractionState": "manual"
+    "데이터를 읽을 수 없습니다. 파일이 손상되었을 수 있습니다." : {
+      "extractionState" : "manual"
     },
-    "만들기": {
-      "extractionState": "manual"
+    "데이터에 접근할 권한이 없습니다." : {
+      "extractionState" : "manual"
     },
-    "변경": {
-      "extractionState": "manual"
+    "만들기" : {
+      "extractionState" : "manual"
     },
-    "보관 해제": {
-      "extractionState": "manual"
+    "변경" : {
+      "extractionState" : "manual"
     },
-    "보관된 Board": {
-      "extractionState": "manual"
+    "보관 해제" : {
+      "extractionState" : "manual"
     },
-    "보관된 Board · 읽기 전용": {
-      "extractionState": "manual"
+    "보관된 Board" : {
+      "extractionState" : "manual"
     },
-    "보관된 Board는 바꿀 수 없습니다.": {
-      "extractionState": "manual"
+    "보관된 Board · 읽기 전용" : {
+      "extractionState" : "manual"
     },
-    "보관됨": {
-      "extractionState": "manual"
+    "보관된 Board는 바꿀 수 없습니다." : {
+      "extractionState" : "manual"
     },
-    "새 대상": {
-      "extractionState": "manual"
+    "보관됨" : {
+      "extractionState" : "manual"
     },
-    "아래로 이동": {
-      "extractionState": "manual"
+    "새 대상" : {
+      "extractionState" : "manual"
     },
-    "연결 대상 변경": {
-      "extractionState": "manual"
+    "아래로 이동" : {
+      "extractionState" : "manual"
     },
-    "연결 대상 변경…": {
-      "extractionState": "manual"
+    "연결 대상 변경" : {
+      "extractionState" : "manual"
     },
-    "연결 대상을 바꾸지 못했습니다.": {
-      "extractionState": "manual"
+    "연결 대상 변경…" : {
+      "extractionState" : "manual"
     },
-    "연결하지 못한 항목이 있어 아무것도 추가하지 않았습니다: %@": {
-      "extractionState": "manual"
+    "연결 대상을 바꾸지 못했습니다." : {
+      "extractionState" : "manual"
     },
-    "웹 링크": {
-      "extractionState": "manual"
+    "연결하지 못한 항목이 있어 아무것도 추가하지 않았습니다: %@" : {
+      "extractionState" : "manual"
     },
-    "웹 링크 \"%@\"": {
-      "extractionState": "manual"
+    "열기" : {
+      "extractionState" : "manual"
     },
-    "웹 링크 제거": {
-      "extractionState": "manual"
+    "열지 못했습니다." : {
+      "extractionState" : "manual"
     },
-    "웹 링크 추가": {
-      "extractionState": "manual"
+    "열지 못했습니다. 상태: 권한 필요" : {
+      "extractionState" : "manual"
     },
-    "웹 링크 추가…": {
-      "extractionState": "manual"
+    "열지 못했습니다. 상태: 대상 없음" : {
+      "extractionState" : "manual"
     },
-    "위로 이동": {
-      "extractionState": "manual"
+    "열지 못했습니다. 상태: 볼륨 연결 필요" : {
+      "extractionState" : "manual"
     },
-    "이 버전의 앱이 읽을 수 없는 형식입니다. 더 새로운 버전의 앱이 만들었을 수 있습니다.": {
-      "extractionState": "manual"
+    "열지 못했습니다. 상태: 확인 실패" : {
+      "extractionState" : "manual"
     },
-    "이동": {
-      "extractionState": "manual"
+    "웹 링크" : {
+      "extractionState" : "manual"
     },
-    "이동…": {
-      "extractionState": "manual"
+    "웹 링크 \"%@\"" : {
+      "extractionState" : "manual"
     },
-    "이동할 위치": {
-      "extractionState": "manual"
+    "웹 링크 제거" : {
+      "extractionState" : "manual"
     },
-    "이름": {
-      "extractionState": "manual"
+    "웹 링크 추가" : {
+      "extractionState" : "manual"
     },
-    "이름 변경": {
-      "extractionState": "manual"
+    "웹 링크 추가…" : {
+      "extractionState" : "manual"
     },
-    "이름 변경…": {
-      "extractionState": "manual"
+    "위로 이동" : {
+      "extractionState" : "manual"
     },
-    "이름을 입력하세요.": {
-      "extractionState": "manual"
+    "이 버전의 앱이 읽을 수 없는 형식입니다. 더 새로운 버전의 앱이 만들었을 수 있습니다." : {
+      "extractionState" : "manual"
     },
-    "이미 연결된 대상이라 바꾸지 않았습니다.": {
-      "extractionState": "manual"
+    "이동" : {
+      "extractionState" : "manual"
     },
-    "이미 연결된 대상입니다.": {
-      "extractionState": "manual"
+    "이동…" : {
+      "extractionState" : "manual"
     },
-    "저장하지 못했습니다. 다시 시도하세요.": {
-      "extractionState": "manual"
+    "이동할 위치" : {
+      "extractionState" : "manual"
     },
-    "제거": {
-      "extractionState": "manual"
+    "이름" : {
+      "extractionState" : "manual"
     },
-    "제거…": {
-      "extractionState": "manual"
+    "이름 변경" : {
+      "extractionState" : "manual"
     },
-    "종료": {
-      "extractionState": "manual"
+    "이름 변경…" : {
+      "extractionState" : "manual"
     },
-    "종류": {
-      "extractionState": "manual"
+    "이름을 입력하세요." : {
+      "extractionState" : "manual"
     },
-    "최상위": {
-      "extractionState": "manual"
+    "이미 연결된 대상이라 바꾸지 않았습니다." : {
+      "extractionState" : "manual"
     },
-    "취소": {
-      "extractionState": "manual"
+    "이미 연결된 대상입니다." : {
+      "extractionState" : "manual"
     },
-    "표시 이름": {
-      "extractionState": "manual"
+    "저장하지 못했습니다. 다시 시도하세요." : {
+      "extractionState" : "manual"
     },
-    "항목을 고르세요": {
-      "extractionState": "manual"
+    "제거" : {
+      "extractionState" : "manual"
     },
-    "현재 구성에서 제거합니다: %@. 연결된 파일과 폴더는 그대로 남습니다.": {
-      "extractionState": "manual"
+    "제거…" : {
+      "extractionState" : "manual"
     },
-    "현재 구성을 읽지 못했습니다": {
-      "extractionState": "manual"
+    "종료" : {
+      "extractionState" : "manual"
     },
-    "확인": {
-      "extractionState": "manual"
+    "종류" : {
+      "extractionState" : "manual"
+    },
+    "최상위" : {
+      "extractionState" : "manual"
+    },
+    "취소" : {
+      "extractionState" : "manual"
+    },
+    "표시 이름" : {
+      "extractionState" : "manual"
+    },
+    "항목을 고르세요" : {
+      "extractionState" : "manual"
+    },
+    "현재 구성에서 제거합니다: %@. 연결된 파일과 폴더는 그대로 남습니다." : {
+      "extractionState" : "manual"
+    },
+    "현재 구성을 읽지 못했습니다" : {
+      "extractionState" : "manual"
+    },
+    "확인" : {
+      "extractionState" : "manual"
     }
   },
-  "version": "1.0"
+  "version" : "1.0"
 }

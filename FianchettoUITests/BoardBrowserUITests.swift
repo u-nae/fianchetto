@@ -90,6 +90,9 @@ final class BoardBrowserUITests: XCTestCase {
         // W11-commands: 그룹 추가·웹 링크 추가는 파일 메뉴, 이름 변경·URL 변경은 편집 메뉴에 있다.
         XCTAssertTrue(fileMenu.menuItems["그룹 추가…"].exists)
         XCTAssertTrue(fileMenu.menuItems["웹 링크 추가…"].exists)
+        // W14-commands: 열기(⌘O)·Finder에서 보기(⌘R)도 파일 메뉴에 있다.
+        XCTAssertTrue(fileMenu.menuItems["열기"].exists)
+        XCTAssertTrue(fileMenu.menuItems["Finder에서 보기"].exists)
         app.typeKey(.escape, modifierFlags: [])
         let editMenu = app.menuBars.menuBarItems["편집"]
         editMenu.click()

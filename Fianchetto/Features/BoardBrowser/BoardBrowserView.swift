@@ -183,6 +183,18 @@ private struct ConfigurationTreeView: View {
                         }
                 }
             }
+            // 이중 클릭은 열기다. 오른쪽 클릭 메뉴는 메뉴 막대와 같은 명령이다.
+            .contextMenu(forSelectionType: UUID.self) { ids in
+                if let id = ids.first {
+                    Button("열기") { Task { await model.open(id) } }
+                    Button("Finder에서 보기") {
+                        model.selectedNodeID = id
+                        Task { await model.revealSelected() }
+                    }
+                }
+            } primaryAction: { ids in
+                if let id = ids.first { Task { await model.open(id) } }
+            }
             .dropDestination(for: TreeDropItem.self) { items, _ in
                 accept(items, on: nil)
             }
@@ -339,6 +351,14 @@ private struct NodeInspectorView: View {
                 LabeledContent("종류", value: inspection.kind)
                 if let target = inspection.target {
                     LabeledContent("대상", value: target)
+                }
+                HStack {
+                    if model.canOpenSelected {
+                        Button("열기") { Task { await model.openSelected() } }
+                    }
+                    if model.canRevealSelected {
+                        Button("Finder에서 보기") { Task { await model.revealSelected() } }
+                    }
                 }
                 if model.canReplaceSelectedTarget {
                     Button("연결 대상 변경") { Task { await model.beginReplaceTarget() } }

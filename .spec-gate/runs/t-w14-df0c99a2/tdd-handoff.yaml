@@ -1,0 +1,116 @@
+schema_version: "1.0"
+run_id: t-w14-df0c99a2
+verdict: READY
+source:
+  baseline:
+    - path: docs/PRD.md
+      fingerprint: 5d8c45fd91830695e3f8f90fb49be3f9d8be64e0ca0256d382a31d0af4a4ae0a
+    - path: docs/TECH_STACK.md
+      fingerprint: 9cba18e5f7490fe1c39a658ed3485d17fe782060c588b429d6db923c23d55fbe
+  decision_records:
+    path: docs/decisions
+    fingerprint: a8ce81a9b21f644e2b123b2c61603477034123977e2bc71e9bdd916adc7a4202
+  work_items_artifact: docs/work-items.yaml
+  work_items_fingerprint: eb3560a898e4f4a2b842eb67d96616190718f8527af1b40624d011421659a860
+  normalized_artifact: .spec-gate/runs/t-w14-df0c99a2/normalized-tasks.yaml
+source_tasks:
+  - task_id: W14
+    title: 현재 대상 열기와 Finder에서 보기
+    route: GHERKIN
+    acceptance_refs:
+      - A02
+accepted_specifications:
+  - task_id: W14
+    route: GHERKIN
+    path: .spec-gate/runs/t-w14-df0c99a2/specs/revision-1/task-W14.feature
+test_obligations:
+  - obligation_id: W14-open-current-target
+    task_id: W14
+    kind: scenario
+    description: Bishop 파일·폴더는 해석한 현재 위치, 웹 링크는 URL을 기본 앱 열기 요청으로 정확히 한 번 넘기고(메뉴·이중 클릭, 웹 링크 이중 클릭 포함) 기록하지 않으며 대상을 바꾸지 않는다
+    source: .spec-gate/runs/t-w14-df0c99a2/specs/revision-1/task-W14.feature#열기는 항목의 현재 대상을 기본 앱으로 넘기고 기록하지 않는다
+    acceptance_refs:
+      - A02
+  - obligation_id: W14-access-scope-paired
+    task_id: W14
+    kind: scenario
+    description: 열기·Finder 보기 요청은 접근 범위 시작 뒤에 나가고, 요청 성공·실패와 상관없이 범위는 정확히 한 번 닫힌다(TECH_STACK 파일 접근과 권한)
+    source: .spec-gate/runs/t-w14-df0c99a2/specs/revision-1/task-W14.feature#열기 요청은 접근 범위를 연 상태에서 나가고 범위는 정확히 한 번 닫힌다
+    acceptance_refs:
+      - A02
+  - obligation_id: W14-no-scope-when-unreachable
+    task_id: W14
+    kind: scenario
+    description: 해석에 실패하면 접근 범위를 열지 않고 요청도 보내지 않는다
+    source: .spec-gate/runs/t-w14-df0c99a2/specs/revision-1/task-W14.feature#대상을 찾지 못하면 접근 범위를 열지 않는다
+  - obligation_id: W14-open-moved-target
+    task_id: W14
+    kind: scenario
+    description: 같은 볼륨에서 옮겨진 대상은 지금 위치로 열고 기록 당시 경로와 revision 수는 그대로다
+    source: .spec-gate/runs/t-w14-df0c99a2/specs/revision-1/task-W14.feature#옮겨진 대상은 지금 위치로 연다
+    acceptance_refs:
+      - A02
+  - obligation_id: W14-open-after-reopen
+    task_id: W14
+    kind: scenario
+    description: 저장소를 다시 연 뒤에도 저장된 접근 정보로 대상을 연다
+    source: .spec-gate/runs/t-w14-df0c99a2/specs/revision-1/task-W14.feature#앱을 다시 실행해도 저장된 접근 정보로 연다
+    acceptance_refs:
+      - A02
+  - obligation_id: W14-open-archived
+    task_id: W14
+    kind: scenario
+    description: 보관된 Board에서도 열기·Finder에서 보기는 조회라 허용하고 보관 안내를 띄우지 않는다(0009)
+    source: .spec-gate/runs/t-w14-df0c99a2/specs/revision-1/task-W14.feature#보관된 Board의 항목도 열고 Finder에서 볼 수 있다
+  - obligation_id: W14-reveal-in-finder
+    task_id: W14
+    kind: scenario
+    description: Finder에서 보기는 Bishop 현재 위치로 Finder 표시 요청을 정확히 한 번 보내고 기본 앱 열기는 하지 않으며 기록하지 않는다
+    source: .spec-gate/runs/t-w14-df0c99a2/specs/revision-1/task-W14.feature#Finder에서 보기는 Bishop의 현재 대상을 선택해 보여 주고 기록하지 않는다
+    acceptance_refs:
+      - A02
+  - obligation_id: W14-unreachable-target
+    task_id: W14
+    kind: scenario
+    description: 해석 실패는 상태(대상 없음·권한 필요·볼륨 연결 필요·확인 실패)를 담은 안내를 보이고 아무 요청도 보내지 않으며 항목과 revision 수를 유지한다
+    source: .spec-gate/runs/t-w14-df0c99a2/specs/revision-1/task-W14.feature#대상을 찾지 못하면 원인을 안내하고 아무것도 열지 않는다
+  - obligation_id: W14-open-rejected
+    task_id: W14
+    kind: scenario
+    description: 기본 앱 열기 요청이 실패하면 열지 못했다는 안내를 보인다
+    source: .spec-gate/runs/t-w14-df0c99a2/specs/revision-1/task-W14.feature#기본 앱이 열기를 거부하면 안내한다
+  - obligation_id: W14-nothing-to-open
+    task_id: W14
+    kind: scenario
+    description: 선택 없음·그룹(열기·Finder 보기·이중 클릭)·웹 링크 Finder 보기는 요청과 안내 없이 아무 일도 하지 않는다
+    source: .spec-gate/runs/t-w14-df0c99a2/specs/revision-1/task-W14.feature#열 대상이 없는 선택에서는 아무 일도 일어나지 않는다
+  - obligation_id: W14-commands
+    task_id: W14
+    kind: scenario
+    description: 파일 메뉴에 열기(⌘O)·Finder에서 보기(⌘R)가 있고, 상세 영역 버튼이 종류에 맞게(그룹은 없음) 보이며 문구가 String Catalog에 있다
+    source: .spec-gate/runs/t-w14-df0c99a2/specs/revision-1/task-W14.feature#열기 명령이 메뉴와 상세 영역에 있다
+acceptance_coverage:
+  A02:
+    - W14-open-current-target
+    - W14-access-scope-paired
+    - W14-open-moved-target
+    - W14-open-after-reopen
+    - W14-reveal-in-finder
+decision_log: null
+critic_report: .spec-gate/runs/t-w14-df0c99a2/critic-pass-2.yaml
+non_blocking_notes:
+  - finding_id: F-W14-8
+    task_id: W14
+    note: "F-W14-1 is resolved: the scope ordering and closure now have obligations (W14-access-scope-paired, W14-no-scope-when-unreachable). One case is still unstated. The scenario assumes that starting the scope always succeeds. It does not say what happens when starting the scope reports failure. In that case the pairing rule means stop must not be called. Whether the request is still sent, or the failure is classified as 권한 필요, is also left open. A test double that always reports success cannot catch an unconditional stop."
+  - finding_id: F-W14-9
+    task_id: W14
+    note: The launch-rejected path is specified only for a Bishop. A web link open, for example when no default browser handler exists, can also be rejected. The spec does not say whether the same "열지 못했습니다" notice appears for a web link.
+  - finding_id: F-W14-10
+    task_id: W14
+    note: F-W14-5 is resolved by an explicit assumption. The handoff's acceptance_coverage will still list A02 under W14 alone. Ownership of the "복구 동작 표시" branch now depends on a future work-item edit. The edit is correctly deferred, because changing work-items.yaml now would invalidate this run.
+  - finding_id: F-W14-11
+    task_id: W14
+    note: W14 resolves bookmarks but does not persist stale refreshes, and leaves storage to W15. This matches W15's scope and the no-revision invariant, so it is consistent. Until W15 lands, a moved target will re-resolve as stale on every open.
+  - finding_id: F-W14-12
+    task_id: W14
+    note: This carries forward F-W14-7. The early drafted code must be reconciled against the revision-1 obligations, especially the new scope-ordering and no-scope-on-failure obligations. The existing code should not be treated as satisfying them.
