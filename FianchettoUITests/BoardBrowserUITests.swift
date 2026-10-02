@@ -50,6 +50,11 @@ final class BoardBrowserUITests: XCTestCase {
         XCTAssertTrue(fileMenu.menuItems["Bishop 추가…"].exists)
         // W09-commands: 연결 대상 변경(⇧⌘R)도 파일 메뉴에 있다.
         XCTAssertTrue(fileMenu.menuItems["연결 대상 변경…"].exists)
+        // W10-commands-no-delete: 이름 변경·보관·보관 해제가 있고 영구 삭제 명령은 없다.
+        for title in ["Board 이름 변경…", "Board 보관", "보관 해제"] {
+            XCTAssertTrue(fileMenu.menuItems[title].exists, title)
+        }
+        XCTAssertFalse(fileMenu.menuItems.allElementsBoundByIndex.contains { $0.title.contains("삭제") })
         // 단축키는 XCUITest가 노출하지 않으므로, 메뉴를 닫고 ⌘N이 이 명령을 실행하는지로 확인한다.
         app.typeKey(.escape, modifierFlags: [])
         app.typeKey("n", modifierFlags: .command)

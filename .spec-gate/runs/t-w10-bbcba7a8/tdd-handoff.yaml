@@ -1,0 +1,107 @@
+schema_version: "1.0"
+run_id: t-w10-bbcba7a8
+verdict: READY
+source:
+  baseline:
+    - path: docs/PRD.md
+      fingerprint: 5d8c45fd91830695e3f8f90fb49be3f9d8be64e0ca0256d382a31d0af4a4ae0a
+    - path: docs/TECH_STACK.md
+      fingerprint: 9cba18e5f7490fe1c39a658ed3485d17fe782060c588b429d6db923c23d55fbe
+  decision_records:
+    path: docs/decisions
+    fingerprint: d4f8e85d8e29f349273fde02a25e81c3277efd6ceef08978ecc2e94e830ef170
+  work_items_artifact: docs/work-items.yaml
+  work_items_fingerprint: 2371c40700f9e2a10b2c34d887fb1c300d391fcb4e352055e5923dad59e5e9ff
+  normalized_artifact: .spec-gate/runs/t-w10-bbcba7a8/normalized-tasks.yaml
+source_tasks:
+  - task_id: W10
+    title: Board 이름 변경·보관·보관 해제
+    route: GHERKIN
+    acceptance_refs:
+      - A04
+accepted_specifications:
+  - task_id: W10
+    route: GHERKIN
+    path: .spec-gate/runs/t-w10-bbcba7a8/specs/revision-0/task-W10.feature
+test_obligations:
+  - obligation_id: W10-rename-records-revision
+    task_id: W10
+    kind: scenario
+    description: 이름 변경은 정리한 이름으로 renameProject revision 하나를 남기고 직전 revision은 옛 이름이며 선택이 유지된다
+    source: .spec-gate/runs/t-w10-bbcba7a8/specs/revision-0/task-W10.feature#Board 이름을 바꾸면 revision이 남고 과거 revision은 옛 이름을 가진다
+    acceptance_refs:
+      - A04
+  - obligation_id: W10-rename-unchanged-or-cancel
+    task_id: W10
+    kind: scenario
+    description: 같은 이름 확정·취소는 revision을 만들지 않는다
+    source: .spec-gate/runs/t-w10-bbcba7a8/specs/revision-0/task-W10.feature#같은 이름으로 확정하거나 취소하면 아무것도 기록하지 않는다
+    acceptance_refs:
+      - A04
+  - obligation_id: W10-rename-blank
+    task_id: W10
+    kind: scenario
+    description: 빈 이름은 입력을 유지하고 안내하며 기록하지 않는다
+    source: .spec-gate/runs/t-w10-bbcba7a8/specs/revision-0/task-W10.feature#빈 이름은 입력을 유지하고 이름이 필요하다고 알린다
+  - obligation_id: W10-rename-save-failure
+    task_id: W10
+    kind: scenario
+    description: 이름 변경 저장 실패는 입력을 유지하고 안내하며 목록·revision이 그대로다
+    source: .spec-gate/runs/t-w10-bbcba7a8/specs/revision-0/task-W10.feature#이름 변경 저장이 실패하면 입력을 유지하고 저장하지 못했다고 알린다
+  - obligation_id: W10-archive-no-revision
+    task_id: W10
+    kind: scenario
+    description: 보관은 revision 없이 보관된 Board 묶음으로 옮기고 선택·조회를 유지하며 읽기 전용 표시를 글자로 보여 주고 재오픈 후에도 유지된다(0005)
+    source: .spec-gate/runs/t-w10-bbcba7a8/specs/revision-0/task-W10.feature#Board를 보관하면 revision 없이 보관된 Board로 옮겨지고 읽기 전용이 된다
+  - obligation_id: W10-unarchive-no-revision
+    task_id: W10
+    kind: scenario
+    description: 보관 해제는 revision 없이 만든 순서대로 목록에 돌려놓고 편집을 다시 허용한다
+    source: .spec-gate/runs/t-w10-bbcba7a8/specs/revision-0/task-W10.feature#보관을 해제하면 revision 없이 Board 목록의 원래 순서로 돌아오고 다시 바꿀 수 있다
+  - obligation_id: W10-archived-blocks-edits
+    task_id: W10
+    kind: scenario
+    description: 보관된 Board에서 이름 변경·Bishop 추가·연결 대상 변경은 안내만 하고 기록하지 않는다(Q-W10-1)
+    source: .spec-gate/runs/t-w10-bbcba7a8/specs/revision-0/task-W10.feature#보관된 Board에서는 바꾸는 동작이 아무것도 기록하지 않고 안내한다
+  - obligation_id: W10-archive-idempotent
+    task_id: W10
+    kind: scenario
+    description: 이미 보관된 Board 보관·보관되지 않은 Board 보관 해제는 보관 시각과 revision을 바꾸지 않는다
+    source: .spec-gate/runs/t-w10-bbcba7a8/specs/revision-0/task-W10.feature#보관과 보관 해제를 같은 상태로 다시 요청하면 아무것도 바뀌지 않는다
+  - obligation_id: W10-archive-save-failure
+    task_id: W10
+    kind: scenario
+    description: 보관 저장 실패는 안내하고 목록·저장소 상태가 그대로다
+    source: .spec-gate/runs/t-w10-bbcba7a8/specs/revision-0/task-W10.feature#보관 저장이 실패하면 상태가 그대로이고 저장하지 못했다고 알린다
+  - obligation_id: W10-archive-missing-project
+    task_id: W10
+    kind: scenario
+    description: 없는 Board 보관은 project_not_found 거부다
+    source: .spec-gate/runs/t-w10-bbcba7a8/specs/revision-0/task-W10.feature#없는 Board는 보관할 수 없다
+  - obligation_id: W10-commands-no-delete
+    task_id: W10
+    kind: scenario
+    description: 파일 메뉴에 Board 이름 변경·보관·보관 해제가 있고 영구 삭제 명령이 없으며 문구가 String Catalog에 있다
+    source: .spec-gate/runs/t-w10-bbcba7a8/specs/revision-0/task-W10.feature#선택한 Board 상태에 맞는 메뉴 명령이 있고 삭제 명령은 없다
+acceptance_coverage:
+  A04:
+    - W10-rename-records-revision
+    - W10-rename-unchanged-or-cancel
+decision_log: .spec-gate/runs/t-w10-bbcba7a8/decision-log.yaml
+critic_report: .spec-gate/runs/t-w10-bbcba7a8/critic-pass-1.yaml
+non_blocking_notes:
+  - finding_id: F-W10-1
+    task_id: W10
+    note: The feature narrative (line 5) states that 새 Board 만들기 stays allowed while an archived Board is selected, but no scenario proves it. Read-only gating added in W10 could be applied too broadly (for example to every command while selectedBoardIsArchived) and no obligation would fail. 내보내기 does not exist yet (W24), so only Board 만들기 is testable now.
+  - finding_id: F-W10-2
+    task_id: W10
+    note: Persistence failure and persistence across reopen are specified for 보관 but not for 보관 해제. The two transitions share the same store write, but a model that updates the list optimistically on 보관 해제 would not be caught.
+  - finding_id: F-W10-3
+    task_id: W10
+    note: The scenario title promises state-dependent commands, but the steps only check that the three commands exist and that no delete command exists. The "only one of 보관/보관 해제 acts" behavior from the assumption, and the behavior when no Board is selected, have no observable step. The service-level idempotency scenario does not cover what the user sees when invoking "보관 해제" on an unarchived Board from the menu.
+  - finding_id: F-W10-4
+    task_id: W10
+    note: The human decision is recorded correctly and applying it in W22 is reasonable, since checkpoints do not exist yet. However, no obligation or explicit carry-forward note in this run makes sure W22 picks it up. W22 does not currently cite 0005 or mention archived Boards, so the rule could be lost if decision promotion is skipped.
+  - finding_id: F-W10-5
+    task_id: W10
+    note: The steps use internal cause and rejection identifiers, which matches earlier runs (0005 cause enum, W09 rejection vocabulary) and is acceptable at the service-test level. Keeping the first archivedAt on a repeated archive request is an author-chosen rule. It is reversible, invisible to the user, and does not change revision data, so it is acceptable as an assumption rather than a question.

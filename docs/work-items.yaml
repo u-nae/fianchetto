@@ -229,7 +229,7 @@ items:
     test_strategy: >-
       서비스 테스트: 이름 변경 revision 1개, 같은 이름·공백만 변경 무변경, 보관·해제 시 revision 수 불변,
       보관 중 구성 편집 거부, 보관 중 조회 가능.
-    status: pending
+    status: done
     priority: medium
     dependencies: [W07]
     source_refs:
@@ -469,6 +469,7 @@ items:
       일 선택. 입력 중에는 revision을 만들지 않고 기존 revision에 붙인다. 저장 후 불변, 같은 revision에
       여러 체크포인트 허용. 조회는 연결된 과거 구성을 읽기 전용으로 보여 주고 복원은 별도 동작. 웹 링크는
       revision 구성으로 참조(0002). 실패 시 부분 생성 없이 입력을 유지해 재시도. 로그에 메모 원문 금지.
+      보관된 Board에서는 체크포인트 저장을 거부한다(0009).
     test_strategy: >-
       서비스 테스트: 저장 전후 revision 수 불변, 고정 revision 연결, 빈 제목 거부, 저장 실패 주입 시
       체크포인트 미생성, 같은 revision 다중 체크포인트. 화면 상태 테스트: 시트 동안 편집 비활성.
@@ -479,6 +480,7 @@ items:
     source_refs:
       - docs/PRD.md#g-체크포인트-남기기와-재개
       - docs/decisions/0002-web-links-are-nodes.md
+      - docs/decisions/0009-archived-board-read-only.md
     acceptance_refs: [A10]
     subtasks: []
 

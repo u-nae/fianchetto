@@ -30,7 +30,16 @@
     "Board 목록을 읽지 못했습니다": {
       "extractionState": "manual"
     },
+    "Board 보관": {
+      "extractionState": "manual"
+    },
     "Board 이름": {
+      "extractionState": "manual"
+    },
+    "Board 이름 변경": {
+      "extractionState": "manual"
+    },
+    "Board 이름 변경…": {
       "extractionState": "manual"
     },
     "Board가 없습니다": {
@@ -85,7 +94,13 @@
     "변경": {
       "extractionState": "manual"
     },
+    "보관 해제": {
+      "extractionState": "manual"
+    },
     "보관된 Board": {
+      "extractionState": "manual"
+    },
+    "보관된 Board · 읽기 전용": {
       "extractionState": "manual"
     },
     "보관된 Board는 바꿀 수 없습니다.": {
@@ -113,6 +128,9 @@
       "extractionState": "manual"
     },
     "이 버전의 앱이 읽을 수 없는 형식입니다. 더 새로운 버전의 앱이 만들었을 수 있습니다.": {
+      "extractionState": "manual"
+    },
+    "이름 변경": {
       "extractionState": "manual"
     },
     "이름을 입력하세요.": {

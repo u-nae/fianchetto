@@ -61,6 +61,8 @@ struct ServiceHarness {
     let fault: FaultPoint
     let bookmarks = ScriptedBookmarkSystem()
     var linking: LinkingService { LinkingService(bookmarks: BookmarkAdapter(system: bookmarks), configuration: service) }
+    let lifecycleClock = TestClock([date(500), date(600), date(700)])
+    var lifecycle: ProjectLifecycleService { ProjectLifecycleService(store: store, now: { [lifecycleClock] in lifecycleClock.now() }) }
 
     init(directory: URL, clock: TestClock = TestClock(startingAt: date(0))) throws {
         url = directory.appending(path: "Fianchetto.store")

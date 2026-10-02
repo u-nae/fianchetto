@@ -14,6 +14,10 @@ struct BoardCommands: Commands {
                 .keyboardShortcut("a", modifiers: [.command, .shift])
             Button("연결 대상 변경…") { Task { await model?.beginReplaceTarget() } }
                 .keyboardShortcut("r", modifiers: [.command, .shift])
+            Divider()
+            Button("Board 이름 변경…") { model?.beginRename() }
+            Button("Board 보관") { Task { await model?.archiveSelected() } }
+            Button("보관 해제") { Task { await model?.unarchiveSelected() } }
         }
     }
 }

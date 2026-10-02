@@ -6,4 +6,5 @@ struct OpenedStore: Sendable {
     let service: ConfigurationService
     let linking: LinkingService
     let replacement: TargetReplacementService
+    let lifecycle: ProjectLifecycleService
 }
