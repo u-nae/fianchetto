@@ -1,0 +1,53 @@
+schema_version: "1.0"
+task_id: W06
+decision_id: bookmark_failure_cause
+execution_format: review-only
+# 위에서 아래로 처음 맞는 규칙. 볼륨이 분리된 경우를 먼저 본다(분리된 볼륨의 대상은 "없음" 오류로도 보이기 때문).
+hit_policy: FIRST
+ordered_rules: true
+inputs:
+  - name: volume_state
+    type: string
+    # 북마크가 기록한 볼륨 경로가 지금 마운트되어 있는지. unknown: 북마크에서 볼륨 경로를 읽지 못함.
+    allowed_values: [mounted, unmounted, unknown]
+    blank_means: any
+  - name: error_kind
+    type: string
+    # 해석·접근 오류의 Foundation 오류 범주. no_such_file: 파일 없음 계열, no_permission: 읽기 권한 없음 계열.
+    allowed_values: [no_such_file, no_permission, other]
+    blank_means: any
+outputs:
+  - name: cause
+    type: string
+    allowed_values: [volume_unavailable, missing, access_denied, check_failed]
+rules:
+  - rule_id: R1
+    when: {volume_state: unmounted}
+    then: {cause: volume_unavailable}
+  - rule_id: R2
+    when: {error_kind: no_permission}
+    then: {cause: access_denied}
+  - rule_id: R3
+    when: {volume_state: mounted, error_kind: no_such_file}
+    then: {cause: missing}
+  - rule_id: R4
+    when: {volume_state: unknown, error_kind: no_such_file}
+    then: {cause: check_failed}
+  - rule_id: R5
+    when: {error_kind: other}
+    then: {cause: check_failed}
+default_rule: null
+gap_analysis:
+  - >-
+    입력 3 × 3 = 9 조합. unmounted 3 조합은 R1. 남은 mounted·unknown 6 조합 중 no_permission 2개는 R2,
+    (mounted, no_such_file)은 R3, (unknown, no_such_file)은 R4, other 2개는 R5. 빈 칸이 없다.
+overlap_analysis:
+  - >-
+    R1은 R2·R5와 unmounted 행에서 겹치며 FIRST로 R1이 이긴다. 볼륨이 빠지면 권한·기타 오류도 볼륨 문제로 안내하는 것이
+    해결 동작(볼륨 연결)에 맞다. R2~R5는 서로 겹치지 않는다.
+  - >-
+    "대상 없음"은 볼륨이 마운트되어 있다는 근거가 있을 때만 판정한다(R3). 볼륨을 알 수 없으면 존재 여부를 단정하지 않고 확인 실패다(R4,
+    PRD §6-H "판정 근거가 부족하면 '확인 실패'").
+source_locators:
+  - docs/PRD.md#h-연결-오류와-재연결
+  - docs/TECH_STACK.md#파일-접근과-권한

@@ -1,0 +1,157 @@
+schema_version: "1.0"
+run_id: t-w06-c0dec005
+verdict: READY
+source:
+  baseline:
+    - path: docs/PRD.md
+      fingerprint: 5d8c45fd91830695e3f8f90fb49be3f9d8be64e0ca0256d382a31d0af4a4ae0a
+    - path: docs/TECH_STACK.md
+      fingerprint: 9cba18e5f7490fe1c39a658ed3485d17fe782060c588b429d6db923c23d55fbe
+  decision_records:
+    path: docs/decisions
+    fingerprint: 343f661197a778ad3c4d5f2c8371031c3c1c45337ac2f1b8f5d59641e812e38f
+  work_items_artifact: docs/work-items.yaml
+  work_items_fingerprint: 239d75c0367d84254d89d573cb477c607f6e71285c900b1f3221acfc8ba9f7f4
+  normalized_artifact: .spec-gate/runs/t-w06-c0dec005/normalized-tasks.yaml
+source_tasks:
+  - task_id: W06
+    title: 읽기 전용 보안 범위 북마크 어댑터
+    route: BOTH
+    acceptance_refs:
+      - A02
+accepted_specifications:
+  - task_id: W06
+    route: BOTH
+    path: .spec-gate/runs/t-w06-c0dec005/specs/revision-1/task-W06.feature
+  - task_id: W06
+    route: BOTH
+    path: .spec-gate/runs/t-w06-c0dec005/specs/revision-0/W06.decision.yaml
+test_obligations:
+  - obligation_id: W06-create-bookmark
+    task_id: W06
+    kind: scenario
+    description: 파일·폴더·패키지 폴더에서 북마크 바이트, 종류(패키지는 file), 점 경로를 정리한 절대 경로를 만들고 식별자는 넣지 않는다
+    source: .spec-gate/runs/t-w06-c0dec005/specs/revision-1/task-W06.feature#고른 대상에서 북마크를 만들면 종류와 경로를 함께 돌려준다
+    acceptance_refs:
+      - A02
+  - obligation_id: W06-read-only-options
+    task_id: W06
+    kind: scenario
+    description: 북마크 생성 옵션은 보안 범위 + 읽기 전용, 해석 옵션은 보안 범위다(0001)
+    source: .spec-gate/runs/t-w06-c0dec005/specs/revision-1/task-W06.feature#북마크는 보안 범위와 읽기 전용 옵션으로 만든다
+  - obligation_id: W06-create-missing-fails
+    task_id: W06
+    kind: scenario
+    description: 없는 경로의 북마크 생성은 오류다
+    source: .spec-gate/runs/t-w06-c0dec005/specs/revision-1/task-W06.feature#없는 대상의 북마크는 만들 수 없다
+  - obligation_id: W06-resolve-same-target
+    task_id: W06
+    kind: scenario
+    description: 만든 북마크는 같은 경로로 해석되고 갱신 북마크가 없다
+    source: .spec-gate/runs/t-w06-c0dec005/specs/revision-1/task-W06.feature#만든 북마크를 해석하면 같은 대상을 가리킨다
+    acceptance_refs:
+      - A02
+  - obligation_id: W06-resolve-moved-refreshes
+    task_id: W06
+    kind: scenario
+    description: 이동한 대상은 새 위치로 해석되고 갱신 북마크를 주며 갱신 북마크는 다시 갱신이 필요 없다
+    source: .spec-gate/runs/t-w06-c0dec005/specs/revision-1/task-W06.feature#대상이 같은 볼륨 안에서 이동해도 해석은 새 위치를 가리키고 갱신 북마크를 준다
+    acceptance_refs:
+      - A02
+  - obligation_id: W06-resolve-deleted-missing
+    task_id: W06
+    kind: scenario
+    description: 삭제된 대상의 해석은 missing 실패다
+    source: .spec-gate/runs/t-w06-c0dec005/specs/revision-1/task-W06.feature#대상이 삭제되면 해석은 대상 없음으로 실패한다
+  - obligation_id: W06-resolve-garbage-check-failed
+    task_id: W06
+    kind: scenario
+    description: 손상된 북마크 바이트 해석은 check_failed 실패다
+    source: .spec-gate/runs/t-w06-c0dec005/specs/revision-1/task-W06.feature#손상된 북마크 바이트는 확인 실패로 분류한다
+  - obligation_id: W06-stale-same-path-refreshes
+    task_id: W06
+    kind: scenario
+    description: 경로가 그대로여도 시스템이 stale을 알리면 갱신 북마크를 만든다(TECH_STACK 파일 접근)
+    source: .spec-gate/runs/t-w06-c0dec005/specs/revision-1/task-W06.feature#경로가 그대로여도 시스템이 stale을 알리면 갱신 북마크를 만든다
+  - obligation_id: W06-refresh-failure-reported
+    task_id: W06
+    kind: scenario
+    description: 갱신 북마크 생성이 실패해도 해석은 성공하고 갱신 실패를 알린다
+    source: .spec-gate/runs/t-w06-c0dec005/specs/revision-1/task-W06.feature#갱신 북마크를 만들지 못해도 해석은 성공하고 갱신 실패를 알린다
+  - obligation_id: W06-error-kind-mapping
+    task_id: W06
+    kind: scenario
+    description: Cocoa·POSIX 오류 코드를 no_such_file·no_permission·other로 바꾼다
+    source: .spec-gate/runs/t-w06-c0dec005/specs/revision-1/task-W06.feature#시스템 오류를 오류 범주로 바꾼다
+  - obligation_id: W06-volume-state
+    task_id: W06
+    kind: scenario
+    description: 북마크 볼륨 경로가 있으면 mounted, 없으면 unmounted, 읽지 못하면 unknown이다
+    source: .spec-gate/runs/t-w06-c0dec005/specs/revision-1/task-W06.feature#북마크가 기록한 볼륨 경로로 볼륨 상태를 정한다
+  - obligation_id: W06-resolve-failure-end-to-end
+    task_id: W06
+    kind: scenario
+    description: 실제 해석 실패는 오류 범주와 볼륨 상태를 함께 써서 결정표대로 원인을 정하고, 볼륨을 읽지 못하면 대상 없음을 단정하지 않는다(PRD §6-H)
+    source: .spec-gate/runs/t-w06-c0dec005/specs/revision-1/task-W06.feature#실제 해석 실패는 오류와 볼륨 상태를 함께 써서 원인을 정한다
+  - obligation_id: W06-failure-cause-decision
+    task_id: W06
+    kind: decision-rule
+    description: volume_state·error_kind 9조합을 결정표 R1~R5대로 분류한다
+    source: .spec-gate/runs/t-w06-c0dec005/specs/revision-0/W06.decision.yaml#R1-R5
+  - obligation_id: W06-scoped-access-pairing
+    task_id: W06
+    kind: scenario
+    description: 작업은 접근 시작 결과와 상관없이 한 번 실행되고, 종료는 시작이 성공했을 때만 정확히 한 번이며, 결과·오류를 그대로 전달한다
+    source: .spec-gate/runs/t-w06-c0dec005/specs/revision-1/task-W06.feature#보안 범위 접근은 시작한 경우에만 정확히 한 번 끝낸다
+  - obligation_id: W06-identity-same-and-different
+    task_id: W06
+    kind: scenario
+    description: 심볼릭 링크·점 경로 표기를 거친 같은 대상은 같은 식별자, 다른 파일은 다른 파일 식별자다(0004)
+    source: .spec-gate/runs/t-w06-c0dec005/specs/revision-1/task-W06.feature#같은 대상의 식별자는 같고, 다른 대상의 식별자는 다르다
+  - obligation_id: W06-identity-survives-rename
+    task_id: W06
+    kind: scenario
+    description: 이름을 바꾼 대상은 같은 대상 판정이 same_target이다
+    source: .spec-gate/runs/t-w06-c0dec005/specs/revision-1/task-W06.feature#같은 볼륨 안에서 이동·이름 변경한 대상은 같은 파일 식별자를 가진다
+  - obligation_id: W06-identity-missing
+    task_id: W06
+    kind: scenario
+    description: 없는 경로의 식별자는 파일·볼륨 모두 없다
+    source: .spec-gate/runs/t-w06-c0dec005/specs/revision-1/task-W06.feature#없는 대상의 식별자는 얻을 수 없다
+  - obligation_id: W06-target-untouched
+    task_id: W06
+    kind: scenario
+    description: 어댑터의 모든 연산 뒤 파일 내용·수정 시각·권한과 폴더 목록이 그대로다
+    acceptance_refs:
+      - A02
+    source: .spec-gate/runs/t-w06-c0dec005/specs/revision-1/task-W06.feature#북마크 생성·해석·접근·식별자 조회는 대상을 바꾸지 않는다
+acceptance_coverage:
+  A02:
+    - W06-create-bookmark
+    - W06-resolve-same-target
+    - W06-resolve-moved-refreshes
+    - W06-target-untouched
+decision_log: null
+critic_report: .spec-gate/runs/t-w06-c0dec005/critic-pass-2.yaml
+non_blocking_notes:
+  - finding_id: F-W06-10
+    task_id: W06
+    note: 기록 경로는 심볼릭 링크를 풀지 않는다고 정했지만 이를 검증하는 예시가 없어, 링크를 푸는 구현도 모든 시나리오를 통과한다. 또 북마크 해석 결과 URL은 보통 실제 경로(링크가 풀린 형태)다. 갱신 조건의 "생성 때의 경로"가 사용자가 고른 표기(링크 유지)라면 링크를 거쳐 고른 대상은 이동이 없어도 첫 해석마다 경로가 달라 보여 갱신 북마크가 나온다. 비교 기준(북마크에 담긴 경로인지, 호출자가 기록한 경로인지, 링크 해소 후 비교인지)이 정해져 있지 않다. 테스트 호스트가 sandbox 컨테이너 임시 디렉토리를 쓰면 경로에 링크가 없어 이 차이가 드러나지 않는다.
+  - finding_id: F-W06-11
+    task_id: W06
+    note: 해석 옵션은 "보안 범위를 포함한다"만 고정한다. 분리된 볼륨(특히 네트워크 볼륨)의 북마크를 해석할 때 시스템이 마운트를 시도하거나 UI를 띄우지 않도록 하는 옵션(withoutUI, withoutMounting)을 쓰는지 정하지 않았다. 해석은 MainActor 밖에서 호출되므로 UI 표시 시도는 부적절하고, 자동 마운트 여부는 R1(volume_unavailable)에 도달하는지를 바꾼다.
+  - finding_id: F-W06-12
+    task_id: W06
+    note: Feature는 POSIX ENOENT를 no_such_file로 매핑하지만 매니페스트 가정의 매핑 목록에는 ENOENT가 없다. 두 문서 중 하나만 읽으면 매핑 범위가 다르게 보인다. 시나리오가 obligation 기준이므로 동작은 정해져 있으나 근거 문서가 어긋난다.
+  - finding_id: F-W06-13
+    task_id: W06
+    note: F-W06-6의 소유 경계는 가정으로 정리되었지만, 결정표 9조합을 그대로 반복하는 Outline이 남아 있고 이 Outline을 source로 가리키는 obligation이 없다(고아 시나리오). 결정표와 Outline을 함께 고쳐야 하는 유지 부담이 그대로다. 현재 두 산출물의 9행은 서로 일치한다.
+  - finding_id: F-W06-14
+    task_id: W06
+    note: 패키지를 file로 보는 선택은 이력에 남는 Node 종류에 영향을 주지만 Finder 표시 관례와 PRD §5와 일관되고 되돌릴 수 있어 정책 질문이 필요하지 않다고 본다(pass 1 F-W06-8과 같은 판단을 독립적으로 재확인).
+  - finding_id: F-W06-15
+    task_id: W06
+    note: 재실행 후 sandbox 접근과 실제 볼륨 분리는 이 항목의 단위 테스트로 증명할 수 없고, 같은 프로세스 내 해석과 주입한 시스템 어댑터가 대리 증거다. A02의 완전한 충족은 W08·W14·W15·W27에 달려 있다.
+  - finding_id: F-W06-16
+    task_id: W06
+    note: 시작 실패 시에도 작업을 실행하는 선택은 기준 문서의 대응 규칙과 충돌하지 않고, 실제 접근 불가는 작업 오류로 드러나며 되돌리기 쉬운 구현 선택이다. 그 작업 오류를 W15 상태로 분류하는 경로는 이 항목의 오류 범주 매핑·결정표를 재사용할 수 있다.
