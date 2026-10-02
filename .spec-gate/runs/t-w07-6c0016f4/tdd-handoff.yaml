@@ -1,0 +1,177 @@
+schema_version: "1.0"
+run_id: t-w07-6c0016f4
+verdict: READY
+source:
+  baseline:
+    - path: docs/PRD.md
+      fingerprint: 5d8c45fd91830695e3f8f90fb49be3f9d8be64e0ca0256d382a31d0af4a4ae0a
+    - path: docs/TECH_STACK.md
+      fingerprint: 9cba18e5f7490fe1c39a658ed3485d17fe782060c588b429d6db923c23d55fbe
+  decision_records:
+    path: docs/decisions
+    fingerprint: 343f661197a778ad3c4d5f2c8371031c3c1c45337ac2f1b8f5d59641e812e38f
+  work_items_artifact: docs/work-items.yaml
+  work_items_fingerprint: 788772eab1342345df09d47e0a07f06c5fba9bc4ec60db1dfc67684009fe5dbf
+  normalized_artifact: .spec-gate/runs/t-w07-6c0016f4/normalized-tasks.yaml
+source_tasks:
+  - task_id: W07
+    title: 기본 창과 Board 탐색
+    route: GHERKIN
+    acceptance_refs:
+      - A01
+accepted_specifications:
+  - task_id: W07
+    route: GHERKIN
+    path: .spec-gate/runs/t-w07-6c0016f4/specs/revision-1/task-W07.feature
+test_obligations:
+  - obligation_id: W07-first-launch-empty
+    task_id: W07
+    kind: scenario
+    description: Board가 없으면 빈 목록, 선택 없음, Board 만들기 동작이 있는 안내를 보여 준다
+    source: .spec-gate/runs/t-w07-6c0016f4/specs/revision-1/task-W07.feature#첫 실행에는 빈 Board 목록과 Board 만들기 동작을 보여 준다
+  - obligation_id: W07-create-board-selects
+    task_id: W07
+    kind: scenario
+    description: Board 만들기 저장 성공 뒤 목록에 나타나고 선택되며 빈 현재 구성을 보여 주고 입력 창이 닫히며, 다시 연 창에도 순번 1 revision 하나로 남아 있다
+    source: .spec-gate/runs/t-w07-6c0016f4/specs/revision-1/task-W07.feature#Board를 만들면 목록에 나타나고 선택되며 빈 현재 구성을 보여 준다
+    acceptance_refs:
+      - A01
+  - obligation_id: W07-create-board-failure-keeps-input
+    task_id: W07
+    kind: scenario
+    description: 빈 이름·저장 실패 시 입력 창과 입력을 유지하고 이유를 보여 주며 목록·선택은 그대로다(A13 성공 미표시)
+    source: .spec-gate/runs/t-w07-6c0016f4/specs/revision-1/task-W07.feature#Board를 만들지 못하면 입력을 유지하고 이유를 보여 준다
+  - obligation_id: W07-list-active-and-archived
+    task_id: W07
+    kind: scenario
+    description: 활성 Board는 만든 순서, 보관된 Board는 따로 모아 "보관됨"을 글자로 표시한다
+    source: .spec-gate/runs/t-w07-6c0016f4/specs/revision-1/task-W07.feature#Board 목록은 보관된 Board를 따로 모아 보여 준다
+  - obligation_id: W07-same-name-distinguished
+    task_id: W07
+    kind: scenario
+    description: 같은 이름 Board는 만든 시각으로 구분된다
+    source: .spec-gate/runs/t-w07-6c0016f4/specs/revision-1/task-W07.feature#같은 이름의 Board는 만든 시각으로 구분해 보여 준다
+  - obligation_id: W07-select-shows-tree
+    task_id: W07
+    kind: scenario
+    description: 선택한 Board의 현재 구성을 정렬 순서대로 중첩 트리로 보여 주고, 연결 폴더는 하위 항목이 없으며 종류를 글자로 알린다
+    source: .spec-gate/runs/t-w07-6c0016f4/specs/revision-1/task-W07.feature#Board를 선택하면 현재 구성을 트리로 보여 준다
+  - obligation_id: W07-inspector-shows-node
+    task_id: W07
+    kind: scenario
+    description: 항목 선택 시 상세 영역이 표시 이름·종류·기록 당시 경로 또는 URL을 보여 준다
+    source: .spec-gate/runs/t-w07-6c0016f4/specs/revision-1/task-W07.feature#트리에서 항목을 선택하면 상세 영역에 표시 이름·종류·대상을 보여 준다
+  - obligation_id: W07-restore-last-board
+    task_id: W07
+    kind: scenario
+    description: 재실행 시 마지막 Board(보관 포함)를 현재 구성으로 열고, 없는 기록이면 선택하지 않는다
+    source: .spec-gate/runs/t-w07-6c0016f4/specs/revision-1/task-W07.feature#다시 열면 마지막으로 본 Board를 현재 구성으로 연다
+  - obligation_id: W07-selection-recorded
+    task_id: W07
+    kind: scenario
+    description: Board 선택이 마지막 Board 기록을 바꾼다
+    source: .spec-gate/runs/t-w07-6c0016f4/specs/revision-1/task-W07.feature#Board를 선택하면 마지막 Board 기록을 바꾼다
+  - obligation_id: W07-store-failure-recovery-screen
+    task_id: W07
+    kind: scenario
+    description: 저장소 열기 실패 원인 4종마다 안내(incompatible은 더 새 버전일 수 있다고 단정하지 않음)와 다시 시도·Finder에서 보기·종료를 보여 주고 빈 저장소를 만들지 않는다(PRD §7, Q-W07-1)
+    source: .spec-gate/runs/t-w07-6c0016f4/specs/revision-1/task-W07.feature#저장소를 열 수 없으면 원인과 복구 선택지를 보여 준다
+  - obligation_id: W07-retry-opens-store
+    task_id: W07
+    kind: scenario
+    description: 다시 시도가 성공하면 복구 화면이 사라지고 Board 목록을 보여 준다
+    source: .spec-gate/runs/t-w07-6c0016f4/specs/revision-1/task-W07.feature#다시 시도해 저장소가 열리면 Board 목록을 보여 준다
+  - obligation_id: W07-reveal-and-quit
+    task_id: W07
+    kind: scenario
+    description: Finder에서 보기는 저장소 위치 표시 요청을, 종료는 종료 요청을 한 번씩 보낸다
+    source: .spec-gate/runs/t-w07-6c0016f4/specs/revision-1/task-W07.feature#Finder에서 보기와 종료는 해당 동작만 한다
+  - obligation_id: W07-store-opened-off-main
+    task_id: W07
+    kind: scenario
+    description: 저장소 열기는 메인 스레드 밖에서 실행된다
+    source: .spec-gate/runs/t-w07-6c0016f4/specs/revision-1/task-W07.feature#저장소는 MainActor 밖에서 연다
+  - obligation_id: W07-sidebar-create-entry
+    task_id: W07
+    kind: scenario
+    description: Board 목록 위의 Board 만들기 버튼이 입력 창을 연다
+    source: .spec-gate/runs/t-w07-6c0016f4/specs/revision-1/task-W07.feature#Board 목록 위의 "Board 만들기"에서도 만들기 입력 창을 연다
+  - obligation_id: W07-cancel-saves-nothing
+    task_id: W07
+    kind: scenario
+    description: 만들기 입력 창 취소는 아무것도 저장하지 않는다(PRD §7)
+    source: .spec-gate/runs/t-w07-6c0016f4/specs/revision-1/task-W07.feature#만들기 입력 창을 취소하면 아무것도 저장하지 않는다
+  - obligation_id: W07-single-confirm-while-saving
+    task_id: W07
+    kind: scenario
+    description: 저장 중 확정 동작이 꺼져 두 번 확정해도 Board는 하나다
+    source: .spec-gate/runs/t-w07-6c0016f4/specs/revision-1/task-W07.feature#저장 중에는 확정을 한 번만 받는다
+  - obligation_id: W07-browsing-creates-no-revision
+    task_id: W07
+    kind: scenario
+    description: 열기·Board 선택·항목 선택·재실행 복원은 revision 수와 현재 revision을 바꾸지 않는다(PRD §7)
+    source: .spec-gate/runs/t-w07-6c0016f4/specs/revision-1/task-W07.feature#열기·선택·복원은 revision을 만들지 않는다
+  - obligation_id: W07-list-read-failure
+    task_id: W07
+    kind: scenario
+    description: Board 목록 읽기 실패는 빈 목록이 아니라 오류와 다시 시도를 보여 준다
+    source: .spec-gate/runs/t-w07-6c0016f4/specs/revision-1/task-W07.feature#Board 목록을 읽지 못하면 빈 목록 대신 오류와 다시 시도를 보여 준다
+  - obligation_id: W07-current-read-failure
+    task_id: W07
+    kind: scenario
+    description: 선택한 Board의 현재 구성을 읽지 못하면 빈 트리 대신 오류를 보여 주고 다른 Board는 계속 볼 수 있다(불변식 9)
+    source: .spec-gate/runs/t-w07-6c0016f4/specs/revision-1/task-W07.feature#선택한 Board의 현재 구성을 읽지 못하면 빈 구성 대신 오류를 보여 준다
+  - obligation_id: W07-retry-fails-again
+    task_id: W07
+    kind: scenario
+    description: 다시 시도가 또 실패하면 복구 화면을 새 원인으로 유지하고 빈 저장소를 만들지 않는다
+    source: .spec-gate/runs/t-w07-6c0016f4/specs/revision-1/task-W07.feature#다시 시도가 또 실패하면 복구 화면을 새 원인으로 유지한다
+  - obligation_id: W07-create-disabled-on-recovery
+    task_id: W07
+    kind: scenario
+    description: 복구 화면에서는 Board 만들기 명령이 꺼져 있다
+    source: .spec-gate/runs/t-w07-6c0016f4/specs/revision-1/task-W07.feature#복구 화면에서는 Board 만들기 명령이 꺼져 있다
+  - obligation_id: W07-accessibility-labels
+    task_id: W07
+    kind: scenario
+    description: 목록·트리 행의 접근성 레이블이 이름과 보관 상태·종류를 글자로 포함한다(PRD §8)
+    source: .spec-gate/runs/t-w07-6c0016f4/specs/revision-1/task-W07.feature#목록과 트리 행은 접근성 레이블로 이름과 상태·종류를 알린다
+  - obligation_id: W07-ui-create-board-keyboard
+    task_id: W07
+    kind: ui-test
+    description: "XCUITest: 빈 테스트 저장소에서 ⌘N·이름·Return으로 Board를 만들면 선택된 채 나타나고 빈 구성 안내를 보이며, 앱을 다시 실행해도 선택된 채 남아 있다"
+    source: .spec-gate/runs/t-w07-6c0016f4/specs/revision-1/task-W07.feature#첫 실행에서 키보드로 Board를 만든다 (UI 테스트)
+    acceptance_refs:
+      - A01
+  - obligation_id: W07-ui-menu-command
+    task_id: W07
+    kind: ui-test
+    description: 'XCUITest: 파일 메뉴에 ⌘N의 "Board 만들기…"가 있다'
+    source: .spec-gate/runs/t-w07-6c0016f4/specs/revision-1/task-W07.feature#메뉴에 Board 만들기 명령이 있다 (UI 테스트)
+  - obligation_id: W07-terms-in-catalog
+    task_id: W07
+    kind: structure-check
+    description: String Catalog에 0006 용어가 있고 DB·JSON·bookmark·북마크·파일 삭제가 없다(검사 스크립트)
+    source: .spec-gate/runs/t-w07-6c0016f4/specs/revision-1/task-W07.feature#화면 문구는 정해진 용어를 쓰고 구현 용어를 쓰지 않는다
+acceptance_coverage:
+  A01:
+    - W07-create-board-selects
+    - W07-ui-create-board-keyboard
+decision_log: .spec-gate/runs/t-w07-6c0016f4/decision-log.yaml
+critic_report: .spec-gate/runs/t-w07-6c0016f4/critic-pass-2.yaml
+non_blocking_notes:
+  - finding_id: F-W07-9
+    task_id: W07
+    note: 현재 구성 읽기 실패는 사용자가 직접 선택하는 경로로만 고정되어 있다. 재실행 복원으로 처음 진입한 Board의 현재 구성이 읽히지 않는 경우는 같은 처리를 탄다고 가정할 뿐 시나리오가 없다. Board 목록 읽기 실패 화면의 "다시 시도"가 성공했을 때 목록이 나타나는 경로도 없다.
+  - finding_id: F-W07-10
+    task_id: W07
+    note: 저장소 위치를 알 수 없어 열기에 실패하면(unavailable, 위치 조회 실패) "Finder에서 보기"가 보여 줄 대상이 없다. 명세는 네 원인 모두에서 이 선택지를 보여 준다고 하므로, 대상이 없을 때 선택지를 끌지, 상위 폴더를 보여 줄지가 정해지지 않았다. Q-W07-1 답 A의 범위 안에서 정할 수 있는 화면 처리 세부다.
+  - finding_id: F-W07-11
+    task_id: W07
+    note: A01 시나리오의 다시 열기 단계는 목록과 revision 수(순번 1 하나)만 확인하고, 다시 연 뒤 그 Board의 현재 구성이 Node 없는 구성이라는 점은 확인하지 않는다. 또 Board를 만들어 선택되었을 때 마지막 Board 기록이 바뀐다는 점은 화면 상태 시나리오에 없고 UI 테스트(재실행 후 선택 유지)에만 기대고 있다.
+  - finding_id: F-W07-12
+    task_id: W07
+    note: W07 명세는 A01의 "실제 디렉토리 생성 없이" 부분을 직접 확인하지 않는다. 이 조건은 W05 서비스 obligation이 이미 증명하고 W07은 W05 서비스로 커밋하므로 W07에서 반복할 필요는 작다. 화면 상태 모델이 서비스를 우회하지 않는다는 점은 다시 열기 단계(F-W07-1 해소)로 확인된다.
+  - finding_id: F-W07-13
+    task_id: W07
+    note: Swift 6에서는 async 문맥에서 Thread.isMainThread를 쓸 수 없으므로, 이 obligation은 주입한 동기 저장소 열기 함수 안에서 메인 스레드 여부를 기록하는 방식으로 검증해야 한다. 명세 수정은 필요 없고 TDD 단계에서 참고할 사항이다.

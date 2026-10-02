@@ -91,6 +91,29 @@ printf 'import SwiftData\n' >"$allowed/Persistence/Schema.swift"
 printf 'import SwiftData\n' >"$allowed/App/App.swift"
 expect "Persistence·App의 SwiftData import는 허용한다" 0 "$SCRIPTS/check-structure.sh" "$allowed"
 
+# W07-terms-in-catalog: 화면 용어 검사
+terms_tree() { # terms_tree <루트> <카탈로그 키 JSON> <Swift 문자열>
+  make_tree "$1"
+  printf '{ "sourceLanguage" : "ko", "strings" : { %s }, "version" : "1.0" }\n' "$2" >"$1/Localizable.xcstrings"
+  printf 'import SwiftUI\nlet text = %s\n' "$3" >"$1/Features/View.swift"
+}
+required='"Board 만들기" : {}, "보관된 Board" : {}, "Bishop" : {}, "그룹" : {}, "웹 링크" : {}'
+terms_tree "$workdir/terms-ok" "$required" '"Board 만들기"'
+expect "필수 용어가 있고 금지어가 없으면 통과한다" 0 "$SCRIPTS/check-terms.sh" "$workdir/terms-ok"
+terms_tree "$workdir/terms-missing" '"Board 만들기" : {}' '"Board 만들기"'
+expect "필수 용어가 빠지면 실패한다" nonzero "$SCRIPTS/check-terms.sh" "$workdir/terms-missing"
+index=0
+for word in 'DB' 'JSON' 'bookmark' '북마크' '파일 삭제'; do
+  index=$((index + 1))
+  terms_tree "$workdir/terms-catalog-$index" "$required, \"$word 오류\" : {}" '"Board 만들기"'
+  expect "카탈로그의 '$word' 는 실패한다" nonzero "$SCRIPTS/check-terms.sh" "$workdir/terms-catalog-$index"
+  terms_tree "$workdir/terms-source-$index" "$required" "\"$word 열기\""
+  expect "화면 소스 문자열의 '$word' 는 실패한다" nonzero "$SCRIPTS/check-terms.sh" "$workdir/terms-source-$index"
+done
+terms_tree "$workdir/terms-identifier" "$required" '"Board 만들기"'
+printf 'let bookmarkData = Data()\n' >>"$workdir/terms-identifier/Features/View.swift"
+expect "문자열이 아닌 코드 식별자의 bookmark는 허용한다" 0 "$SCRIPTS/check-terms.sh" "$workdir/terms-identifier"
+
 # check-entitlements.sh: 임시 실행 파일을 ad-hoc 서명해 entitlement 조합을 검사한다.
 sign() { # sign <이름> <entitlement 키...>  → 서명된 실행 파일 경로 출력
   local name="$1"

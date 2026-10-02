@@ -117,6 +117,20 @@ actor ProjectStore {
         try adapter.projects()
     }
 
+    /// Board 목록. 이름은 각 현재 revision의 목록 정보에서 읽고 스냅샷은 디코딩하지 않는다.
+    func projectListings() throws(StoreReadError) -> [ProjectListing] {
+        var listings: [ProjectListing] = []
+        for project in try adapter.projects() {
+            guard let current = try adapter.revisionSummary(project.currentRevisionID) else {
+                throw .notFound(project.currentRevisionID)
+            }
+            listings.append(ProjectListing(
+                id: project.id, name: current.projectName, createdAt: project.createdAt, archivedAt: project.archivedAt
+            ))
+        }
+        return listings
+    }
+
     func revisionSummaries(projectID: UUID) throws(StoreReadError) -> [RevisionSummary] {
         try adapter.revisionSummaries(projectID: projectID)
     }

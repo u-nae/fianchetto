@@ -17,7 +17,10 @@ func withTemporaryDirectory<T>(_ body: (URL) throws -> T) throws -> T {
 }
 
 /// 비동기 테스트용 임시 디렉토리.
-func withTemporaryDirectoryAsync(_ body: (URL) async throws -> Void) async throws {
+func withTemporaryDirectoryAsync(
+    isolation: isolated (any Actor)? = #isolation,
+    _ body: (URL) async throws -> Void
+) async throws {
     let directory = try FileManager.default.url(
         for: .itemReplacementDirectory, in: .userDomainMask,
         appropriateFor: FileManager.default.temporaryDirectory, create: true

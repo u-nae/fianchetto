@@ -1,10 +1,108 @@
 {
-  "sourceLanguage" : "ko",
-  "strings" : {
-    "Fianchetto" : {
-      "comment" : "기본 창 제목. 앱 이름이라 번역하지 않는다.",
-      "shouldTranslate" : false
+  "sourceLanguage": "ko",
+  "strings": {
+    "Bishop": {
+      "comment": "로컬 파일·폴더 연결 항목의 화면 용어(0006). 영문 고유 용어 그대로 쓴다.",
+      "extractionState": "manual"
+    },
+    "Bishop(파일)": {
+      "extractionState": "manual"
+    },
+    "Bishop(폴더)": {
+      "extractionState": "manual"
+    },
+    "Board": {
+      "comment": "프로젝트의 화면 용어(0006). 영문 고유 용어 그대로 쓴다.",
+      "extractionState": "manual"
+    },
+    "Board 만들기": {
+      "extractionState": "manual"
+    },
+    "Board 만들기…": {
+      "extractionState": "manual"
+    },
+    "Board 목록을 읽지 못했습니다": {
+      "extractionState": "manual"
+    },
+    "Board 이름": {
+      "extractionState": "manual"
+    },
+    "Board가 없습니다": {
+      "extractionState": "manual"
+    },
+    "Board를 만들거나 목록에서 고르세요.": {
+      "extractionState": "manual"
+    },
+    "Fianchetto": {
+      "comment": "기본 창 제목. 앱 이름이라 번역하지 않는다.",
+      "shouldTranslate": false
+    },
+    "Finder에서 보기": {
+      "extractionState": "manual"
+    },
+    "구성이 비어 있습니다": {
+      "extractionState": "manual"
+    },
+    "그룹": {
+      "extractionState": "manual"
+    },
+    "다시 시도": {
+      "extractionState": "manual"
+    },
+    "대상": {
+      "extractionState": "manual"
+    },
+    "데이터를 열 수 없습니다": {
+      "extractionState": "manual"
+    },
+    "데이터를 열지 못했습니다.": {
+      "extractionState": "manual"
+    },
+    "데이터를 읽을 수 없습니다. 파일이 손상되었을 수 있습니다.": {
+      "extractionState": "manual"
+    },
+    "데이터에 접근할 권한이 없습니다.": {
+      "extractionState": "manual"
+    },
+    "만들기": {
+      "extractionState": "manual"
+    },
+    "보관된 Board": {
+      "extractionState": "manual"
+    },
+    "보관됨": {
+      "extractionState": "manual"
+    },
+    "웹 링크": {
+      "extractionState": "manual"
+    },
+    "이 버전의 앱이 읽을 수 없는 형식입니다. 더 새로운 버전의 앱이 만들었을 수 있습니다.": {
+      "extractionState": "manual"
+    },
+    "이름을 입력하세요.": {
+      "extractionState": "manual"
+    },
+    "저장하지 못했습니다. 다시 시도하세요.": {
+      "extractionState": "manual"
+    },
+    "종료": {
+      "extractionState": "manual"
+    },
+    "종류": {
+      "extractionState": "manual"
+    },
+    "취소": {
+      "extractionState": "manual"
+    },
+    "표시 이름": {
+      "extractionState": "manual"
+    },
+    "항목을 고르세요": {
+      "extractionState": "manual"
+    },
+    "현재 구성을 읽지 못했습니다": {
+      "extractionState": "manual"
     }
   },
-  "version" : "1.0"
+  "version": "1.0"
 }

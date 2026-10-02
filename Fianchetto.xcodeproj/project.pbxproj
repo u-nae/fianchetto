@@ -33,7 +33,6 @@
 		FA0000000000000000000044 /* Exceptions for "Fianchetto" folder in "Fianchetto" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Features/.gitkeep,
 			);
 			target = FA0000000000000000000010 /* Fianchetto */;
 		};
