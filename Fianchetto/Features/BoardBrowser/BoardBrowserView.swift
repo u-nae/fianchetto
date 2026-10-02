@@ -7,6 +7,7 @@ struct BoardBrowserView: View {
     var body: some View {
         // Observation은 body에서 읽은 값만 추적하므로 Binding 클로저 밖에서 먼저 읽는다.
         let isCreating = model.creation != nil
+        let isRenaming = model.rename != nil
         let notice = model.linkNotice
         let replacement = model.replacement
         Group {
@@ -34,6 +35,9 @@ struct BoardBrowserView: View {
         .frame(minWidth: 820, minHeight: 480)
         .sheet(isPresented: Binding(get: { isCreating }, set: { if !$0 { model.cancelCreate() } })) {
             CreateBoardSheet(model: model)
+        }
+        .sheet(isPresented: Binding(get: { isRenaming }, set: { if !$0 { model.cancelRename() } })) {
+            RenameBoardSheet(model: model)
         }
         .sheet(item: Binding(get: { replacement.map(PreviewItem.init) }, set: { if $0 == nil { model.cancelReplacement() } })) { item in
             ReplacementSheet(model: model, preview: item.preview)
@@ -122,6 +126,20 @@ private struct ConfigurationTreeView: View {
     @Bindable var model: BoardBrowserModel
 
     var body: some View {
+        VStack(spacing: 0) {
+            if let readOnly = model.readOnlyText {
+                Label(readOnly, systemImage: "archivebox")
+                    .font(.callout)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(8)
+                    .background(.quaternary)
+            }
+            content
+        }
+    }
+
+    @ViewBuilder
+    private var content: some View {
         switch model.current {
         case .none:
             ContentUnavailableView {
@@ -249,6 +267,36 @@ private struct NodeInspectorView: View {
         } else {
             ContentUnavailableView("항목을 고르세요", systemImage: "sidebar.right")
         }
+    }
+}
+
+private struct RenameBoardSheet: View {
+    @Bindable var model: BoardBrowserModel
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Board 이름 변경").font(.headline)
+            TextField("Board 이름", text: Binding(get: { model.rename?.name ?? "" }, set: { model.rename?.name = $0 }))
+                .onSubmit { confirm() }
+            if let message = model.rename?.message {
+                Text(message == .nameRequired ? "이름을 입력하세요." : "저장하지 못했습니다. 다시 시도하세요.")
+                    .foregroundStyle(.red)
+            }
+            HStack {
+                Spacer()
+                Button("취소", role: .cancel) { model.cancelRename() }
+                    .keyboardShortcut(.cancelAction)
+                Button("이름 변경") { confirm() }
+                    .keyboardShortcut(.defaultAction)
+                    .disabled(model.rename?.isSaving == true)
+            }
+        }
+        .padding()
+        .frame(width: 360)
+    }
+
+    private func confirm() {
+        Task { await model.confirmRename() }
     }
 }
 

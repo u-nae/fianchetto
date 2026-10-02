@@ -85,7 +85,8 @@ struct BrowserHarness {
             return OpenedStore(
                 store: store, service: service,
                 linking: LinkingService(bookmarks: adapter, configuration: service),
-                replacement: TargetReplacementService(bookmarks: adapter, configuration: service)
+                replacement: TargetReplacementService(bookmarks: adapter, configuration: service),
+                lifecycle: ProjectLifecycleService(store: store, now: { clock.now() })
             )
         }
         model = BoardBrowserModel(dependencies: .init(

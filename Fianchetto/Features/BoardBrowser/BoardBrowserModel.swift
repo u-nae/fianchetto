@@ -84,6 +84,8 @@ final class BoardBrowserModel {
     private(set) var current: CurrentConfiguration = .none
     var selectedNodeID: UUID?
     var creation: Creation?
+    /// Board 이름 변경 입력. Board 만들기 입력과 같은 모양이다.
+    var rename: Creation?
     private(set) var openedStore: OpenedStore?
     private(set) var linkNotice: LinkNotice?
     /// 연결 대상 변경 확인 창.
@@ -258,6 +260,83 @@ final class BoardBrowserModel {
         case .rejected, .unchanged:
             finishCreate(with: .saveFailed)
         }
+    }
+
+    // MARK: Board 이름 변경·보관
+
+    /// 선택한 Board가 보관돼 있으면 읽기 전용 표시 문구(색만으로 구분하지 않는다).
+    var readOnlyText: String? {
+        selectedBoardIsArchived ? String(localized: "보관된 Board · 읽기 전용") : nil
+    }
+
+    var canArchiveSelected: Bool { selectedBoardID != nil && !selectedBoardIsArchived }
+    var canUnarchiveSelected: Bool { selectedBoardID != nil && selectedBoardIsArchived }
+
+    func beginRename() {
+        guard let boardID = selectedBoardID, let board = board(boardID) else { return }
+        guard board.archivedAt == nil else {
+            linkNotice = LinkNotice(kind: .archived, request: nil)
+            return
+        }
+        rename = Creation(name: board.name)
+    }
+
+    func cancelRename() {
+        guard rename?.isSaving != true else { return }
+        rename = nil
+    }
+
+    func confirmRename() async {
+        guard var draft = rename, !draft.isSaving, let boardID = selectedBoardID, let service = openedStore?.service else { return }
+        draft.isSaving = true
+        draft.message = nil
+        rename = draft
+        let outcome: ConfigurationCommitOutcome
+        do {
+            outcome = try await service.apply(.renameProject(draft.name), to: boardID)
+        } catch {
+            rename?.isSaving = false
+            rename?.message = .saveFailed
+            return
+        }
+        switch outcome {
+        case let .committed(_, snapshot):
+            rename = nil
+            await reloadBoards()
+            if selectedBoardID == boardID { current = .loaded(snapshot) }
+        case .unchanged:
+            rename = nil
+        case .rejected(.edit(.blankName)):
+            rename?.isSaving = false
+            rename?.message = .nameRequired
+        case .rejected(.archived):
+            rename = nil
+            linkNotice = LinkNotice(kind: .archived, request: nil)
+        case .rejected:
+            rename?.isSaving = false
+            rename?.message = .saveFailed
+        }
+    }
+
+    func archiveSelected() async {
+        guard canArchiveSelected else { return }
+        await setSelectedArchived(true)
+    }
+
+    func unarchiveSelected() async {
+        guard canUnarchiveSelected else { return }
+        await setSelectedArchived(false)
+    }
+
+    private func setSelectedArchived(_ archived: Bool) async {
+        guard let boardID = selectedBoardID, let lifecycle = openedStore?.lifecycle else { return }
+        do {
+            _ = try await lifecycle.setArchived(boardID, archived)
+        } catch {
+            linkNotice = LinkNotice(kind: .saveFailed, request: nil)
+            return
+        }
+        await reloadBoards()
     }
 
     // MARK: Bishop 추가와 드롭

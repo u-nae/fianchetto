@@ -229,7 +229,7 @@ items:
     test_strategy: >-
       서비스 테스트: 이름 변경 revision 1개, 같은 이름·공백만 변경 무변경, 보관·해제 시 revision 수 불변,
       보관 중 구성 편집 거부, 보관 중 조회 가능.
-    status: pending
+    status: done
     priority: medium
     dependencies: [W07]
     source_refs:
