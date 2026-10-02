@@ -104,8 +104,8 @@ Asset Catalog(`Fianchetto/Assets.xcassets`)의 Color Set으로 정의한다. 코
 | 쓰임 | 현재 기호 | 위치 |
 |---|---|---|
 | 그룹 | `folder` | 트리 행(`NodeRow`) |
-| Bishop(파일) | `fianchetto.bishop`(커스텀, 0012) | 트리 행 |
-| Bishop(폴더) | `fianchetto.bishop.folder`(커스텀, 0012) | 트리 행 |
+| Bishop(파일) | `fianchetto.bishop`(커스텀, 0013) | 트리 행 |
+| Bishop(폴더) | `fianchetto.bishop.folder`(커스텀, 0013) | 트리 행 |
 | 웹 링크 | `link` | 트리 행 |
 | 최상위(이동 창) | `square.stack` | 이동 창 |
 | 보관된 Board 표시 | `archivebox` | 읽기 전용 띠 |
@@ -115,7 +115,7 @@ Asset Catalog(`Fianchetto/Assets.xcassets`)의 Color Set으로 정의한다. 코
 | 저장소 복구 | `externaldrive.badge.exclamationmark` | 복구 화면 |
 | 오류 일반 | `exclamationmark.triangle` | 목록 오류·경고 |
 
-### 5.2 Bishop 커스텀 심볼 (0012 확정)
+### 5.2 Bishop 커스텀 심볼 (0013 확정)
 
 - 모양: 비숍의 머리(미트라)를 크게 그린다. 위에 구슬, 몸통에 대각선 홈(피앙케토의 긴 대각선), 아래에 받침띠가 있다.
   폴더 Bishop은 미트라를 줄이고 오른쪽 아래에 폴더 배지를 붙인다. 파일과 폴더는 색이 아닌 배지 모양으로 구분한다.
@@ -224,7 +224,7 @@ W15에서 연결 상태를 트리에 표시한다. 상태 이름은 W14 안내 �
 
 - [x] `AccentColor` 라이트·다크·고대비 값(3.2의 긴장 해소) — 0011
 - [ ] `ThemeSurface`를 상세 영역에 쓸지, 빈 화면에만 쓸지
-- [x] Bishop 커스텀 심볼 채택 여부와 모양(파일/폴더 구분 방식) — 0012
+- [x] Bishop 커스텀 심볼 채택 여부와 모양(파일/폴더 구분 방식) — 0013
 - [ ] 앱 아이콘 모티프와 macOS 15 이전 형식 처리
 - [ ] Board 제목 세리프 사용 여부
 - [ ] 빈 화면 일러스트 사용 여부와 범위

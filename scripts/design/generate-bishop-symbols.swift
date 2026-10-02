@@ -1,4 +1,4 @@
-// Bishop 커스텀 심볼(0012)의 SF Symbols 템플릿을 만든다.
+// Bishop 커스텀 심볼(0013)의 SF Symbols 템플릿을 만든다.
 // 24 격자의 선 디자인을 채운 윤곽선으로 바꿔 Regular-M 하나만 담는다(굵기 보간 없음).
 // 사용: swift scripts/design/generate-bishop-symbols.swift Fianchetto/Assets.xcassets
 // CGPath 불리언 연산을 쓰므로 macOS 14 이상에서 실행한다. 앱 실행 환경과는 무관하다.
