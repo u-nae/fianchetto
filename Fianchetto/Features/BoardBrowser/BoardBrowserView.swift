@@ -236,7 +236,7 @@ private struct NodeRow: View {
                 }
             }
         } icon: {
-            Image(systemName: icon)
+            icon
         }
         .tag(node.id)
         .accessibilityElement(children: .ignore)
@@ -245,12 +245,12 @@ private struct NodeRow: View {
         .accessibilityAddTraits(model.selectedNodeID == node.id ? .isSelected : [])
     }
 
-    private var icon: String {
+    private var icon: Image {
         switch node.kind {
-        case .group: "folder"
-        case .file: "doc"
-        case .folder: "folder.badge.gearshape"
-        case .webLink: "link"
+        case .group: Image(systemName: "folder")
+        case .file: Image(.fianchettoBishop)
+        case .folder: Image(.fianchettoBishopFolder)
+        case .webLink: Image(systemName: "link")
         }
     }
 }

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Generator: scripts/design/generate-bishop-symbols.swift-->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="3300" height="2200">
+ <!--glyph: "fianchetto.bishop", point size: 100.0-->
+ <g id="Notes">
+  <text style="stroke:none;fill:black;font-family:sans-serif;font-size:13;" transform="matrix(1 0 0 1 263 1933)">Template v.3.0</text>
+ </g>
+ <g id="Guides">
+  <line id="Baseline-S" style="fill:none;stroke:#27AAE1;opacity:1;stroke-width:0.5;" x1="263" x2="3036" y1="696" y2="696"/>
+  <line id="Capline-S" style="fill:none;stroke:#27AAE1;opacity:1;stroke-width:0.5;" x1="263" x2="3036" y1="625.541" y2="625.541"/>
+  <line id="Baseline-M" style="fill:none;stroke:#27AAE1;opacity:1;stroke-width:0.5;" x1="263" x2="3036" y1="1126" y2="1126"/>
+  <line id="Capline-M" style="fill:none;stroke:#27AAE1;opacity:1;stroke-width:0.5;" x1="263" x2="3036" y1="1055.54" y2="1055.54"/>
+  <line id="Baseline-L" style="fill:none;stroke:#27AAE1;opacity:1;stroke-width:0.5;" x1="263" x2="3036" y1="1556" y2="1556"/>
+  <line id="Capline-L" style="fill:none;stroke:#27AAE1;opacity:1;stroke-width:0.5;" x1="263" x2="3036" y1="1485.54" y2="1485.54"/>
+  <line id="left-margin-Regular-M" style="fill:none;stroke:#00AEEF;stroke-width:0.5;opacity:1.0;" x1="1391.3" x2="1391.3" y1="1030.79" y2="1150.12"/>
+  <line id="right-margin-Regular-M" style="fill:none;stroke:#00AEEF;stroke-width:0.5;opacity:1.0;" x1="1457.111" x2="1457.111" y1="1030.79" y2="1150.12"/>
+ </g>
+ <g id="Symbols">
+  <g id="Regular-M" transform="matrix(1 0 0 1 1391.3 1126)">
+   <path d="M43.486 -75.709C43.486 -71.148 40.599 -67.261 36.547 -65.786C59.252 -51.636 67.036 -27.537 56.734 -9.272C58.483 -7.759 59.586 -5.523 59.586 -3.030L59.586 1.570C59.586 6.143 55.879 9.850 51.306 9.850L14.506 9.850C9.933 9.850 6.226 6.143 6.226 1.570L6.226 -3.030C6.226 -5.523 7.328 -7.759 9.077 -9.272C-1.225 -27.537 6.560 -51.636 29.264 -65.786C25.212 -67.261 22.326 -71.148 22.326 -75.709C22.326 -81.553 27.062 -86.290 32.906 -86.290C38.749 -86.290 43.486 -81.553 43.486 -75.709ZM14.506 -3.950C13.998 -3.950 13.586 -3.538 13.586 -3.030L13.586 1.570C13.586 2.079 13.998 2.490 14.506 2.490L51.306 2.490C51.814 2.490 52.226 2.079 52.226 1.570L52.226 -3.030C52.226 -3.538 51.814 -3.950 51.306 -3.950ZM16.492 -11.310L49.320 -11.310C55.636 -20.948 55.240 -33.117 48.598 -43.903C48.553 -43.842 48.501 -43.785 48.448 -43.729L29.128 -23.489C27.724 -22.018 25.395 -21.964 23.925 -23.368C22.455 -24.771 22.400 -27.100 23.804 -28.570L43.124 -48.810C43.484 -49.188 43.906 -49.473 44.360 -49.661C41.306 -53.224 37.468 -56.518 32.906 -59.391C12.893 -46.787 6.814 -26.078 16.492 -11.310ZM29.686 -75.709C29.686 -73.931 31.127 -72.489 32.906 -72.489C34.684 -72.489 36.126 -73.931 36.126 -75.709C36.126 -77.488 34.684 -78.929 32.906 -78.929C31.127 -78.929 29.686 -77.488 29.686 -75.709Z"/>
+  </g>
+ </g>
+</svg>
