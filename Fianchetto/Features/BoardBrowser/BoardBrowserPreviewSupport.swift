@@ -43,7 +43,7 @@ enum BoardBrowserPreviewSupport {
             return (ConfigurationSnapshot(projectName: projectName, nodes: [
                 group(10, "개발", parent: nil, at: 0),
                 group(11, "백엔드와 인증 서버 리팩토링 참고 자료 묶음", parent: 10, at: 0),
-                group(12, "세 번째 단계로 깊게 중첩된 그룹", parent: 11, at: 0),
+                group(12, "세 번째 단계로 깊게 중첩된 Wing", parent: 11, at: 0),
                 file(13, "인증 토큰 갱신 흐름 설계 메모 최종본 v3 (검토 반영).md", parent: 12, at: 0),
                 folder(14, "legacy-authentication-service-backend", parent: 11, at: 1),
                 link(15, "API 명세 (내부 위키 · 인증 · 토큰 · 세션 관리)", parent: nil, at: 1),

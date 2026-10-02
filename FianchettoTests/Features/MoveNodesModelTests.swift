@@ -296,7 +296,7 @@ struct MoveNodesModelTests {
             }
             let notice = try #require(o.model.linkNotice)
             #expect(notice.kind == .moveIntoItself)
-            #expect(o.model.noticeText(notice) == "그룹을 자기 안으로 옮길 수 없습니다.")
+            #expect(o.model.noticeText(notice) == "Wing을 자기 안으로 옮길 수 없습니다.")
         }
     }
 

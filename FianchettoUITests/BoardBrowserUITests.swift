@@ -46,7 +46,7 @@ final class BoardBrowserUITests: XCTestCase {
         XCTAssertTrue(app.descendants(matching: .any)["board-row-Service A"].waitForExistence(timeout: 5))
 
         app.menuBars.menuBarItems["파일"].click()
-        app.menuBars.menuBarItems["파일"].menuItems["그룹 추가…"].click()
+        app.menuBars.menuBarItems["파일"].menuItems["Wing 추가…"].click()
         let field = app.textFields["node-name-field"]
         test.type("Dev", into: field)
         app.typeKey(.return, modifierFlags: [])
@@ -67,7 +67,7 @@ final class BoardBrowserUITests: XCTestCase {
         // 회귀: 선택한(접힌) 그룹 안에 그룹을 추가하면 그 그룹이 펼쳐져 새 항목이 보인다.
         core.click()
         app.menuBars.menuBarItems["파일"].click()
-        app.menuBars.menuBarItems["파일"].menuItems["그룹 추가…"].click()
+        app.menuBars.menuBarItems["파일"].menuItems["Wing 추가…"].click()
         test.type("Data", into: field)
         app.typeKey(.return, modifierFlags: [])
         XCTAssertTrue(app.descendants(matching: .any)["node-row-Data"].waitForExistence(timeout: 5))
@@ -97,7 +97,7 @@ final class BoardBrowserUITests: XCTestCase {
         }
         XCTAssertFalse(fileMenu.menuItems.allElementsBoundByIndex.contains { $0.title.contains("삭제") })
         // W11-commands: 그룹 추가·웹 링크 추가는 파일 메뉴, 이름 변경·URL 변경은 편집 메뉴에 있다.
-        XCTAssertTrue(fileMenu.menuItems["그룹 추가…"].exists)
+        XCTAssertTrue(fileMenu.menuItems["Wing 추가…"].exists)
         XCTAssertTrue(fileMenu.menuItems["웹 링크 추가…"].exists)
         // W14-commands: 열기(⌘O)·Finder에서 보기(⌘R)도 파일 메뉴에 있다.
         XCTAssertTrue(fileMenu.menuItems["열기"].exists)

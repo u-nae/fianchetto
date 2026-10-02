@@ -101,7 +101,7 @@ Fianchetto는 실제 파일을 이동하지 않고, 흩어진 로컬 파일·폴
 | Checkpoint | 하나의 Revision에 연결된 이름·진행 메모·다음 할 일·이미지 |
 | Current | 현재 revision이 가리키는 편집 가능한 구성 |
 
-화면 용어: Project는 Board, `file`/`folder` 종류의 Node는 Bishop, Group은 그룹, `webLink` 종류의 Node는 웹 링크로 표시한다([0006](decisions/0006-board-and-bishop-terms.md)). 이 문서의 나머지 부분은 데이터 모델 용어로 서술한다.
+화면 용어: Project는 Board, `file`/`folder` 종류의 Node는 Bishop, Group은 Wing([0017](decisions/0017-group-screen-term-wing.md)), `webLink` 종류의 Node는 웹 링크로 표시한다([0006](decisions/0006-board-and-bishop-terms.md)). 이 문서의 나머지 부분은 데이터 모델 용어로 서술한다.
 
 ### 불변식
 
