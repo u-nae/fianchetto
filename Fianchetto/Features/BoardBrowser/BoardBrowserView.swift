@@ -181,12 +181,9 @@ private struct ConfigurationTreeView: View {
                 model.selectedNodeID = id
                 Task { await model.selectNode(id) }
             })) {
-                OutlineGroup(model.tree, children: \.children) { item in
-                    NodeRow(model: model, node: item.node)
-                        .draggable(NodeDragItem(nodeID: item.node.id))
-                        .dropDestination(for: TreeDropItem.self) { items, _ in
-                            accept(items, on: item.node.id)
-                        }
+                // 펼침 상태는 모델이 가진다. 그룹 안에 항목을 넣으면 모델이 그 그룹을 펼쳐 새 항목이 보이게 한다.
+                ForEach(model.tree) { item in
+                    TreeBranch(model: model, item: item, accept: accept)
                 }
             }
             // 이중 클릭은 열기다. 오른쪽 클릭 메뉴는 메뉴 막대와 같은 명령이다.
@@ -205,6 +202,37 @@ private struct ConfigurationTreeView: View {
                 accept(items, on: nil)
             }
         }
+    }
+}
+
+/// 트리 한 갈래: 하위 항목이 있는 그룹은 모델의 펼침 상태에 묶인 DisclosureGroup, 나머지는 행 하나.
+private struct TreeBranch: View {
+    let model: BoardBrowserModel
+    let item: TreeItem
+    let accept: ([TreeDropItem], UUID?) -> Bool
+
+    var body: some View {
+        if let children = item.children {
+            // Observation은 body에서 읽은 값만 추적하므로 Binding 클로저 밖에서 먼저 읽는다.
+            let expanded = model.isExpanded(item.id)
+            DisclosureGroup(isExpanded: Binding(get: { expanded }, set: { model.setExpanded(item.id, $0) })) {
+                ForEach(children) { child in
+                    TreeBranch(model: model, item: child, accept: accept)
+                }
+            } label: {
+                row
+            }
+        } else {
+            row
+        }
+    }
+
+    private var row: some View {
+        NodeRow(model: model, node: item.node)
+            .draggable(NodeDragItem(nodeID: item.node.id))
+            .dropDestination(for: TreeDropItem.self) { items, _ in
+                accept(items, item.node.id)
+            }
     }
 }
 

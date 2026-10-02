@@ -166,6 +166,8 @@ final class BoardBrowserModel {
     private(set) var removal: Removal?
     /// 이번 화면 세션에서 확인한 연결 상태. 저장하지 않고 Board를 바꾸면 비운다.
     private(set) var linkStatuses: [UUID: LinkStatus] = [:]
+    /// 트리에서 펼친 그룹. 그룹 안에 항목을 넣거나 옮기면 그 그룹과 상위 그룹을 펼쳐 새 항목이 보이게 한다. Board를 바꾸면 비운다.
+    private(set) var expandedGroupIDs: Set<UUID> = []
     /// Board 전환·다시 선택·대상 변경 때 올린다. 확인을 시작할 때의 값과 다르면 늦게 온 결과를 버린다.
     private var statusEpoch = 0
     /// 이동을 저장하는 중이다. 그동안 들어온 이동은 옛 구성 기준이라 무시한다.
@@ -259,6 +261,37 @@ final class BoardBrowserModel {
     }
 
     // MARK: 현재 구성 트리
+
+    func isExpanded(_ groupID: UUID) -> Bool { expandedGroupIDs.contains(groupID) }
+
+    /// 사용자가 펼침 삼각형으로 펼치거나 접는다.
+    func setExpanded(_ groupID: UUID, _ expanded: Bool) {
+        if expanded { expandedGroupIDs.insert(groupID) } else { expandedGroupIDs.remove(groupID) }
+    }
+
+    /// 지금 트리에 보이는 항목: 최상위와, 모든 상위 그룹이 펼쳐진 항목.
+    var visibleNodeIDs: Set<UUID> {
+        var result: Set<UUID> = []
+        func walk(_ parentID: UUID?) {
+            for node in children(of: parentID) {
+                result.insert(node.id)
+                if node.kind == .group, isExpanded(node.id) { walk(node.id) }
+            }
+        }
+        walk(nil)
+        return result
+    }
+
+    /// 그룹과 그 상위 그룹을 모두 펼친다. 최상위(nil)면 아무것도 하지 않는다.
+    private func reveal(_ groupID: UUID?) {
+        guard case let .loaded(snapshot) = current else { return }
+        var next = groupID
+        var seen: Set<UUID> = []
+        while let id = next, seen.insert(id).inserted, let node = snapshot.nodes.first(where: { $0.id == id }) {
+            expandedGroupIDs.insert(id)
+            next = node.parentID
+        }
+    }
 
     func children(of parentID: UUID?) -> [ConfigurationNode] {
         guard case let .loaded(snapshot) = current else { return [] }
@@ -414,7 +447,13 @@ final class BoardBrowserModel {
         switch outcome {
         case let .committed(_, snapshot):
             nodeForm = nil
-            if selectedBoardID == form.boardID { current = .loaded(snapshot) }
+            if selectedBoardID == form.boardID {
+                current = .loaded(snapshot)
+                switch form.purpose {
+                case let .addGroup(parentID), let .addWebLink(parentID): reveal(parentID)
+                case .rename, .changeURL: break
+                }
+            }
         case .unchanged:
             nodeForm = nil
         case .rejected(.edit(.blankName)):
@@ -697,6 +736,7 @@ final class BoardBrowserModel {
             guard selectedBoardID == boardID else { return }
             current = .loaded(snapshot)
             selectedNodeID = nodeID
+            reveal(parentID)
         case .unchanged:
             break
         case .rejected(.edit(.cycle)):
@@ -987,7 +1027,10 @@ final class BoardBrowserModel {
         }
         switch outcome {
         case let .committed(_, snapshot):
-            if selectedBoardID == request.projectID { current = .loaded(snapshot) }
+            if selectedBoardID == request.projectID {
+                current = .loaded(snapshot)
+                reveal(request.parentID)
+            }
         case .unchanged:
             break
         case let .rejected(.unreachableTargets(names)):
@@ -1030,6 +1073,7 @@ final class BoardBrowserModel {
         selectedBoardID = boardID
         selectedNodeID = nil
         linkStatuses = [:]
+        expandedGroupIDs = []
         statusEpoch += 1
         guard let store = openedStore?.store else { return }
         do {
