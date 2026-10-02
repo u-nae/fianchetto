@@ -37,37 +37,48 @@
 ### 3.1 토큰 이름과 역할
 
 Asset Catalog(`Fianchetto/Assets.xcassets`)의 Color Set으로 정의한다. 코드에 hex·RGB 값을 직접 쓰지 않는다.
-빌드 설정 `ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES`가 이미 켜져 있어 `Color(.themeWalnut)`처럼
-생성된 심볼로 참조한다(문자열 이름 `Color("...")` 금지).
+빌드 설정 `ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES`가 이미 켜져 있어 `Color(.themeSurface)`처럼
+생성된 심볼로 참조한다(문자열 이름 `Color("...")` 금지). 생성 심볼 이름: `.accent`, `.themeAccentText`, `.themeSurface`,
+`.themeBoardGreen`, `.themeLine`.
 
 | 토큰 | 역할 | 쓰는 곳 |
 |---|---|---|
 | `AccentColor` | 앱 강조 색(채움) | 전역 강조. 기본 버튼 채움(흰 글자 위), 선택 표시, 포커스 |
 | `ThemeAccentText` | 강조 색의 글자·기호용 변형 | 배경 위에 강조 색으로 쓰는 글자·심볼(링크형 버튼, 강조 기호) |
-| `ThemeIvory` | 밝은 면(라이트) | 빈 화면·상세 영역 머리의 약한 면 |
-| `ThemeEbony` | 어두운 면(다크) | 같은 용도의 다크 모드 값. 보통 `ThemeSurface` 한 토큰의 다크 값으로 둔다 |
-| `ThemeSurface` | 테마 면 색(라이트=아이보리, 다크=에보니) | 실제 코드는 이 토큰만 쓴다. 위 두 토큰은 팔레트 기록용 |
+| `ThemeSurface` | 테마 면 색(라이트=아이보리, 다크=에보니) | 빈 화면·상세 영역 머리의 약한 면. 아이보리·에보니는 이 토큰의 두 값이며 따로 두지 않는다(0011) |
 | `ThemeBoardGreen` | 보조 강조(체스판 녹색) | 일러스트·아이콘 보조 색. 글자 색으로 쓰지 않는다 |
 | `ThemeLine` | 장식 구분선 | 빈 화면 일러스트·머리 장식. 목록 구분선은 시스템 것을 쓴다 |
 
 글자·기본 배경·구분선·선택 배경은 **시스템 의미 색**을 쓴다: `.primary`, `.secondary`, `Color(nsColor: .windowBackgroundColor)`,
 `.separator` 등. 테마 토큰으로 바꾸지 않는다.
 
-### 3.2 후보 팔레트 (디자인 세션이 확정)
+### 3.2 팔레트 (0011 확정)
 
-| 토큰 | 라이트 | 다크 | 비고 |
-|---|---|---|---|
-| `AccentColor` | `#8A5A2E` 월넛 | `#A06C38` | 흰 글자 대비: 라이트 5.86:1, 다크 4.47:1(경계, 조정 필요) |
-| `ThemeAccentText` | `#8A5A2E` | `#D2A06A` | 다크 배경(#1E1E1E) 위 7.13:1 |
-| `ThemeSurface` | `#F6F1E7` 아이보리 | `#2A2520` 에보니 | 위 글자(#2C2621 / #EDE6D8) 대비 13:1 안팎 |
-| `ThemeBoardGreen` | `#3F6B4A` | `#8DB596` | 흰 배경 6.15:1, 다크 배경 7.29:1 |
-| `ThemeLine` | `#D9CDB8` | `#4A4037` | 장식용(대비 요구 없음) |
+| 토큰 | 라이트 | 다크 | 라이트 고대비 | 다크 고대비 |
+|---|---|---|---|---|
+| `AccentColor` | `#8A5A2E` 월넛 | `#9D6634` | `#6B4624` | `#A16936` |
+| `ThemeAccentText` | `#8A5A2E` | `#D2A06A` | `#6B4624` | `#E6C6A8` |
+| `ThemeSurface` | `#F6F1E7` 아이보리 | `#2A2520` 에보니 | `#FFFFFF` | `#1E1E1E` |
+| `ThemeBoardGreen` | `#3F6B4A` | `#8DB596` | `#2F5539` | `#B3D4BA` |
+| `ThemeLine` | `#D9CDB8` | `#4A4037` | `#8C7A60` | `#9A8A74` |
 
-대비 수치는 이 문서 작성 시 WCAG 상대 휘도 식으로 계산한 값이다. 확정 전 Xcode의 Accessibility Inspector(색 대비 계산기)로 다시 잰다.
+대비(WCAG 상대 휘도 식, 배경은 개발 기기의 시스템 배경 `#FFFFFF`/`#1E1E1E`):
 
-**알려진 긴장:** macOS는 강조 색 채움 위에 흰 글자를 그린다. 다크 모드에서 밝은 월넛(#D2A06A)은 어두운 배경 위 글자로는
-좋지만(7.13:1) 흰 글자를 올리면 2.34:1로 부족하다. 그래서 채움용 `AccentColor`와 글자용 `ThemeAccentText`를 나눴다.
-`AccentColor` 다크 값은 흰 글자 4.5:1 이상과 어두운 배경 위 3:1 이상(선택 표시 등 UI 요소)을 함께 만족하는 값을 고른다.
+| 조합 | 라이트 | 다크 | 라이트 고대비 | 다크 고대비 |
+|---|---|---|---|---|
+| `AccentColor` 위 흰 글자 | 5.86 | 4.79 | 8.31 | 4.58 |
+| `AccentColor` 대 배경(UI 요소) | 5.86 | 3.48 | 8.31 | 3.64 |
+| `ThemeAccentText` 대 배경 | 5.86 | 7.13 | 8.31 | 10.33 |
+| `ThemeAccentText` 대 `ThemeSurface` | 5.21 | 6.49 | — | — |
+| `ThemeBoardGreen` 대 배경 | 6.15 | 7.29 | 8.47 | 10.35 |
+
+- 채움용 `AccentColor`와 글자용 `ThemeAccentText`를 나눈다. macOS는 강조 색 채움 위에 흰 글자를 그린다. 다크 모드의 밝은 월넛
+  (`#D2A06A`)은 어두운 배경 위 글자로는 좋지만(7.13:1) 흰 글자를 올리면 2.34:1로 부족하기 때문이다.
+- `AccentColor` 다크 값은 흰 글자 4.5:1과 `#1E1E1E` 대비 3:1을 함께 만족하는 범위(상대 휘도 0.139–0.183)에서 골랐다.
+  `#323232`처럼 더 밝은 배경 위에서는 3:1과 흰 글자 4.5:1을 동시에 만족하는 색이 없다(`#9D6634`는 2.68). 이 경우 흰 글자
+  대비를 우선한다.
+- 고대비에서 `ThemeSurface`는 시스템 배경 값으로 돌아가고, 나머지는 대비를 높인다.
+- 고대비 값과 macOS 15에서의 실제 모습은 실기에서 Accessibility Inspector로 다시 잰다(W27).
 
 ### 3.3 대비·변형 기준
 
@@ -173,7 +184,7 @@ W15에서 연결 상태를 트리에 표시한다. 상태 이름은 W14 안내 �
 
 ## 12. 코드 구조
 
-- 자산: `Fianchetto/Assets.xcassets`(아직 없음, 디자인 세션이 만든다). 소스 폴더가 폴더 동기화 그룹이라 폴더를 만들면
+- 자산: `Fianchetto/Assets.xcassets`(0011에서 만듦). 소스 폴더가 폴더 동기화 그룹이라 폴더를 만들면
   target에 자동 포함된다. pbxproj의 파일 목록은 고치지 않는다.
 - 빌드 설정(앱 target Debug·Release 모두): 강조 색을 쓰면 `ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor`,
   아이콘을 쓰면 `ASSETCATALOG_COMPILER_APPICON_NAME = <아이콘 이름>`. pbxproj를 직접 고치거나 Xcode에서 설정한다.
@@ -208,7 +219,7 @@ W15에서 연결 상태를 트리에 표시한다. 상태 이름은 W14 안내 �
 
 ## 15. 디자인 세션이 정할 것
 
-- [ ] `AccentColor` 라이트·다크·고대비 값(3.2의 긴장 해소)
+- [x] `AccentColor` 라이트·다크·고대비 값(3.2의 긴장 해소) — 0011
 - [ ] `ThemeSurface`를 상세 영역에 쓸지, 빈 화면에만 쓸지
 - [ ] Bishop 커스텀 심볼 채택 여부와 모양(파일/폴더 구분 방식)
 - [ ] 앱 아이콘 모티프와 macOS 15 이전 형식 처리
