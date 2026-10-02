@@ -80,11 +80,27 @@ final class FakeScopedResource: SecurityScopedResource, Sendable {
 /// 실제 Foundation 북마크 호출을 쓰되, 지정한 이름의 대상은 북마크 생성을 실패시키고 호출 스레드를 기록한다.
 final class ScriptedBookmarkSystem: BookmarkSystem {
     private let real = FoundationBookmarkSystem()
-    private let state = Mutex((failNames: Set<String>(), failuresLeft: Int.max, onMain: [Bool](), resolveError: NSError?.none, volumeUnmounted: false))
+    private let state = Mutex((failNames: Set<String>(), failuresLeft: Int.max, onMain: [Bool](), resolveError: NSError?.none, volumeUnmounted: false,
+                                     scopedOnly: false, scopedResolutions: [String](), gate: ResolutionGate?.none))
 
     /// 이후 모든 해석(범위 있음·없음)을 이 오류로 실패시킨다. volumeUnmounted면 기록된 볼륨도 연결돼 있지 않은 것으로 보인다.
-    func failResolution(with error: NSError, volumeUnmounted: Bool = false) {
-        state.withLock { $0.resolveError = error; $0.volumeUnmounted = volumeUnmounted }
+    /// scopedOnly면 보안 범위 해석만 실패하고 범위 없는 해석(분류·식별자 확인용)은 실제로 한다.
+    func failResolution(with error: NSError, volumeUnmounted: Bool = false, scopedOnly: Bool = false) {
+        state.withLock { $0.resolveError = error; $0.volumeUnmounted = volumeUnmounted; $0.scopedOnly = scopedOnly }
+    }
+
+    func clearResolutionFailure() {
+        state.withLock { $0.resolveError = nil; $0.volumeUnmounted = false; $0.scopedOnly = false }
+    }
+
+    /// 보안 범위 해석을 요청한 대상의 마지막 경로 이름(호출 순서). 범위 없는 재해석은 세지 않는다.
+    var scopedResolutions: [String] { state.withLock { $0.scopedResolutions } }
+
+    /// 다음 보안 범위 해석 하나를 게이트가 열릴 때까지 멈춘다.
+    func pauseNextResolution() -> ResolutionGate {
+        let gate = ResolutionGate()
+        state.withLock { $0.gate = gate }
+        return gate
     }
 
     private static let missingVolume = "/Volumes/fianchetto-test-missing-volume"
@@ -108,7 +124,19 @@ final class ScriptedBookmarkSystem: BookmarkSystem {
     }
 
     func resolve(_ data: Data, options: URL.BookmarkResolutionOptions) throws -> (url: URL, isStale: Bool) {
-        if let error = state.withLock({ $0.resolveError }) { throw error }
+        let scoped = options.contains(.withSecurityScope)
+        let (error, gate) = state.withLock { state -> (NSError?, ResolutionGate?) in
+            var gate: ResolutionGate?
+            if scoped {
+                state.scopedResolutions.append(real.bookmarkedPath(of: data).map { URL(filePath: $0).lastPathComponent } ?? "?")
+                gate = state.gate
+                state.gate = nil
+            }
+            let fails = state.resolveError != nil && (scoped || !state.scopedOnly)
+            return (fails ? state.resolveError : nil, gate)
+        }
+        gate?.block()
+        if let error { throw error }
         return try real.resolve(data, options: options)
     }
 
@@ -118,6 +146,31 @@ final class ScriptedBookmarkSystem: BookmarkSystem {
     }
     func itemKind(at url: URL) throws -> LinkedTarget.Kind { try real.itemKind(at: url) }
     func fileExists(atPath path: String) -> Bool { path == Self.missingVolume ? false : real.fileExists(atPath: path) }
+}
+
+/// 해석 하나를 멈춰 두는 게이트. 테스트는 entered()로 멈춘 것을 확인하고 release()로 진행시킨다(sleep 없음).
+final class ResolutionGate: Sendable {
+    private let semaphore = DispatchSemaphore(value: 0)
+    private let enteredStream: AsyncStream<Void>
+    private let enteredContinuation: AsyncStream<Void>.Continuation
+
+    init() {
+        (enteredStream, enteredContinuation) = AsyncStream<Void>.makeStream()
+    }
+
+    /// 해석하는 쪽(MainActor 밖)에서 부른다.
+    func block() {
+        enteredContinuation.yield()
+        semaphore.wait()
+    }
+
+    func entered() async {
+        for await _ in enteredStream { return }
+    }
+
+    func release() {
+        semaphore.signal()
+    }
 }
 
 /// 임시 디렉토리에 파일·폴더를 만든다.

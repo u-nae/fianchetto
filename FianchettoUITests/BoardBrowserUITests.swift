@@ -93,6 +93,9 @@ final class BoardBrowserUITests: XCTestCase {
         // W14-commands: 열기(⌘O)·Finder에서 보기(⌘R)도 파일 메뉴에 있다.
         XCTAssertTrue(fileMenu.menuItems["열기"].exists)
         XCTAssertTrue(fileMenu.menuItems["Finder에서 보기"].exists)
+        // W15-commands: 다시 선택…·상태 새로고침도 파일 메뉴에 있다.
+        XCTAssertTrue(fileMenu.menuItems["다시 선택…"].exists)
+        XCTAssertTrue(fileMenu.menuItems["상태 새로고침"].exists)
         app.typeKey(.escape, modifierFlags: [])
         let editMenu = app.menuBars.menuBarItems["편집"]
         editMenu.click()

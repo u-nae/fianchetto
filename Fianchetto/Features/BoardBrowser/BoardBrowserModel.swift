@@ -6,6 +6,8 @@ struct NodeInspection: Equatable {
     var displayName: String
     var kind: String
     var target: String?
+    /// 확인한 연결 상태 문구. 정상이거나 확인 전이면 nil.
+    var status: String?
 }
 
 /// 트리 한 행. 하위 항목은 펼칠 수 있는 그룹에만 있다.
@@ -162,6 +164,10 @@ final class BoardBrowserModel {
     var nodeForm: NodeForm?
     private(set) var moveDialog: MoveDialog?
     private(set) var removal: Removal?
+    /// 이번 화면 세션에서 확인한 연결 상태. 저장하지 않고 Board를 바꾸면 비운다.
+    private(set) var linkStatuses: [UUID: LinkStatus] = [:]
+    /// Board 전환·다시 선택·대상 변경 때 올린다. 확인을 시작할 때의 값과 다르면 늦게 온 결과를 버린다.
+    private var statusEpoch = 0
     /// 이동을 저장하는 중이다. 그동안 들어온 이동은 옛 구성 기준이라 무시한다.
     private var isMoving = false
     private(set) var openedStore: OpenedStore?
@@ -284,7 +290,9 @@ final class BoardBrowserModel {
     }
 
     func accessibilityLabel(for node: ConfigurationNode) -> String {
-        "\(node.displayName), \(kindText(for: node))"
+        let base = "\(node.displayName), \(kindText(for: node))"
+        guard let status = displayedStatus(of: node.id) else { return base }
+        return "\(base), \(statusText(status))"
     }
 
     var inspector: NodeInspection? {
@@ -297,7 +305,10 @@ final class BoardBrowserModel {
         case .folder: String(localized: "Bishop(폴더)")
         case .webLink: String(localized: "웹 링크")
         }
-        return NodeInspection(displayName: node.displayName, kind: kind, target: node.recordedPath ?? node.url)
+        return NodeInspection(
+            displayName: node.displayName, kind: kind, target: node.recordedPath ?? node.url,
+            status: displayedStatus(of: node.id).map(statusText)
+        )
     }
 
     // MARK: Board 만들기
@@ -726,7 +737,18 @@ final class BoardBrowserModel {
     /// 열기는 조회라 보관된 Board에서도 한다(0009는 편집만 막는다).
     private func perform(_ command: OpenCommand, on nodeID: UUID) async {
         guard let boardID = selectedBoardID, let opening = openedStore?.opening else { return }
-        if case let .failed(failure) = await opening.perform(command, projectID: boardID, nodeID: nodeID) {
+        let isLinked = selectedNode.map { $0.kind == .file || $0.kind == .folder } ?? false
+        let epoch = statusEpoch
+        let outcome = await opening.perform(command, projectID: boardID, nodeID: nodeID)
+        // 열기도 상태 확인이다(W15): 해석 결과를 그 항목의 상태로 남긴다.
+        if isLinked, epoch == statusEpoch {
+            switch outcome {
+            case .opened: linkStatuses[nodeID] = .healthy
+            case let .failed(.unreachable(cause)): linkStatuses[nodeID] = LinkStatus(cause)
+            case .failed, .notApplicable: break
+            }
+        }
+        if case let .failed(failure) = outcome {
             linkNotice = LinkNotice(kind: .openFailed(failure), request: nil, action: .open)
         }
     }
@@ -739,6 +761,69 @@ final class BoardBrowserModel {
         case .unreachable(.volumeUnavailable): String(localized: "열지 못했습니다. 상태: 볼륨 연결 필요")
         case .unreachable(.checkFailed): String(localized: "열지 못했습니다. 상태: 확인 실패")
         case .launchFailed, .unreadable: String(localized: "열지 못했습니다.")
+        }
+    }
+
+    // MARK: 연결 상태와 다시 선택
+
+    /// 화면에 보일 상태. 정상이거나 확인 전이면 nil이다.
+    func displayedStatus(of nodeID: UUID) -> LinkStatus? {
+        guard let status = linkStatuses[nodeID], status != .healthy else { return nil }
+        return status
+    }
+
+    func statusText(_ status: LinkStatus) -> String {
+        switch status {
+        case .healthy: String(localized: "정상")
+        case .accessRequired: String(localized: "권한 필요")
+        case .missing: String(localized: "대상 없음")
+        case .volumeUnavailable: String(localized: "볼륨 연결 필요")
+        case .checkFailed: String(localized: "확인 실패")
+        }
+    }
+
+    /// 트리에서 항목을 고른다. Bishop이면 그 항목의 상태를 확인한다(선택 때만, PRD §8).
+    func selectNode(_ nodeID: UUID?) async {
+        selectedNodeID = nodeID
+        guard let nodeID, let node = selectedNode, node.kind == .file || node.kind == .folder,
+              let boardID = selectedBoardID, let links = openedStore?.links
+        else { return }
+        let epoch = statusEpoch
+        let status = await links.check(projectID: boardID, nodeID: nodeID)
+        guard epoch == statusEpoch, selectedBoardID == boardID, let status else { return }
+        linkStatuses[nodeID] = status
+    }
+
+    /// Board의 모든 Bishop을 한 번씩 다시 확인한다. 기록하지 않는다.
+    func refreshStatuses() async {
+        guard let boardID = selectedBoardID, let links = openedStore?.links else { return }
+        let epoch = statusEpoch
+        let statuses = await links.checkAll(projectID: boardID)
+        guard epoch == statusEpoch, selectedBoardID == boardID else { return }
+        linkStatuses.merge(statuses) { _, new in new }
+    }
+
+    var canReselectSelected: Bool { selectedNode.map { $0.kind == .file || $0.kind == .folder } ?? false }
+
+    /// 다시 선택: 같은 대상이면 접근을 복구하고, 아니면 연결 대상 변경 확인 창을 연다.
+    func reselectSelectedTarget() async {
+        guard canReselectSelected, let node = selectedNode, let boardID = selectedBoardID,
+              let service = openedStore?.replacement
+        else { return }
+        let kind: LinkedTarget.Kind = node.kind == .folder ? .folder : .file
+        guard let url = dependencies.pickReplacement(kind) else { return }
+        do {
+            switch try await service.reselect(projectID: boardID, nodeID: node.id, newURL: url) {
+            case .recovered:
+                statusEpoch += 1
+                if selectedBoardID == boardID { linkStatuses[node.id] = .healthy }
+            case let .needsConfirmation(preview):
+                replacement = preview
+            case let .rejected(rejection):
+                linkNotice = notice(for: rejection, url: url)
+            }
+        } catch {
+            linkNotice = LinkNotice(kind: .saveFailed, request: nil)
         }
     }
 
@@ -870,7 +955,11 @@ final class BoardBrowserModel {
         }
         switch outcome {
         case let .committed(_, snapshot):
-            if selectedBoardID == preview.projectID { current = .loaded(snapshot) }
+            statusEpoch += 1
+            if selectedBoardID == preview.projectID {
+                current = .loaded(snapshot)
+                linkStatuses[preview.nodeID] = nil
+            }
         case .unchanged:
             linkNotice = LinkNotice(kind: .alreadyLinked, request: nil)
         case let .rejected(rejection):
@@ -940,6 +1029,8 @@ final class BoardBrowserModel {
     private func loadCurrent(of boardID: UUID) async {
         selectedBoardID = boardID
         selectedNodeID = nil
+        linkStatuses = [:]
+        statusEpoch += 1
         guard let store = openedStore?.store else { return }
         do {
             current = .loaded(try await store.currentSnapshot(projectID: boardID))
@@ -948,3 +1039,17 @@ final class BoardBrowserModel {
         }
     }
 }
+
+#if DEBUG
+extension BoardBrowserModel {
+    /// Xcode Preview 전용: 저장소를 열지 않고 화면 상태를 채운다. 실제 저장소·파일에 접근하지 않는다.
+    func loadPreview(boards: [ProjectListing], selectedBoardID: UUID?, snapshot: ConfigurationSnapshot?, statuses: [UUID: LinkStatus]) {
+        phase = .ready
+        activeBoards = boards.filter { $0.archivedAt == nil }
+        archivedBoards = boards.filter { $0.archivedAt != nil }
+        self.selectedBoardID = selectedBoardID
+        current = snapshot.map(CurrentConfiguration.loaded) ?? .none
+        linkStatuses = statuses
+    }
+}
+#endif

@@ -8,4 +8,5 @@ struct OpenedStore: Sendable {
     let replacement: TargetReplacementService
     let lifecycle: ProjectLifecycleService
     let opening: TargetOpeningService
+    let links: LinkStatusService
 }

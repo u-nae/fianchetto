@@ -174,7 +174,11 @@ private struct ConfigurationTreeView: View {
                 }
         case .loaded:
             let selectedNode = model.selectedNodeID
-            List(selection: Binding(get: { selectedNode }, set: { model.selectedNodeID = $0 })) {
+            // 선택은 바로 반영하고, Bishop이면 연결 상태를 확인한다(W15).
+            List(selection: Binding(get: { selectedNode }, set: { id in
+                model.selectedNodeID = id
+                Task { await model.selectNode(id) }
+            })) {
                 OutlineGroup(model.tree, children: \.children) { item in
                     NodeRow(model: model, node: item.node)
                         .draggable(NodeDragItem(nodeID: item.node.id))
@@ -227,6 +231,9 @@ private struct NodeRow: View {
             HStack {
                 Text(node.displayName)
                 Text(model.kindText(for: node)).font(.caption).foregroundStyle(.secondary)
+                if let status = model.displayedStatus(of: node.id), let presentation = LinkStatusPresentation.of(status) {
+                    LinkStatusLabel(text: model.statusText(status), presentation: presentation)
+                }
             }
         } icon: {
             Image(systemName: icon)
@@ -351,6 +358,16 @@ private struct NodeInspectorView: View {
                 LabeledContent("종류", value: inspection.kind)
                 if let target = inspection.target {
                     LabeledContent("대상", value: target)
+                }
+                if let id = model.selectedNodeID, let status = model.displayedStatus(of: id),
+                   let presentation = LinkStatusPresentation.of(status) {
+                    LabeledContent("상태") {
+                        LinkStatusLabel(text: model.statusText(status), presentation: presentation)
+                    }
+                    HStack {
+                        Button("다시 선택…") { Task { await model.reselectSelectedTarget() } }
+                        Button("상태 새로고침") { Task { await model.refreshStatuses() } }
+                    }
                 }
                 HStack {
                     if model.canOpenSelected {

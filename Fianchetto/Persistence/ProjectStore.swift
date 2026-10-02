@@ -111,6 +111,17 @@ actor ProjectStore {
         try commit()
     }
 
+    /// 같은 참조의 접근 정보(북마크)와 마지막 확인 위치만 바꾼다. 참조 식별자·처음 경로·revision은 그대로다(불변식 8).
+    func updateReferenceAccess(_ id: UUID, bookmarkData: Data, lastResolvedPath: String?) throws(ProjectStoreError) {
+        do {
+            try adapter.updateReference(id, bookmarkData: bookmarkData, lastResolvedPath: lastResolvedPath)
+        } catch {
+            modelContext.rollback()
+            throw .storeUnavailable
+        }
+        try commit()
+    }
+
     // MARK: 읽기
 
     func projects() throws(StoreReadError) -> [ProjectRecord] {

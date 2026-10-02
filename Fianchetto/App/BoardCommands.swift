@@ -37,6 +37,8 @@ struct BoardCommands: Commands {
                 .keyboardShortcut("o")
             Button("Finder에서 보기") { Task { await model?.revealSelected() } }
                 .keyboardShortcut("r")
+            Button("다시 선택…") { Task { await model?.reselectSelectedTarget() } }
+            Button("상태 새로고침") { Task { await model?.refreshStatuses() } }
             Divider()
             Button("Board 이름 변경…") { model?.beginRename() }
             Button("Board 보관") { Task { await model?.archiveSelected() } }
