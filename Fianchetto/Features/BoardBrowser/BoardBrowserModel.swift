@@ -316,7 +316,7 @@ final class BoardBrowserModel {
 
     func kindText(for node: ConfigurationNode) -> String {
         switch node.kind {
-        case .group: String(localized: "그룹")
+        case .group: String(localized: "Wing")
         case .file, .folder: String(localized: "Bishop")
         case .webLink: String(localized: "웹 링크")
         }
@@ -333,7 +333,7 @@ final class BoardBrowserModel {
               let id = selectedNodeID, let node = snapshot.nodes.first(where: { $0.id == id })
         else { return nil }
         let kind = switch node.kind {
-        case .group: String(localized: "그룹")
+        case .group: String(localized: "Wing")
         case .file: String(localized: "Bishop(파일)")
         case .folder: String(localized: "Bishop(폴더)")
         case .webLink: String(localized: "웹 링크")
@@ -631,7 +631,7 @@ final class BoardBrowserModel {
         case .changeFailed:
             String(localized: "연결 대상을 바꾸지 못했습니다.")
         case .moveIntoItself:
-            String(localized: "그룹을 자기 안으로 옮길 수 없습니다.")
+            String(localized: "Wing을 자기 안으로 옮길 수 없습니다.")
         case .moveIntoNonGroup:
             String(localized: "그 항목 안으로는 옮길 수 없습니다.")
         case let .openFailed(failure):
@@ -911,7 +911,7 @@ final class BoardBrowserModel {
 
     func removalTitle(_ removal: Removal) -> String {
         switch removal.kind {
-        case .group: String(localized: "그룹 제거")
+        case .group: String(localized: "Wing 제거")
         case .file, .folder: String(localized: "Bishop 제거")
         case .webLink: String(localized: "웹 링크 제거")
         }
@@ -920,9 +920,9 @@ final class BoardBrowserModel {
     func removalMessage(_ removal: Removal) -> String {
         let target = switch removal.kind {
         case .group where removal.descendantCount == 0:
-            String(localized: "그룹 \"\(removal.name)\"(포함된 항목 없음)")
+            String(localized: "Wing \"\(removal.name)\"(포함된 항목 없음)")
         case .group:
-            String(localized: "그룹 \"\(removal.name)\"(포함된 항목 \(removal.descendantCount)개)")
+            String(localized: "Wing \"\(removal.name)\"(포함된 항목 \(removal.descendantCount)개)")
         case .file, .folder:
             String(localized: "Bishop \"\(removal.name)\"")
         case .webLink:

@@ -90,8 +90,8 @@ struct RemoveNodesModelTests {
     }
 
     nonisolated static let dialogs: [DialogCase] = [
-        DialogCase(item: "개발", title: "그룹 제거", message: "현재 구성에서 제거합니다: 그룹 \"개발\"(포함된 항목 4개)."),
-        DialogCase(item: "보관함", title: "그룹 제거", message: "현재 구성에서 제거합니다: 그룹 \"보관함\"(포함된 항목 없음)."),
+        DialogCase(item: "개발", title: "Wing 제거", message: "현재 구성에서 제거합니다: Wing \"개발\"(포함된 항목 4개)."),
+        DialogCase(item: "보관함", title: "Wing 제거", message: "현재 구성에서 제거합니다: Wing \"보관함\"(포함된 항목 없음)."),
         DialogCase(item: "backend", title: "Bishop 제거", message: "현재 구성에서 제거합니다: Bishop \"backend\"."),
         DialogCase(item: "API 명세", title: "웹 링크 제거", message: "현재 구성에서 제거합니다: 웹 링크 \"API 명세\"."),
     ]

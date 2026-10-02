@@ -454,7 +454,7 @@ private struct NodeFormSheet: View {
 
     private func title(_ purpose: BoardBrowserModel.NodeForm.Purpose?) -> String {
         switch purpose {
-        case .addGroup: String(localized: "그룹 추가")
+        case .addGroup: String(localized: "Wing 추가")
         case .addWebLink: String(localized: "웹 링크 추가")
         case .rename: String(localized: "이름 변경")
         case .changeURL: String(localized: "URL 변경")

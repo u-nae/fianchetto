@@ -103,7 +103,7 @@ Asset Catalog(`Fianchetto/Assets.xcassets`)의 Color Set으로 정의한다. 코
 
 | 쓰임 | 현재 기호 | 위치 |
 |---|---|---|
-| 그룹 | `folder` | 트리 행(`NodeRow`) |
+| Wing(가상 그룹) | `folder` | 트리 행(`NodeRow`) |
 | Bishop(파일) | `fianchetto.bishop`(커스텀, 0013) | 트리 행 |
 | Bishop(폴더) | `fianchetto.bishop.folder`(커스텀, 0013) | 트리 행 |
 | 웹 링크 | `link` | 트리 행 |

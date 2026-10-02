@@ -175,7 +175,7 @@ struct BoardBrowserModelTests {
             #expect(harness.model.children(of: development.id).map(\.displayName) == ["설계 메모", "backend"])
             let backend = try #require(snapshot.node(named: "backend"))
             #expect(harness.model.childrenIfExpandable(backend) == nil)
-            #expect(harness.model.kindText(for: development) == "그룹")
+            #expect(harness.model.kindText(for: development) == "Wing")
             #expect(harness.model.kindText(for: backend) == "Bishop")
             #expect(harness.model.kindText(for: try #require(snapshot.node(named: "API 명세"))) == "웹 링크")
         }
@@ -460,7 +460,7 @@ struct BoardBrowserModelTests {
             let archived = try #require(harness.model.archivedBoards.first)
             #expect(harness.model.accessibilityLabel(for: archived).contains("옛 프로젝트"))
             #expect(harness.model.accessibilityLabel(for: archived).contains("보관됨"))
-            for (name, kind) in [("개발", "그룹"), ("backend", "Bishop"), ("API 명세", "웹 링크")] {
+            for (name, kind) in [("개발", "Wing"), ("backend", "Bishop"), ("API 명세", "웹 링크")] {
                 let label = harness.model.accessibilityLabel(for: try #require(snapshot.node(named: name)))
                 #expect(label.contains(name) && label.contains(kind))
             }
