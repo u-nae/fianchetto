@@ -43,6 +43,12 @@ struct TargetOpeningService: Sendable {
             return .failed(.unreadable)
         }
         guard let node = snapshot.nodes.first(where: { $0.id == nodeID }) else { return .notApplicable }
+        return await perform(command, node: node)
+    }
+
+    /// 주어진 Node를 연다. 과거 구성의 항목은 그 revision의 Node를 넘긴다: Bishop은 그 참조가 지금 해석하는 대상,
+    /// 웹 링크는 당시 URL을 연다(PRD §6-D, 0003). 현재 구성을 다시 읽지 않는다.
+    func perform(_ command: OpenCommand, node: ConfigurationNode) async -> OpenOutcome {
         switch (node.kind, command) {
         case (.group, _), (.webLink, .reveal):
             return .notApplicable

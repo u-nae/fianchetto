@@ -149,6 +149,44 @@ final class BoardBrowserUITests: XCTestCase {
         XCTAssertTrue(second.waitForNonExistence(timeout: 5))
     }
 
+    /// W18-past-view·W18-return-to-current: 이력에서 Wing을 더하기 전 revision을 고르면 과거 구성 띠가 보이고 Wing이 사라지며,
+    /// 띠의 '현재로 돌아가기'로 현재 구성에 돌아온다.
+    @MainActor
+    func test_W18_pastConfigurationAndReturn() {
+        let test = UITestApp(name: "past")
+        test.launch()
+        defer { test.terminate() }
+        let app = test.app
+        XCTAssertTrue(app.staticTexts["Board가 없습니다"].waitForExistence(timeout: 10))
+        test.activateForKeyboard()
+        app.typeKey("n", modifierFlags: .command)
+        test.type("Past", into: app.textFields["board-name-field"])
+        app.typeKey(.return, modifierFlags: [])
+        XCTAssertTrue(app.descendants(matching: .any)["board-row-Past"].waitForExistence(timeout: 5))
+        app.menuBars.menuBarItems["파일"].click()
+        app.menuBars.menuBarItems["파일"].menuItems["Wing 추가…"].click()
+        test.type("Dev", into: app.textFields["node-name-field"])
+        app.typeKey(.return, modifierFlags: [])
+        let wing = app.descendants(matching: .any)["node-row-Dev"]
+        XCTAssertTrue(wing.waitForExistence(timeout: 5))
+
+        let viewMenu = app.menuBars.menuBarItems["보기"]
+        viewMenu.click()
+        XCTAssertFalse(viewMenu.menuItems["현재 구성으로 돌아가기"].isEnabled)
+        viewMenu.menuItems["이력 보기"].click()
+        let first = app.descendants(matching: .any)["revision-row-1"]
+        XCTAssertTrue(first.waitForExistence(timeout: 5))
+        first.click()
+        let banner = app.descendants(matching: .any)["past-banner"]
+        XCTAssertTrue(banner.waitForExistence(timeout: 5))
+        XCTAssertTrue((banner.label as String).hasPrefix("과거 구성, 읽기 전용, #1, "), banner.label)
+        XCTAssertTrue(wing.waitForNonExistence(timeout: 5))
+
+        app.buttons["return-to-current"].click()
+        XCTAssertTrue(banner.waitForNonExistence(timeout: 5))
+        XCTAssertTrue(wing.waitForExistence(timeout: 5))
+    }
+
     /// W07-ui-menu-command: 파일 메뉴에 ⌘N의 "Board 만들기…"가 있다.
     @MainActor
     func test_W07_fileMenuHasCreateBoardCommand() {

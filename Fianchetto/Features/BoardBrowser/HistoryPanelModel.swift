@@ -54,6 +54,10 @@ final class HistoryPanelModel {
     private(set) var selectedRevisionID: UUID?
     /// 고른 revision의 구성(W18이 가운데 영역에 그린다).
     private(set) var selectedSnapshot: ConfigurationSnapshot?
+    /// 고른 revision의 목록 정보(과거 구성 띠의 순번·기록 시각).
+    private(set) var selectedSummary: RevisionSummary?
+    /// 고른 revision이 바뀐 뒤 부른다(과거·현재 모드 전환, W18).
+    var selectionChanged: (@MainActor () async -> Void)?
     /// 날짜로 찾은 시각이 Board가 생기기 전이다.
     private(set) var lookupFoundNothing = false
     /// 날짜로 찾은 행. 화면이 그 행으로 스크롤한다.
@@ -91,6 +95,7 @@ final class HistoryPanelModel {
         notice = nil
         selectedRevisionID = nil
         selectedSnapshot = nil
+        selectedSummary = nil
         lookupFoundNothing = false
         scrollTarget = nil
         isLoaded = false
@@ -146,8 +151,11 @@ final class HistoryPanelModel {
     func select(_ selection: Selection) async {
         switch selection {
         case .current:
+            guard selectedRevisionID != nil else { return }
             selectedRevisionID = nil
             selectedSnapshot = nil
+            selectedSummary = nil
+            await selectionChanged?()
         case let .revision(id):
             guard id != selectedRevisionID, let store = store() else { return }
             let boardID = boardID
@@ -156,6 +164,8 @@ final class HistoryPanelModel {
                 guard self.boardID == boardID else { return }
                 selectedRevisionID = id
                 selectedSnapshot = snapshot
+                selectedSummary = rows.first { $0.id == id }?.summary
+                await selectionChanged?()
             } catch {
                 guard self.boardID == boardID else { return }
                 notice = .unreadableRevision
@@ -225,6 +235,11 @@ final class HistoryPanelModel {
         row.summary.recordedAt.formatted(Date.FormatStyle(
             date: .omitted, time: .shortened, locale: environment.locale, calendar: calendar, timeZone: calendar.timeZone
         ))
+    }
+
+    /// 날짜와 시각(시스템 시간대·로캘). 과거 구성 띠의 기록 시각에 쓴다.
+    func dateTimeText(_ date: Date) -> String {
+        date.formatted(Date.FormatStyle(date: .long, time: .shortened, locale: environment.locale, calendar: calendar, timeZone: calendar.timeZone))
     }
 
     /// 행 아래 줄: '#순번 · 시각'.

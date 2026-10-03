@@ -68,6 +68,9 @@ struct BoardCommands: Commands {
             Button("이력 보기") { Task { await model?.toggleHistory() } }
                 .keyboardShortcut("y")
                 .disabled(!isEnabled(\.canShowHistory))
+            // 과거 구성에서 현재 구성으로(W18, DESIGN.md 16.4).
+            Button("현재 구성으로 돌아가기") { Task { await model?.returnToCurrent() } }
+                .disabled(!isEnabled(\.canReturnToCurrent))
         }
         // 첫 버전에는 도움말 문서가 없으므로, 눌러도 "도움말을 사용할 수 없음"만 뜨는 기본 항목을 뺀다(메뉴 검색은 시스템이 유지한다).
         CommandGroup(replacing: .help) {}

@@ -5,6 +5,10 @@
       "comment" : "revision 행 아래 줄: 순번과 기록 시각(W17).",
       "extractionState" : "manual"
     },
+    "#%lld · %@ 기록" : {
+      "comment" : "과거 구성 띠 둘째 줄: 순번과 실제 기록 시각(W18).",
+      "extractionState" : "manual"
+    },
     "#%lld에서 복원" : {
       "comment" : "원인 문구: 출처 revision 순번에서 복원(W17, DESIGN.md 16.2).",
       "extractionState" : "manual"
@@ -123,8 +127,24 @@
     "같은 대상인지 확인할 수 없어 연결 대상 변경으로 기록됩니다." : {
       "extractionState" : "manual"
     },
+    "고른 항목" : {
+      "comment" : "이력 탭 아래쪽 카드 제목(W18, 16.2).",
+      "extractionState" : "manual"
+    },
+    "과거 구성 · 읽기 전용" : {
+      "comment" : "과거 구성 띠 첫 줄(W18, DESIGN.md 16.3). 색만으로 구분하지 않는다.",
+      "extractionState" : "manual"
+    },
+    "과거 구성, 읽기 전용, #%lld, %@ 기록" : {
+      "comment" : "과거 구성 띠의 VoiceOver 라벨(W18, 16.3).",
+      "extractionState" : "manual"
+    },
     "과거 구성에서 만듦" : {
       "comment" : "원인 문구: 과거 구성에서 새 Board(DESIGN.md 16.2).",
+      "extractionState" : "manual"
+    },
+    "과거 구성에서는 같은 대상의 접근만 복구할 수 있습니다." : {
+      "comment" : "과거 화면 다시 선택에서 다른 대상을 고름(W18, PRD §6-H).",
       "extractionState" : "manual"
     },
     "구성이 비어 있습니다" : {
@@ -161,6 +181,18 @@
       "extractionState" : "manual"
     },
     "닫기" : {
+      "extractionState" : "manual"
+    },
+    "당시 URL" : {
+      "comment" : "카드: 과거 웹 링크의 URL(W18).",
+      "extractionState" : "manual"
+    },
+    "당시 경로" : {
+      "comment" : "카드: 기록 당시 경로(W18, 0003).",
+      "extractionState" : "manual"
+    },
+    "당시와 다른 위치" : {
+      "comment" : "카드: 당시 경로와 현재 위치가 다름(W18).",
       "extractionState" : "manual"
     },
     "대상" : {
@@ -276,6 +308,10 @@
       "extractionState" : "manual"
     },
     "열기" : {
+      "extractionState" : "manual"
+    },
+    "열면 지금의 파일이 열립니다. 파일 내용의 과거 버전은 보관하지 않습니다." : {
+      "comment" : "카드 안내: 과거 항목을 열면 현재 내용이 열린다(W18, PRD §6-D).",
       "extractionState" : "manual"
     },
     "열지 못했습니다." : {
@@ -437,7 +473,19 @@
     "현재 구성에서 제거합니다: %@. 연결된 파일과 폴더는 그대로 남습니다." : {
       "extractionState" : "manual"
     },
+    "현재 구성으로 돌아가기" : {
+      "comment" : "보기 메뉴: 과거 구성에서 현재 구성으로(W18, 16.4).",
+      "extractionState" : "manual"
+    },
     "현재 구성을 읽지 못했습니다" : {
+      "extractionState" : "manual"
+    },
+    "현재 위치" : {
+      "comment" : "카드: 지금 해석한 위치(W18).",
+      "extractionState" : "manual"
+    },
+    "현재로 돌아가기" : {
+      "comment" : "과거 구성 띠 버튼(W18).",
       "extractionState" : "manual"
     },
     "확인" : {

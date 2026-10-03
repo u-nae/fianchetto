@@ -494,18 +494,18 @@ struct HistoryModelTests {
         }
     }
 
-    @Test("[W17-new-revision-prepends] 이력 탭이 열린 채 새 revision이 기록되면 맨 위에 더해지고 선택은 유지된다")
+    /// W18 이후 과거 revision을 고른 동안에는 편집이 꺼지므로(DESIGN 16.4), 새 revision은 현재 구성을 보는 동안에만 기록된다.
+    @Test("[W17-new-revision-prepends] 이력 탭이 열린 채 새 revision이 기록되면 맨 위에 더해지고 선택은 '현재 구성' 그대로다")
     func newRevisionPrepends() async throws {
         try await withTemporaryDirectoryAsync { directory async throws in
             let o = try await opened(directory, daily(5))
             await openHistory(o)
-            await o.history.select(.revision(Self.revisionID(2)))
             o.model.beginAddGroup()
             o.model.nodeForm?.name = "개발"
             await o.model.confirmNodeForm()
             #expect(o.sequences.first == 6)
             #expect(o.history.causeText(try o.row(6)) == "Wing 추가")
-            #expect(o.history.selection == .revision(Self.revisionID(2)))
+            #expect(o.history.selection == .current)
         }
     }
 
