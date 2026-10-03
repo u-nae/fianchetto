@@ -187,6 +187,67 @@ final class BoardBrowserUITests: XCTestCase {
         XCTAssertTrue(wing.waitForExistence(timeout: 5))
     }
 
+    /// W18 회귀(디자인 세션 렌더링 확인에서 발견): 기록 뒤 대상이 옮겨진 Bishop을 과거 구성에서 골라도 앱이 멈추거나 끝나지 않고,
+    /// '고른 항목' 카드에 '당시와 다른 위치'가 보인다.
+    @MainActor
+    func test_W18_movedTargetInPastConfigurationDoesNotCrash() throws {
+        // 러너의 임시 폴더(샌드박스 컨테이너) 아래에 테스트 폴더를 만든다.
+        let fixtures = FileManager.default.temporaryDirectory.appending(path: "w18-\(UUID().uuidString)")
+        // 폴더 Bishop을 쓴다. 파일 선택 창 안의 항목은 누를 수 없어(별도 프로세스) 처음 위치의 폴더를 Return으로 고른다.
+        let original = fixtures.appending(path: "plan")
+        let moved = fixtures.appending(path: "moved/plan")
+        try FileManager.default.createDirectory(at: original, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: moved.deletingLastPathComponent(), withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: fixtures) }
+
+        let test = UITestApp(name: "moved")
+        test.app.launchEnvironment["FIANCHETTO_UI_TEST_PICK_DIRECTORY"] = original.path
+        test.launch()
+        defer { test.terminate() }
+        let app = test.app
+        XCTAssertTrue(app.staticTexts["Board가 없습니다"].waitForExistence(timeout: 10))
+        test.activateForKeyboard()
+        app.typeKey("n", modifierFlags: .command)
+        test.type("Moved", into: app.textFields["board-name-field"])
+        app.typeKey(.return, modifierFlags: [])
+        XCTAssertTrue(app.descendants(matching: .any)["board-row-Moved"].waitForExistence(timeout: 5))
+
+        // 파일 선택 창은 테스트 폴더("plan")를 처음 위치로 열리고(Debug UI 테스트 전용 환경 변수), Return으로 그 폴더를 고른다.
+        app.menuBars.menuBarItems["파일"].click()
+        app.menuBars.menuBarItems["파일"].menuItems["Bishop 추가…"].click()
+        let panel = app.dialogs["open-panel"]
+        XCTAssertTrue(panel.waitForExistence(timeout: 5))
+        app.typeKey(.return, modifierFlags: [])
+        let row = app.descendants(matching: .any)["node-row-plan"]
+        XCTAssertTrue(row.waitForExistence(timeout: 10))
+
+        // 앱을 끄고 파일을 옮긴 뒤 같은 저장소로 다시 띄운다.
+        app.terminate()
+        try FileManager.default.moveItem(at: original, to: moved)
+        test.relaunch()
+        XCTAssertTrue(app.descendants(matching: .any)["board-row-Moved"].waitForExistence(timeout: 10))
+        app.descendants(matching: .any)["board-row-Moved"].click()
+
+        let viewMenu = app.menuBars.menuBarItems["보기"]
+        viewMenu.click()
+        viewMenu.menuItems["이력 보기"].click()
+        let revision = app.descendants(matching: .any)["revision-row-2"]
+        XCTAssertTrue(revision.waitForExistence(timeout: 5))
+        revision.click()
+        XCTAssertTrue(app.descendants(matching: .any)["past-banner"].waitForExistence(timeout: 5))
+        XCTAssertTrue(row.waitForExistence(timeout: 5))
+        row.click()
+
+        XCTAssertTrue(app.staticTexts["당시와 다른 위치"].waitForExistence(timeout: 10))
+        // 충돌은 고른 뒤 2–4초 안에 났다. 그동안 앱 상태가 실행 중에서 벗어나지 않아야 한다(뒤집은 기대: 일어나면 실패).
+        let crashed = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "state != %d", XCUIApplication.State.runningForeground.rawValue), object: app
+        )
+        crashed.isInverted = true
+        XCTAssertEqual(XCTWaiter().wait(for: [crashed], timeout: 6), .completed)
+        XCTAssertTrue(app.windows.firstMatch.exists)
+    }
+
     /// W07-ui-menu-command: 파일 메뉴에 ⌘N의 "Board 만들기…"가 있다.
     @MainActor
     func test_W07_fileMenuHasCreateBoardCommand() {

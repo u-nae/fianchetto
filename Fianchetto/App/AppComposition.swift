@@ -24,6 +24,10 @@ enum AppComposition {
                 try? FileManager.default.removeItem(at: root)
             }
             let directory = root.appending(path: id)
+            // 파일 선택 창이 처음 보일 폴더(절대 경로만). 고르는 동작과 권한은 바뀌지 않는다.
+            if let pickDirectory = environment["FIANCHETTO_UI_TEST_PICK_DIRECTORY"], pickDirectory.hasPrefix("/") {
+                TargetPicker.initialDirectory = URL(filePath: pickDirectory, directoryHint: .isDirectory)
+            }
             return .app(
                 storeURL: directory.appending(path: "Fianchetto.store"),
                 lastBoard: FileLastBoard(url: directory.appending(path: "lastBoard"))

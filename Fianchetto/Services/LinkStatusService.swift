@@ -77,7 +77,8 @@ struct LinkStatusService: Sendable {
             let differs = node.recordedPath.map {
                 !PathComparison.isSameLocation(URL(filePath: $0).resolvingSymlinksInPath().path, current)
             } ?? false
-            return .resolved(path: PathComparison.normalize(url.path), differsFromRecorded: differs)
+            // 표시 경로도 심볼릭 링크를 해석한 형태로 맞춘다(/private/var → /var). 당시 경로와 같은 방식으로 보이게 하려는 것이다.
+            return .resolved(path: PathComparison.normalize(current), differsFromRecorded: differs)
         case let .failure(cause):
             return .unresolved(LinkStatus(cause))
         }

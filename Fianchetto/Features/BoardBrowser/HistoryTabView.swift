@@ -86,18 +86,19 @@ private struct PastItemCardView: View {
             switch card.kind {
             case .file, .folder:
                 if let recorded = card.recordedPath {
-                    LabeledContent(model.recordedPathLabel) { Text(recorded).textSelection(.enabled) }
+                    PathLine(label: model.recordedPathLabel, path: PathComparison.normalize(recorded))
                 }
                 switch card.location {
                 case let .resolved(path, differs):
-                    LabeledContent(model.currentLocationLabel) { Text(path).textSelection(.enabled) }
+                    PathLine(label: model.currentLocationLabel, path: path)
                     if differs {
                         Label(model.movedLocationText, systemImage: "arrow.turn.down.right")
                             .font(.caption)
                     }
                 case let .unresolved(status):
                     if let presentation = LinkStatusPresentation.of(status) {
-                        LabeledContent(model.currentLocationLabel) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(model.currentLocationLabel).font(.caption).foregroundStyle(.secondary)
                             LinkStatusLabel(text: model.statusText(status), presentation: presentation)
                         }
                     }
@@ -111,19 +112,54 @@ private struct PastItemCardView: View {
                 Text(model.currentContentNotice)
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
+                    .lineLimit(3)
             case .webLink:
                 if let url = card.url {
-                    LabeledContent(model.recordedURLLabel) { Text(url).textSelection(.enabled) }
+                    PathLine(label: model.recordedURLLabel, path: url, abbreviatesHome: false)
                 }
                 Button("열기") { Task { await model.openSelected() } }
             case .group:
                 EmptyView()
             }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
         .padding()
         .accessibilityIdentifier("past-item-card")
+    }
+}
+
+/// 카드의 경로 한 줄: 위에 작은 라벨, 아래에 최대 두 줄·가운데 줄임 경로(홈은 ~). 전체 경로는 도움말 풍선으로 본다.
+/// 긴 경로가 인스펙터 열의 최소 폭을 밀어 올리지 않게 폭을 고정하지 않는다(분할 뷰 제약 갱신이 반복되던 문제).
+private struct PathLine: View {
+    let label: String
+    let path: String
+    var abbreviatesHome = true
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(label)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            Text(abbreviatesHome ? DisplayPath.abbreviated(path) : path)
+                .font(.callout)
+                .lineLimit(2)
+                .truncationMode(.middle)
+                .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
+                .help(path)
+        }
+        .accessibilityElement(children: .combine)
+    }
+}
+
+/// 화면에 보일 경로: 사용자 홈 아래면 ~로 줄인다. 앱 샌드박스의 홈(컨테이너)이 아니라 실제 사용자 홈을 쓴다.
+enum DisplayPath {
+    private static let home: String? = getpwuid(getuid()).flatMap { String(validatingCString: $0.pointee.pw_dir) }
+
+    static func abbreviated(_ path: String, home: String? = DisplayPath.home) -> String {
+        guard let home, !home.isEmpty, home != "/" else { return path }
+        if path == home { return "~" }
+        guard path.hasPrefix(home + "/") else { return path }
+        return "~" + path.dropFirst(home.count)
     }
 }
 
