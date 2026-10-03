@@ -121,6 +121,37 @@ struct StoreAdapter {
         )).map(Self.summary)
     }
 
+    /// 이력 목록 한 묶음(W17): 순번 역순으로 `sequence`보다 작은 것부터 `limit`개. nil이면 가장 큰 순번부터.
+    /// 묶음 경계를 위치가 아니라 순번으로 잡아, 사이에 새 revision이 더해져도 겹치거나 빠지지 않는다. 스냅샷은 디코딩하지 않는다.
+    func revisionSummaries(projectID: UUID, below sequence: Int?, limit: Int) throws(StoreReadError) -> [RevisionSummary] {
+        let bound = sequence ?? Int.max
+        var descriptor = FetchDescriptor<SchemaV1.RevisionModel>(
+            predicate: #Predicate { $0.projectID == projectID && $0.sequence < bound },
+            sortBy: [SortDescriptor(\.sequence, order: .reverse)]
+        )
+        descriptor.fetchLimit = limit
+        return try read(descriptor).map(Self.summary)
+    }
+
+    /// 순번이 `range` 안인 revision 목록 정보를 순번 역순으로. 스냅샷은 디코딩하지 않는다.
+    func revisionSummaries(projectID: UUID, sequences range: ClosedRange<Int>) throws(StoreReadError) -> [RevisionSummary] {
+        let lower = range.lowerBound, upper = range.upperBound
+        return try read(FetchDescriptor<SchemaV1.RevisionModel>(
+            predicate: #Predicate { $0.projectID == projectID && $0.sequence >= lower && $0.sequence <= upper },
+            sortBy: [SortDescriptor(\.sequence, order: .reverse)]
+        )).map(Self.summary)
+    }
+
+    /// 날짜 시점 조회(PRD §6-D): 기록 시각이 `instant` 이하인 것 중 가장 늦은 시각, 같으면 큰 순번. Domain RevisionLookup과 같은 규칙이다.
+    func latestRevision(projectID: UUID, atOrBefore instant: Date) throws(StoreReadError) -> RevisionSummary? {
+        var descriptor = FetchDescriptor<SchemaV1.RevisionModel>(
+            predicate: #Predicate { $0.projectID == projectID && $0.recordedAt <= instant },
+            sortBy: [SortDescriptor(\.recordedAt, order: .reverse), SortDescriptor(\.sequence, order: .reverse)]
+        )
+        descriptor.fetchLimit = 1
+        return try read(descriptor).first.map(Self.summary)
+    }
+
     func revisionSummary(_ id: UUID) throws(StoreReadError) -> RevisionSummary? {
         try read(FetchDescriptor<SchemaV1.RevisionModel>(predicate: #Predicate { $0.id == id })).first.map(Self.summary)
     }

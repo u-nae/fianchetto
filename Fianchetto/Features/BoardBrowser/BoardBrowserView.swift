@@ -14,6 +14,7 @@ struct BoardBrowserView: View {
         let notice = model.linkNotice
         let replacement = model.replacement
         let inspectorPresented = model.isInspectorPresented
+        let sidebarVisible = model.isSidebarVisible
         Group {
             switch model.phase {
             case .loading:
@@ -28,15 +29,27 @@ struct BoardBrowserView: View {
                 }
             case .ready:
                 // 오른쪽 열은 접을 수 있는 인스펙터 하나다(DESIGN.md 16.1). 접으면 구성 영역이 넓어진다.
-                NavigationSplitView {
+                // 이력 탭을 열면 Board 사이드바를 접고 닫으면 열기 전 상태로 돌린다(16.1). 사용자가 바꾼 표시도 모델에 알린다.
+                NavigationSplitView(columnVisibility: Binding(
+                    get: { sidebarVisible ? .all : .detailOnly },
+                    set: { model.isSidebarVisible = $0 != .detailOnly }
+                )) {
                     BoardListView(model: model)
                 } detail: {
                     ConfigurationTreeView(model: model)
                         .inspector(isPresented: Binding(get: { inspectorPresented }, set: { model.isInspectorPresented = $0 })) {
-                            NodeInspectorView(model: model)
+                            InspectorPanel(model: model)
                                 .inspectorColumnWidth(min: 220, ideal: 280, max: 420)
                         }
                         .toolbar {
+                            ToolbarItem(placement: .primaryAction) {
+                                Button("이력", systemImage: "clock.arrow.circlepath") {
+                                    Task { await model.toggleHistory() }
+                                }
+                                .help("이력")
+                                .disabled(!model.canShowHistory)
+                                .accessibilityIdentifier("history-toggle")
+                            }
                             ToolbarItem(placement: .primaryAction) {
                                 Button(inspectorPresented ? "인스펙터 가리기" : "인스펙터 보기", systemImage: "sidebar.right") {
                                     model.toggleInspector()
@@ -533,6 +546,39 @@ private struct ReplacementSheet: View {
         }
         .padding()
         .frame(width: 460)
+    }
+}
+
+/// 오른쪽 열(인스펙터): 맨 위 '항목 | 이력' 세그먼트로 항목 상세와 이력을 같은 자리에서 바꾼다(DESIGN.md 16.1).
+private struct InspectorPanel: View {
+    let model: BoardBrowserModel
+
+    var body: some View {
+        let tab = model.inspectorTab
+        VStack(spacing: 0) {
+            Picker("인스펙터", selection: Binding(get: { tab }, set: { next in Task { await model.selectInspectorTab(next) } })) {
+                Text("항목").tag(BoardBrowserModel.InspectorTab.item)
+                Text("이력").tag(BoardBrowserModel.InspectorTab.history)
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+            .disabled(!model.canShowHistory && tab == .item)
+            .padding([.horizontal, .top])
+            switch tab {
+            case .item:
+                NodeInspectorView(model: model)
+                    .frame(maxHeight: .infinity, alignment: .top)
+            case .history:
+                HistoryTabView(history: model.history)
+            }
+        }
+        // 날짜나 시스템 시간대가 바뀌면 날짜 구역 머리글과 행 시각을 다시 계산한다.
+        .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged).receive(on: RunLoop.main)) { _ in
+            model.history.clockChanged()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .NSSystemTimeZoneDidChange).receive(on: RunLoop.main)) { _ in
+            model.history.clockChanged()
+        }
     }
 }
 

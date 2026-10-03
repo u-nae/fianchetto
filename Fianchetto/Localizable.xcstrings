@@ -1,6 +1,14 @@
 {
   "sourceLanguage" : "ko",
   "strings" : {
+    "#%lld · %@" : {
+      "comment" : "revision 행 아래 줄: 순번과 기록 시각(W17).",
+      "extractionState" : "manual"
+    },
+    "#%lld에서 복원" : {
+      "comment" : "원인 문구: 출처 revision 순번에서 복원(W17, DESIGN.md 16.2).",
+      "extractionState" : "manual"
+    },
     "Bishop" : {
       "comment" : "로컬 파일·폴더 연결 항목의 화면 용어(0006). 영문 고유 용어 그대로 쓴다.",
       "extractionState" : "manual"
@@ -108,7 +116,15 @@
     "https://" : {
 
     },
+    "가져오기" : {
+      "comment" : "원인 문구: 가져온 Board(DESIGN.md 16.2).",
+      "extractionState" : "manual"
+    },
     "같은 대상인지 확인할 수 없어 연결 대상 변경으로 기록됩니다." : {
+      "extractionState" : "manual"
+    },
+    "과거 구성에서 만듦" : {
+      "comment" : "원인 문구: 과거 구성에서 새 Board(DESIGN.md 16.2).",
       "extractionState" : "manual"
     },
     "구성이 비어 있습니다" : {
@@ -120,6 +136,10 @@
     "그 항목 안으로는 옮길 수 없습니다." : {
       "extractionState" : "manual"
     },
+    "기록을 불러오지 못했습니다" : {
+      "comment" : "이력 목록 정보를 읽지 못함(W17).",
+      "extractionState" : "manual"
+    },
     "기본" : {
       "comment" : "Bishop 용도: 지정 없음. 모르는 값도 이 항목으로 보인다(W29).",
       "extractionState" : "manual"
@@ -128,6 +148,10 @@
       "extractionState" : "manual"
     },
     "기호(기본)" : {
+      "extractionState" : "manual"
+    },
+    "날짜로 찾기" : {
+      "comment" : "이력 탭의 날짜·시각 선택(W17, 0023).",
       "extractionState" : "manual"
     },
     "다시 선택…" : {
@@ -228,7 +252,15 @@
       "comment" : "Bishop 용도 아이콘 고르기 메뉴·인스펙터 줄 이름(W29).",
       "extractionState" : "manual"
     },
+    "아이콘 변경" : {
+      "comment" : "원인 문구: Bishop 용도 변경(W29, DESIGN.md 16.2).",
+      "extractionState" : "manual"
+    },
     "아이콘으로 보기" : {
+      "extractionState" : "manual"
+    },
+    "어제 · %@" : {
+      "comment" : "이력 날짜 구역 머리글. %@는 월·일(W17).",
       "extractionState" : "manual"
     },
     "연결 대상 변경" : {
@@ -261,6 +293,10 @@
     "열지 못했습니다. 상태: 확인 실패" : {
       "extractionState" : "manual"
     },
+    "오늘 · %@" : {
+      "comment" : "이력 날짜 구역 머리글. %@는 월·일(W17).",
+      "extractionState" : "manual"
+    },
     "웹 링크" : {
       "extractionState" : "manual"
     },
@@ -279,7 +315,15 @@
     "위로 이동" : {
       "extractionState" : "manual"
     },
+    "이 기록을 읽을 수 없습니다" : {
+      "comment" : "고른 revision의 구성을 읽지 못함(W17).",
+      "extractionState" : "manual"
+    },
     "이 버전의 앱이 읽을 수 없는 형식입니다. 더 새로운 버전의 앱이 만들었을 수 있습니다." : {
+      "extractionState" : "manual"
+    },
+    "이 시점의 기록 없음" : {
+      "comment" : "날짜로 찾은 시각이 Board가 생기기 전(W17, PRD §6-D).",
       "extractionState" : "manual"
     },
     "이동" : {
@@ -289,6 +333,14 @@
       "extractionState" : "manual"
     },
     "이동할 위치" : {
+      "extractionState" : "manual"
+    },
+    "이력" : {
+      "comment" : "인스펙터 탭·툴바 이력 버튼(W17, DESIGN.md 16.1).",
+      "extractionState" : "manual"
+    },
+    "이력 보기" : {
+      "comment" : "보기 메뉴(⌘Y): 인스펙터를 펴며 이력 탭을 연다(W17).",
       "extractionState" : "manual"
     },
     "이름" : {
@@ -311,6 +363,10 @@
     },
     "이미지" : {
       "comment" : "Bishop 용도(W29).",
+      "extractionState" : "manual"
+    },
+    "인스펙터" : {
+      "comment" : "인스펙터 탭 고르기의 접근성 이름(W17).",
       "extractionState" : "manual"
     },
     "인스펙터 가리기" : {
@@ -364,10 +420,18 @@
       "comment" : "Bishop 용도(W29).",
       "extractionState" : "manual"
     },
+    "항목" : {
+      "comment" : "인스펙터 탭: 고른 항목 상세(W17).",
+      "extractionState" : "manual"
+    },
     "항목 %lld개" : {
       "extractionState" : "manual"
     },
     "항목을 고르세요" : {
+      "extractionState" : "manual"
+    },
+    "현재 구성" : {
+      "comment" : "이력 탭 맨 위 행: 지금 구성(W17).",
       "extractionState" : "manual"
     },
     "현재 구성에서 제거합니다: %@. 연결된 파일과 폴더는 그대로 남습니다." : {

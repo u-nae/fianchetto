@@ -110,6 +110,45 @@ final class BoardBrowserUITests: XCTestCase {
         XCTAssertTrue(tile.waitForExistence(timeout: 5))
     }
 
+    /// W17-open-history: 보기 메뉴 '이력 보기'(⌘Y)로 이력 탭을 열면 'Board 만들기'·'Wing 추가' 행이 순번 역순으로 보이고, 다시 하면 항목 탭으로 돌아간다.
+    @MainActor
+    func test_W17_historyTabShowsRevisions() {
+        let test = UITestApp(name: "history")
+        test.launch()
+        defer { test.terminate() }
+        let app = test.app
+        XCTAssertTrue(app.staticTexts["Board가 없습니다"].waitForExistence(timeout: 10))
+        test.activateForKeyboard()
+        app.typeKey("n", modifierFlags: .command)
+        test.type("Plan", into: app.textFields["board-name-field"])
+        app.typeKey(.return, modifierFlags: [])
+        XCTAssertTrue(app.descendants(matching: .any)["board-row-Plan"].waitForExistence(timeout: 5))
+        app.menuBars.menuBarItems["파일"].click()
+        app.menuBars.menuBarItems["파일"].menuItems["Wing 추가…"].click()
+        test.type("Dev", into: app.textFields["node-name-field"])
+        app.typeKey(.return, modifierFlags: [])
+        XCTAssertTrue(app.descendants(matching: .any)["node-row-Dev"].waitForExistence(timeout: 5))
+
+        let viewMenu = app.menuBars.menuBarItems["보기"]
+        viewMenu.click()
+        let showHistory = viewMenu.menuItems["이력 보기"]
+        XCTAssertTrue(showHistory.waitForExistence(timeout: 5))
+        showHistory.click()
+        let first = app.descendants(matching: .any)["revision-row-1"]
+        let second = app.descendants(matching: .any)["revision-row-2"]
+        XCTAssertTrue(second.waitForExistence(timeout: 5))
+        XCTAssertTrue(first.exists)
+        XCTAssertTrue((second.label as String).hasPrefix("Wing 추가, #2, "), second.label)
+        XCTAssertTrue((first.label as String).hasPrefix("Board 만들기, #1, "), first.label)
+        XCTAssertLessThan(second.frame.minY, first.frame.minY, "최신 revision이 위에 있다")
+        XCTAssertTrue(app.staticTexts["현재 구성"].exists)
+
+        // 이력 탭에서 다시 '이력 보기'를 하면 항목 탭으로 돌아간다. 메뉴를 누른 직후의 키 합성은 불안정해 메뉴로 확인한다.
+        viewMenu.click()
+        showHistory.click()
+        XCTAssertTrue(second.waitForNonExistence(timeout: 5))
+    }
+
     /// W07-ui-menu-command: 파일 메뉴에 ⌘N의 "Board 만들기…"가 있다.
     @MainActor
     func test_W07_fileMenuHasCreateBoardCommand() {

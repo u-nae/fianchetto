@@ -112,6 +112,23 @@ final class PickerScript {
     }
 }
 
+/// 이력 화면의 현재 시각과 시스템 시간대. 테스트가 바꾼 뒤 clockChanged()로 알린다.
+@MainActor
+final class HistoryClock {
+    var now: Date
+    var zone: String
+    init(now: Date = Date(timeIntervalSince1970: 1_790_000_000), zone: String = "Asia/Seoul") {
+        self.now = now
+        self.zone = zone
+    }
+
+    var calendar: Calendar {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: zone)!
+        return calendar
+    }
+}
+
 @MainActor
 struct BrowserHarness {
     let directory: URL
@@ -124,8 +141,14 @@ struct BrowserHarness {
     let bookmarks = ScriptedBookmarkSystem()
     let launcher: RecordingLauncher
     let model: BoardBrowserModel
+    let clock: HistoryClock
 
-    init(directory: URL, lastBoard: InMemoryLastBoard = InMemoryLastBoard(), script: OpenScript = OpenScript(), storeKnown: Bool = true) {
+    init(
+        directory: URL, lastBoard: InMemoryLastBoard = InMemoryLastBoard(), script: OpenScript = OpenScript(), storeKnown: Bool = true,
+        clock: HistoryClock = HistoryClock()
+    ) {
+        self.clock = clock
+        let historyClock = clock
         self.directory = directory
         url = directory.appending(path: "Fianchetto.store")
         self.lastBoard = lastBoard
@@ -159,7 +182,10 @@ struct BrowserHarness {
             revealInFinder: { actions.revealed.append($0) },
             quit: { actions.quits += 1 },
             pickTargets: { picker.pick() },
-            pickReplacement: { picker.pickReplacement($0) }
+            pickReplacement: { picker.pickReplacement($0) },
+            now: { historyClock.now },
+            calendar: { historyClock.calendar },
+            locale: Locale(identifier: "ko_KR")
         ))
     }
 }

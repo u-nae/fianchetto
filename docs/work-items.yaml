@@ -419,7 +419,7 @@ items:
     test_strategy: >-
       시점 선택은 순수 함수 단위 테스트(경계: 정확히 같은 시각, 생성 이전, 시계 역행, 같은 시각 다른 순번).
       서비스 테스트: 페이지 로드 개수, 조회 후 현재 구성·revision 수 불변.
-    status: pending
+    status: done
     priority: high
     dependencies: [W05]
     source_refs:
