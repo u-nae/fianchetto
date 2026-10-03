@@ -123,8 +123,9 @@ Asset Catalog(`Fianchetto/Assets.xcassets`)의 Color Set으로 정의한다. 코
   (생성 심볼). 문자열 이름 금지.
 - 자산: `Fianchetto/Assets.xcassets`의 Symbol Image Set. 템플릿은 `scripts/design/generate-bishop-symbols.swift`가 만든다.
   24 격자의 선 디자인(선 굵기 1.6)을 채운 윤곽선으로 바꿔 넣는다. 모양을 고칠 때는 SVG를 직접 고치지 않고 스크립트를 고쳐 다시 만든다.
-- 한계: 템플릿에는 Regular-M 하나만 있다. 그래서 굵기(weight)를 바꿔도 모양이 같고, 크기(scale)는 시스템이 비율로만 조정한다.
-  트리 행은 기본 굵기만 쓰므로 지금은 문제가 없다. 굵기 대응이 필요해지면 Ultralight·Black 기준 굵기를 같은 점 구조로 추가한다.
+- 크기: 템플릿에는 Regular 굵기의 S·M·L 세 크기 글리프가 있다(SF Symbols 비율 0.783·1·1.29). 크기별 글리프가 없으면 그 크기를 요청하는
+  곳에서 심볼이 비어 보인다. 툴바는 `.large`를 요청해서, M만 있을 때 'Bishop 추가' 버튼이 빈 원으로 보였다(2026-10-03에 S·L 추가로 고침).
+- 한계: 굵기(weight) 보간은 없다. 굵기를 바꿔도 모양이 같다. 굵기 대응이 필요해지면 Ultralight·Black 기준 굵기를 같은 점 구조로 추가한다.
 - 렌더링: 한 레이어(Monochrome)다. 색은 넣지 않고 사용처의 `foregroundStyle`을 따른다.
 
 ## 6. 앱 아이콘 (0014 확정)
