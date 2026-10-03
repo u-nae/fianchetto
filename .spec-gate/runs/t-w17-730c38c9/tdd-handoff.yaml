@@ -1,0 +1,278 @@
+schema_version: "1.0"
+run_id: t-w17-730c38c9
+verdict: READY
+source:
+  baseline:
+    - path: docs/PRD.md
+      fingerprint: 9194c2af1e2024e9a8b9603694c81b01ca618e5303438a7350f15461d1b836ad
+    - path: docs/TECH_STACK.md
+      fingerprint: 695c5a16d41f2b9cd96cf2bfce412e5f845fa9d2d06392eeaa44684b78e7d6f7
+  decision_records:
+    path: docs/decisions
+    fingerprint: fee8f12fd9542136de072a3e2eb17c7dd5b859573101db46722fefc2700447c0
+  work_items_artifact: docs/work-items.yaml
+  work_items_fingerprint: 6796c853d895080875e931582cc698f63186a3fd1a8ba5fc2140b4ca95b53cd7
+  normalized_artifact: .spec-gate/runs/t-w17-730c38c9/normalized-tasks.yaml
+source_tasks:
+  - task_id: W17
+    title: 이력 목록과 날짜 시점 조회
+    route: BOTH
+    acceptance_refs:
+      - A05
+accepted_specifications:
+  - task_id: W17
+    route: BOTH
+    path: .spec-gate/runs/t-w17-730c38c9/specs/revision-1/task-W17.feature
+  - task_id: W17
+    route: BOTH
+    path: .spec-gate/runs/t-w17-730c38c9/specs/revision-1/W17.decision.yaml
+test_obligations:
+  - obligation_id: W17-lookup-latest
+    task_id: W17
+    kind: scenario
+    description: 고른 시각 이하의 기록 중 가장 늦은 시각의 기록을 고른다(정확히 같은 시각 포함, 1초 전은 앞 기록, 마지막 기록 이후는 마지막)
+    source: .spec-gate/runs/t-w17-730c38c9/specs/revision-1/task-W17.feature#고른 시각 이하의 기록 중 가장 늦은 시각의 기록을 고른다
+    acceptance_refs:
+      - A05
+  - obligation_id: W17-lookup-clock-back
+    task_id: W17
+    kind: scenario
+    description: 시계가 뒤로 간 기록이 있으면 순번이 아니라 기록 시각으로 고른다
+    source: .spec-gate/runs/t-w17-730c38c9/specs/revision-1/task-W17.feature#시계가 뒤로 간 기록이 있으면 순번이 아니라 기록 시각으로 고른다
+  - obligation_id: W17-lookup-same-time
+    task_id: W17
+    kind: scenario
+    description: 같은 기록 시각이 여럿이면 순번이 큰 기록을 고른다
+    source: .spec-gate/runs/t-w17-730c38c9/specs/revision-1/task-W17.feature#같은 기록 시각이 여럿이면 순번이 큰 기록을 고른다
+  - obligation_id: W17-lookup-before-creation
+    task_id: W17
+    kind: scenario
+    description: Board 생성 전 시각이면 "이 시점의 기록 없음"을 보이고 선택을 바꾸지 않는다
+    source: .spec-gate/runs/t-w17-730c38c9/specs/revision-1/task-W17.feature#Board가 생기기 전 시각이면 기록 없음이고 선택을 바꾸지 않는다
+    acceptance_refs:
+      - A05
+  - obligation_id: W17-lookup-selects-row
+    task_id: W17
+    kind: scenario
+    description: 찾은 기록이 아직 불러오지 않은 묶음에 있어도 목록에 불러와 고르고 보이게 하며, 행에 실제 기록 시각이 보인다
+    source: .spec-gate/runs/t-w17-730c38c9/specs/revision-1/task-W17.feature#찾은 기록은 목록에서 골라지고 실제 기록 시각이 보인다
+    acceptance_refs:
+      - A05
+  - obligation_id: W17-lookup-minute-boundary
+    task_id: W17
+    kind: scenario
+    description: 행에 보이는 분(오후 2:20)을 고르면 14:20:30 기록이 찾아지고 오후 2:19는 그 앞 기록이다
+    source: .spec-gate/runs/t-w17-730c38c9/specs/revision-1/task-W17.feature#행에 보이는 분을 그대로 고르면 그 분 안의 기록이 찾아진다(Q-W17-1)
+  - obligation_id: W17-page-first
+    task_id: W17
+    kind: scenario
+    description: 이력 탭은 순번 역순으로 첫 묶음(50개)만 불러온다
+    source: .spec-gate/runs/t-w17-730c38c9/specs/revision-1/task-W17.feature#이력 탭은 순번 역순으로 첫 묶음만 불러온다
+  - obligation_id: W17-page-more
+    task_id: W17
+    kind: scenario
+    description: 목록 끝에 닿으면 다음 묶음을 불러오고 다 불러오면 더 불러오지 않는다
+    source: .spec-gate/runs/t-w17-730c38c9/specs/revision-1/task-W17.feature#목록 끝에 닿으면 다음 묶음을 더 불러온다
+  - obligation_id: W17-decode-selected-only
+    task_id: W17
+    kind: scenario
+    description: 목록은 스냅샷을 디코딩하지 않고(손상 스냅샷이 있어도 목록 정상), 고른 revision만 디코딩하며 읽지 못하면 안내하고 선택과 저장 기록을 유지한다
+    source: .spec-gate/runs/t-w17-730c38c9/specs/revision-1/task-W17.feature#목록은 스냅샷을 디코딩하지 않고 고른 revision만 디코딩한다
+  - obligation_id: W17-list-load-failure
+    task_id: W17
+    kind: scenario
+    description: 첫 묶음의 목록 정보를 읽지 못하면 이력 탭에 오류를 보이고 현재 구성·편집과 저장 기록은 그대로다
+    source: .spec-gate/runs/t-w17-730c38c9/specs/revision-1/task-W17.feature#첫 묶음의 목록 정보를 읽지 못하면 이력 탭에 오류를 보이고 현재 구성은 그대로다
+  - obligation_id: W17-cause-label
+    task_id: W17
+    kind: scenario
+    description: 원인별 문구와 기호가 DESIGN.md 16.2 표와 같다
+    source: .spec-gate/runs/t-w17-730c38c9/specs/revision-1/task-W17.feature#revision 행은 원인 문구와 기호를 보인다
+  - obligation_id: W17-restored-label
+    task_id: W17
+    kind: scenario
+    description: 복원 revision 문구는 출처 revision 순번을 넣은 "#N에서 복원"이다
+    source: .spec-gate/runs/t-w17-730c38c9/specs/revision-1/task-W17.feature#복원 revision은 출처 revision의 순번을 문구에 넣는다
+  - obligation_id: W17-row-caption
+    task_id: W17
+    kind: scenario
+    description: '행 아래 줄은 "#순번 · 시각"(시스템 시간대)이고 접근성 라벨은 "원인, #순번, 시각"이다'
+    source: .spec-gate/runs/t-w17-730c38c9/specs/revision-1/task-W17.feature#revision 행의 아래 줄과 접근성 라벨은 순번과 실제 기록 시각이다
+  - obligation_id: W17-day-sections
+    task_id: W17
+    kind: scenario
+    description: 날짜 구역 머리글은 기록이 있는 날에만 만든다
+    source: .spec-gate/runs/t-w17-730c38c9/specs/revision-1/task-W17.feature#날짜 구역 머리글은 기록이 있는 날에만 만든다
+  - obligation_id: W17-day-sections-clock-back
+    task_id: W17
+    kind: scenario
+    description: 시계가 뒤로 간 기록은 순번 순서를 지키고 날짜가 바뀔 때마다 머리글을 다시 연다
+    source: .spec-gate/runs/t-w17-730c38c9/specs/revision-1/task-W17.feature#시계가 뒤로 간 기록은 순번 순서를 지키고 날짜 구역을 다시 연다
+  - obligation_id: W17-current-row
+    task_id: W17
+    kind: scenario
+    description: '"현재 구성" 행이 맨 위에 있고 처음에 골라져 있으며 고르면 고른 revision이 없어진다'
+    source: .spec-gate/runs/t-w17-730c38c9/specs/revision-1/task-W17.feature#'현재 구성' 행은 목록 맨 위에 있고 처음에는 골라져 있다
+  - obligation_id: W17-browse-no-revision
+    task_id: W17
+    kind: scenario
+    description: 이력 열기·행 고르기·날짜로 찾기·현재 구성 고르기는 revision 수와 현재 revision을 바꾸지 않는다
+    source: .spec-gate/runs/t-w17-730c38c9/specs/revision-1/task-W17.feature#이력 열기·행 고르기·날짜로 찾기는 현재 구성과 revision 수를 바꾸지 않는다
+    acceptance_refs:
+      - A05
+  - obligation_id: W17-archived-history
+    task_id: W17
+    kind: scenario
+    description: 보관된 Board도 이력을 보고 고를 수 있다
+    source: .spec-gate/runs/t-w17-730c38c9/specs/revision-1/task-W17.feature#보관된 Board도 이력을 볼 수 있다
+  - obligation_id: W17-new-revision-prepends
+    task_id: W17
+    kind: scenario
+    description: 이력 탭이 열린 채 새 revision이 기록되면 맨 위에 더해지고 선택은 유지된다
+    source: .spec-gate/runs/t-w17-730c38c9/specs/revision-1/task-W17.feature#이력 탭이 열린 채 새 revision이 기록되면 목록 맨 위에 더해지고 선택은 유지된다
+  - obligation_id: W17-board-switch
+    task_id: W17
+    kind: scenario
+    description: 다른 Board를 고르면 그 Board의 목록으로 바뀌고 선택은 비워진다
+    source: .spec-gate/runs/t-w17-730c38c9/specs/revision-1/task-W17.feature#다른 Board를 고르면 그 Board의 이력으로 바뀌고 선택은 비워진다
+  - obligation_id: W17-open-history
+    task_id: W17
+    kind: scenario
+    description: 이력 보기(⌘Y·툴바·세그먼트)는 인스펙터를 펴며 이력 탭을 열고, 이력 탭에서 다시 하면 항목 탭으로 돌아간다
+    source: .spec-gate/runs/t-w17-730c38c9/specs/revision-1/task-W17.feature#이력 보기는 인스펙터를 펴며 이력 탭을 열고, 이력 탭에서 다시 하면 항목 탭으로 돌아간다
+  - obligation_id: W17-sidebar-collapse
+    task_id: W17
+    kind: scenario
+    description: 이력 탭을 열면 Board 사이드바를 접고, 닫으면 열기 전 상태로 돌린다(사용자 조작과 무관)
+    source: .spec-gate/runs/t-w17-730c38c9/specs/revision-1/task-W17.feature#이력 탭을 열면 Board 사이드바를 접고 닫으면 열기 전 상태로 돌린다
+  - obligation_id: W17-sidebar-already-collapsed
+    task_id: W17
+    kind: scenario
+    description: 열기 전 사이드바가 접혀 있었으면, 이력 탭 동안 사용자가 펴도, 닫을 때 접힌 상태로 돌린다
+    source: .spec-gate/runs/t-w17-730c38c9/specs/revision-1/task-W17.feature#이력 탭을 열면 Board 사이드바를 접고 닫으면 열기 전 상태로 돌린다
+  - obligation_id: W17-history-disabled
+    task_id: W17
+    kind: scenario
+    description: 고른 Board가 없으면 이력 보기가 꺼져 있다
+    source: .spec-gate/runs/t-w17-730c38c9/specs/revision-1/task-W17.feature#고른 Board가 없으면 이력 보기가 꺼져 있다
+  - obligation_id: W17-relaunch
+    task_id: W17
+    kind: scenario
+    description: 다시 실행하면 항목 탭과 현재 구성으로 시작한다
+    source: .spec-gate/runs/t-w17-730c38c9/specs/revision-1/task-W17.feature#앱을 다시 열면 항목 탭과 현재 구성으로 시작한다
+  - obligation_id: W17-catalog
+    task_id: W17
+    kind: scenario
+    description: 이력 관련 문구가 String Catalog에 있다
+    source: .spec-gate/runs/t-w17-730c38c9/specs/revision-1/task-W17.feature#이력 관련 문구는 String Catalog에 있다
+  - obligation_id: W17-day-heading
+    task_id: W17
+    kind: decision-rule
+    description: "날짜 구역 머리글: 오늘·어제(해 바뀜 포함)·같은 해·다른 해, 미래 날짜는 날짜만"
+    source: .spec-gate/runs/t-w17-730c38c9/specs/revision-1/W17.decision.yaml#R1-R4
+  - obligation_id: W17-minute-threshold
+    task_id: W17
+    kind: scenario
+    description: 분 단위로 고른 날짜·시각은 그 분의 끝(59.999초, 시스템 시간대)을 기준 시각으로 삼는다
+    source: .spec-gate/runs/t-w17-730c38c9/specs/revision-1/task-W17.feature#분 단위로 고른 시각은 그 분의 끝을 기준 시각으로 삼는다(Q-W17-1)
+  - obligation_id: W17-latest-selects-revision-row
+    task_id: W17
+    kind: scenario
+    description: 날짜로 찾은 결과가 최신 revision이면 '현재 구성' 행이 아니라 그 revision 행을 고른다
+    source: .spec-gate/runs/t-w17-730c38c9/specs/revision-1/task-W17.feature#날짜로 찾은 결과가 최신 revision이면 '현재 구성' 행이 아니라 그 revision 행을 고른다
+  - obligation_id: W17-time-zone
+    task_id: W17
+    kind: scenario
+    description: 같은 절대 시각 기록이 시스템 시간대에 따라 다른 머리글·행 시각으로 보이고 같은 지역 시각 찾기 결과가 달라진다
+    source: .spec-gate/runs/t-w17-730c38c9/specs/revision-1/task-W17.feature#저장은 절대 시각이고 표시·찾기는 시스템 시간대를 따른다
+    acceptance_refs:
+      - A05
+  - obligation_id: W17-next-page-failure
+    task_id: W17
+    kind: scenario
+    description: 다음 묶음을 읽지 못하면 불러온 행·선택을 유지하고 안내하며 저장 기록은 그대로다
+    source: .spec-gate/runs/t-w17-730c38c9/specs/revision-1/task-W17.feature#다음 묶음을 읽지 못하면 이미 불러온 행과 선택을 유지하고 안내한다
+  - obligation_id: W17-lookup-failure
+    task_id: W17
+    kind: scenario
+    description: 날짜로 찾기 중 기록을 읽지 못하면 선택을 바꾸지 않고 안내하며 저장 기록은 그대로다
+    source: .spec-gate/runs/t-w17-730c38c9/specs/revision-1/task-W17.feature#날짜로 찾기 중 기록을 읽지 못하면 선택을 바꾸지 않고 안내한다
+  - obligation_id: W17-restored-source-missing
+    task_id: W17
+    kind: scenario
+    description: 복원 출처 revision을 찾을 수 없으면 손상 기록으로 다루고 새 대체 문구를 쓰지 않는다
+    source: .spec-gate/runs/t-w17-730c38c9/specs/revision-1/task-W17.feature#복원 출처 revision을 찾을 수 없으면 손상 기록으로 다룬다
+  - obligation_id: W17-page-after-prepend
+    task_id: W17
+    kind: scenario
+    description: 새 revision이 더해진 뒤 다음 묶음을 불러와도 순번이 겹치거나 빠지지 않는다
+    source: .spec-gate/runs/t-w17-730c38c9/specs/revision-1/task-W17.feature#새 revision이 더해진 뒤 다음 묶음을 불러와도 행이 겹치거나 빠지지 않는다
+  - obligation_id: W17-day-change-refresh
+    task_id: W17
+    kind: scenario
+    description: 이력 탭이 열린 채 날짜가 바뀌면 오늘·어제 머리글을 다시 계산한다
+    source: .spec-gate/runs/t-w17-730c38c9/specs/revision-1/task-W17.feature#이력 탭이 열린 채 날짜가 바뀌면 날짜 구역 머리글을 다시 계산한다
+  - obligation_id: W17-hide-inspector-closes-history
+    task_id: W17
+    kind: scenario
+    description: 인스펙터를 접으면 이력 탭이 닫히고 사이드바가 열기 전 상태로 돌아가며 다시 펴면 항목 탭이다
+    source: .spec-gate/runs/t-w17-730c38c9/specs/revision-1/task-W17.feature#인스펙터를 접으면 이력 탭이 닫힌다
+  - obligation_id: W17-selection-kept-on-close
+    task_id: W17
+    kind: scenario
+    description: 이력 탭을 닫았다 다시 열어도 고른 revision이 남는다
+    source: .spec-gate/runs/t-w17-730c38c9/specs/revision-1/task-W17.feature#이력 탭을 닫아도 고른 revision은 남는다
+  - obligation_id: W17-relaunch-sidebar
+    task_id: W17
+    kind: scenario
+    description: 앱이 사이드바를 접은 채 끝나도 다시 열면 사이드바가 보인다
+    source: .spec-gate/runs/t-w17-730c38c9/specs/revision-1/task-W17.feature#앱이 사이드바를 접은 채 끝나도 다시 열면 사이드바가 보인다
+  - obligation_id: W17-keyboard-selection
+    task_id: W17
+    kind: scenario
+    description: 키보드로 행을 옮겨 고르면 고른 revision이 바뀌고 골라진 행만 접근성 선택 상태다
+    source: .spec-gate/runs/t-w17-730c38c9/specs/revision-1/task-W17.feature#키보드로 행을 옮겨 고르면 고른 revision이 바뀌고 골라진 행은 접근성 선택 상태다
+  - obligation_id: W17-keyboard-lookup
+    task_id: W17
+    kind: scenario
+    description: 날짜 칸에서 키보드로 값을 바꾸면 찾기가 실행된다
+    source: .spec-gate/runs/t-w17-730c38c9/specs/revision-1/task-W17.feature#날짜 칸에서 키보드로 값을 바꾸면 찾기가 실행된다
+  - obligation_id: W17-day-heading-examples
+    task_id: W17
+    kind: scenario
+    description: 날짜 구역 머리글 예(오늘·어제·같은 해·다른 해·해 바뀜·미래 날짜)가 결정표와 같다
+    source: .spec-gate/runs/t-w17-730c38c9/specs/revision-1/task-W17.feature#날짜 구역 머리글은 결정 history_day_heading을 따른다
+acceptance_coverage:
+  A05:
+    - W17-lookup-latest
+    - W17-lookup-before-creation
+    - W17-lookup-selects-row
+    - W17-browse-no-revision
+    - W17-time-zone
+decision_log: .spec-gate/runs/t-w17-730c38c9/decision-log.yaml
+critic_report: .spec-gate/runs/t-w17-730c38c9/critic-pass-2.yaml
+non_blocking_notes:
+  - finding_id: F-W17-14
+    task_id: W17
+    note: 분 → 기준 시각 변환 예가 모두 Asia/Seoul이다. 일광 절약 시간이 있는 시간대에서 날짜·시각 성분을 다시 조합하는 구현은 되풀이되는 시간 (예 America/Los_Angeles 2026-11-01 오전 1:30)이나 없는 시간에서 다른 절대 시각을 고를 수 있는데, 지금 예는 이를 잡지 못한다.
+  - finding_id: F-W17-15
+    task_id: W17
+    note: "'날짜로 찾기' 칸은 분 단위로 고르는데, 화면 수준 단계 두 곳이 초 단위 값을 넣는다. 화면에서 그 값을 만들 수 없어 테스트 작성자가 순수 함수를 부를지 분 단위 변환을 거칠지 정해야 한다. 결과는 같지만 단계가 실제 조작과 다르다."
+  - finding_id: F-W17-16
+    task_id: W17
+    note: "찾은 revision 자체는 정상인데 그 행까지 불러오는 중간 묶음에 손상 기록이 있는 경우(예: 순번 60 손상, 순번 3을 찾음)를 정하지 않았다. 선택을 바꾸는지, 이미 불러온 행을 유지하는지가 구현마다 달라질 수 있다."
+  - finding_id: F-W17-17
+    task_id: W17
+    note: 가정은 저장소 질의도 같은 경계 예로 검증한다고 하지만, 시계 역행·같은 시각 obligation 설명은 어느 층을 검증하는지 밝히지 않는다. 순수 함수만 테스트하면 저장소 정렬(기록 시각 내림차순 → 순번 내림차순)이 틀려도 실패하지 않는다.
+  - finding_id: F-W17-18
+    task_id: W17
+    note: 날짜 변경 알림은 다루지만 앱이 실행 중일 때 시스템 시간대가 바뀌는 경우는 없다. 시간대를 처음 한 번만 읽는 구현은 머리글·행 시각·날짜 선택이 이전 시간대로 남는다.
+  - finding_id: F-W17-19
+    task_id: W17
+    note: Given에 기록 데이터와 바꿀 값이 없어 Then이 '또는'으로 끝난다. 아무 revision이나 고르는 구현도 통과한다.
+  - finding_id: F-W17-20
+    task_id: W17
+    note: 손상 레코드 하나가 첫 묶음 전체를 오류로 만드는 것으로 읽힌다. 기존 revisionSummaries가 한 레코드 손상에 전체 실패하는 동작과 맞고, PRD §7(이력을 고치거나 지우지 않음)과도 충돌하지 않는다. 손상 행만 건너뛰는 방식은 정하지 않은 것으로 본다.
+  - finding_id: F-W17-21
+    task_id: W17
+    note: "1차 비평의 major F-W17-1(시간대)은 절대 시각 + 두 시간대 Outline으로 해소되었다. 계산을 확인했다(Seoul: 10-02T15:30Z → 10월 3일 오전 12:30, 찾기 결과 1; Los_Angeles: 10월 2일 오전 8:30, 찾기 결과 2). F-W17-2~F-W17-10의 minor도 시나리오·obligation으로 반영되었고, Q-W17-1 답 A는 분 끝 변환과 행 시각 찾기 시나리오로 반영되었다. F-W17-11(W17만 병합된 동안 가운데는 현재 구성)은 W18 범위 분리로 그대로 유지한다."

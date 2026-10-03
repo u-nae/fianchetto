@@ -1,0 +1,55 @@
+schema_version: "1.0"
+task_id: W17
+decision_id: history_day_heading
+execution_format: review-only
+# 이력 탭 날짜 구역 머리글(DESIGN.md 16.2). 위에서 아래로 처음 맞는 규칙.
+# 입력은 모두 시스템 시간대·시스템 달력으로 계산한다. "오늘"은 화면을 그리는 시각(주입된 현재 시각)의 날짜다.
+hit_policy: FIRST
+ordered_rules: true
+inputs:
+  - name: is_today
+    type: boolean
+    # 기록 시각의 날짜가 오늘과 같은 날인가
+    allowed_values: [true, false]
+    blank_means: any
+  - name: is_yesterday
+    type: boolean
+    # 기록 시각의 날짜가 오늘의 바로 전날인가(해가 바뀌는 경우 포함: 1월 1일의 어제는 전년 12월 31일)
+    allowed_values: [true, false]
+    blank_means: any
+  - name: same_year
+    type: boolean
+    # 기록 시각의 연도가 오늘의 연도와 같은가. 시계가 뒤로 가서 오늘보다 뒤의 날짜인 기록도 같은 해면 true다.
+    allowed_values: [true, false]
+    blank_means: any
+outputs:
+  - name: heading
+    type: string
+    # M·d·yyyy는 기록 시각의 월·일·연도(앞에 0을 붙이지 않음)
+    allowed_values: ["오늘 · M월 d일", "어제 · M월 d일", "M월 d일", "yyyy년 M월 d일"]
+rules:
+  - rule_id: R1
+    when: {is_today: true}
+    then: {heading: "오늘 · M월 d일"}
+  - rule_id: R2
+    when: {is_yesterday: true}
+    then: {heading: "어제 · M월 d일"}
+  - rule_id: R3
+    when: {same_year: true}
+    then: {heading: "M월 d일"}
+  - rule_id: R4
+    when: {same_year: false}
+    then: {heading: "yyyy년 M월 d일"}
+default_rule: null
+gap_analysis:
+  - >-
+    입력 2 × 2 × 2 = 8 조합. is_today=true 4조합은 R1, 남은 4조합 중 is_yesterday=true 2조합은 R2, 나머지 2조합은 same_year 값에 따라 R3·R4.
+    빈 칸이 없다. is_today와 is_yesterday가 함께 true인 조합은 실제로 생기지 않지만 FIRST로 R1이 정해 준다.
+overlap_analysis:
+  - >-
+    R1·R2는 same_year와 상관없이 앞선다. 해가 바뀐 1월 1일에 본 전년 12월 31일 기록은 same_year=false지만 R2 "어제 · 12월 31일"이다(연도를 붙이지 않음).
+  - >-
+    시계가 뒤로 가서 오늘보다 뒤 날짜인 기록(미래 날짜)은 R3 또는 R4로 날짜만 보인다. "내일" 같은 머리글은 만들지 않는다.
+source_locators:
+  - docs/PRD.md#d-과거-구성-확인
+  - docs/decisions/0019-history-panel.md
