@@ -117,9 +117,27 @@ final class BoardBrowserUITests: XCTestCase {
         for title in ["위로 이동", "아래로 이동", "이동…"] {
             XCTAssertTrue(editMenu.menuItems[title].exists, title)
         }
-        // 단축키는 XCUITest가 노출하지 않으므로, 메뉴를 닫고 ⌘N이 이 명령을 실행하는지로 확인한다.
         app.typeKey(.escape, modifierFlags: [])
+        // 단축키는 XCUITest가 노출하지 않으므로, ⌘N이 이 명령을 실행하는지로 확인한다.
         app.typeKey("n", modifierFlags: .command)
         XCTAssertTrue(app.textFields["board-name-field"].waitForExistence(timeout: 5))
+        app.typeKey(.escape, modifierFlags: [])
+        XCTAssertTrue(app.textFields["board-name-field"].waitForNonExistence(timeout: 5))
+
+        // 오른쪽 열(인스펙터): 보기 메뉴로 접고 다시 편다. ⌥+I는 데드 키(ˆ)라 XCUITest 키 합성으로는 ⌥⌘I가 전달되지 않아
+        // 메뉴로 확인한다(실제 키보드의 ⌥⌘I는 메뉴 단축키로 동작한다).
+        let inspectorEmpty = app.staticTexts["항목을 고르세요"]
+        XCTAssertTrue(inspectorEmpty.waitForExistence(timeout: 5))
+        let viewMenu = app.menuBars.menuBarItems["보기"]
+        viewMenu.click()
+        let hide = viewMenu.menuItems["인스펙터 가리기"]
+        XCTAssertTrue(hide.waitForExistence(timeout: 5))
+        hide.click()
+        XCTAssertTrue(inspectorEmpty.waitForNonExistence(timeout: 5))
+        viewMenu.click()
+        let show = viewMenu.menuItems["인스펙터 보기"]
+        XCTAssertTrue(show.waitForExistence(timeout: 5))
+        show.click()
+        XCTAssertTrue(inspectorEmpty.waitForExistence(timeout: 5))
     }
 }

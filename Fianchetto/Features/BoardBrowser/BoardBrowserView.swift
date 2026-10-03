@@ -13,6 +13,7 @@ struct BoardBrowserView: View {
         let removal = model.removal
         let notice = model.linkNotice
         let replacement = model.replacement
+        let inspectorPresented = model.isInspectorPresented
         Group {
             switch model.phase {
             case .loading:
@@ -26,12 +27,24 @@ struct BoardBrowserView: View {
                     Button("다시 시도") { Task { await model.retry() } }
                 }
             case .ready:
+                // 오른쪽 열은 접을 수 있는 인스펙터 하나다(DESIGN.md 16.1). 접으면 구성 영역이 넓어진다.
                 NavigationSplitView {
                     BoardListView(model: model)
-                } content: {
-                    ConfigurationTreeView(model: model)
                 } detail: {
-                    NodeInspectorView(model: model)
+                    ConfigurationTreeView(model: model)
+                        .inspector(isPresented: Binding(get: { inspectorPresented }, set: { model.isInspectorPresented = $0 })) {
+                            NodeInspectorView(model: model)
+                                .inspectorColumnWidth(min: 220, ideal: 280, max: 420)
+                        }
+                        .toolbar {
+                            ToolbarItem(placement: .primaryAction) {
+                                Button(inspectorPresented ? "인스펙터 가리기" : "인스펙터 보기", systemImage: "sidebar.right") {
+                                    model.toggleInspector()
+                                }
+                                .help(inspectorPresented ? "인스펙터 가리기" : "인스펙터 보기")
+                                .accessibilityIdentifier("inspector-toggle")
+                            }
+                        }
                 }
             }
         }

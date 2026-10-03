@@ -96,6 +96,7 @@ enum BoardBrowserPreviewSupport {
 
 private final class PreviewLastBoard: LastBoardRecord {
     var lastBoardID: UUID?
+    var isInspectorHidden = false
 }
 
 #Preview("빈 Board") {
