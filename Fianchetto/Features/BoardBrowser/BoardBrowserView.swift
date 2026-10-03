@@ -173,6 +173,26 @@ private struct ConfigurationTreeView: View {
             content
         }
         .toolbar {
+            ToolbarItem(placement: .navigation) {
+                if model.viewMode == .icons {
+                    Button("뒤로", systemImage: "chevron.left") { model.goBack() }
+                        .help("뒤로")
+                        .disabled(!model.canGoBack)
+                }
+            }
+            ToolbarItem {
+                // 보기 전환(DESIGN 17.1): 아이콘 | 목록. Board마다 기억한다.
+                Picker("보기", selection: Binding(get: { model.viewMode }, set: { mode in
+                    mode == .icons ? model.showIcons() : model.showList()
+                })) {
+                    Label("아이콘으로 보기", systemImage: "square.grid.2x2").tag(BoardBrowserModel.ViewMode.icons)
+                    Label("목록으로 보기", systemImage: "list.bullet").tag(BoardBrowserModel.ViewMode.list)
+                }
+                .pickerStyle(.segmented)
+                .help("보기")
+                .disabled(model.selectedBoardID == nil)
+                .accessibilityIdentifier("view-mode")
+            }
             ToolbarItemGroup {
                 Button { Task { await model.addBishops() } } label: {
                     Label("Bishop 추가", image: .fianchettoBishop)
@@ -206,6 +226,8 @@ private struct ConfigurationTreeView: View {
                 .dropDestination(for: TreeDropItem.self) { items, _ in
                     accept(items, on: nil)
                 }
+        case .loaded where model.viewMode == .icons:
+            IconGridView(model: model)
         case .loaded:
             let selectedNode = model.selectedNodeID
             // 선택은 바로 반영하고, Bishop이면 연결 상태를 확인한다(W15).
@@ -276,7 +298,7 @@ private struct TreeBranch: View {
 }
 
 /// 끌어 놓을 위치 표시. 시스템 강조 색 테두리라 사용자의 강조 색 설정을 따른다.
-private struct DropHighlight: View {
+struct DropHighlight: View {
     let isActive: Bool
 
     var body: some View {
@@ -289,9 +311,11 @@ private struct DropHighlight: View {
 }
 
 /// 트리 항목의 오른쪽 클릭 메뉴. 누른 항목을 먼저 고른 뒤 메뉴 막대와 같은 명령을 실행한다.
-private struct NodeContextMenu: View {
+struct NodeContextMenu: View {
     let model: BoardBrowserModel
     let node: ConfigurationNode
+    /// 아이콘 보기의 Wing 타일은 Finder처럼 항목 명령만 보이고, 추가는 빈 곳 메뉴에 둔다(현재 위치에 추가).
+    var inIconView = false
 
     var body: some View {
         switch node.kind {
@@ -307,6 +331,8 @@ private struct NodeContextMenu: View {
             Divider()
             Button("URL 변경…") { run { model.beginChangeURL() } }
                 .disabled(!model.canAddToBoard)
+        case .group where inIconView:
+            Button("들어가기") { run { await model.activateTile(node.id) } }
         case .group:
             Group {
                 Button("Bishop 추가…") { run { await model.addBishops() } }
@@ -399,7 +425,8 @@ private struct NodeRow: View {
                 }
             }
         } icon: {
-            icon
+            // 설정의 Bishop 아이콘 방식을 목록에도 같이 쓴다(DESIGN 18.5).
+            TileIconView(icon: TileIcon.of(node, style: model.bishopIconStyle))
         }
         .tag(node.id)
         .accessibilityElement(children: .ignore)
@@ -408,14 +435,6 @@ private struct NodeRow: View {
         .accessibilityAddTraits(model.selectedNodeID == node.id ? .isSelected : [])
     }
 
-    private var icon: Image {
-        switch node.kind {
-        case .group: Image(systemName: "folder")
-        case .file: Image(.fianchettoBishop)
-        case .folder: Image(.fianchettoBishopFolder)
-        case .webLink: Image(systemName: "link")
-        }
-    }
 }
 
 /// "이동…" 창: 최상위와 옮길 수 있는 그룹을 트리 순서로 보여 준다.

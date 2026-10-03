@@ -97,6 +97,9 @@ enum BoardBrowserPreviewSupport {
 private final class PreviewLastBoard: LastBoardRecord {
     var lastBoardID: UUID?
     var isInspectorHidden = false
+    var bishopIconStyle: String?
+    func viewMode(for boardID: UUID) -> String? { nil }
+    func setViewMode(_ mode: String, for boardID: UUID) {}
 }
 
 #Preview("빈 Board") {

@@ -6,6 +6,11 @@ protocol LastBoardRecord: AnyObject {
     var lastBoardID: UUID? { get set }
     /// 기본은 펼침이라, 접었을 때만 true로 기록한다.
     var isInspectorHidden: Bool { get set }
+    /// Board별 구성 보기 방식(W28). 값은 화면 쪽이 정한 문자열이다. 없으면 nil.
+    func viewMode(for boardID: UUID) -> String?
+    func setViewMode(_ mode: String, for boardID: UUID)
+    /// 설정의 Bishop 아이콘 방식(W28). 없으면 nil(기본).
+    var bishopIconStyle: String? { get set }
 }
 
 @MainActor
@@ -25,6 +30,21 @@ final class UserDefaultsLastBoard: LastBoardRecord {
     var isInspectorHidden: Bool {
         get { defaults.bool(forKey: "inspectorHidden") }
         set { defaults.set(newValue, forKey: "inspectorHidden") }
+    }
+
+    func viewMode(for boardID: UUID) -> String? {
+        (defaults.dictionary(forKey: "viewModes") as? [String: String])?[boardID.uuidString]
+    }
+
+    func setViewMode(_ mode: String, for boardID: UUID) {
+        var modes = defaults.dictionary(forKey: "viewModes") as? [String: String] ?? [:]
+        modes[boardID.uuidString] = mode
+        defaults.set(modes, forKey: "viewModes")
+    }
+
+    var bishopIconStyle: String? {
+        get { defaults.string(forKey: "bishopIconStyle") }
+        set { defaults.set(newValue, forKey: "bishopIconStyle") }
     }
 }
 
@@ -63,4 +83,40 @@ final class FileLastBoard: LastBoardRecord {
     }
 
     private var inspectorURL: URL { url.deletingLastPathComponent().appending(path: "inspectorHidden") }
+
+    /// 같은 테스트 폴더의 "viewModes" 파일에 "UUID=값" 줄로 기록한다.
+    func viewMode(for boardID: UUID) -> String? { viewModes[boardID.uuidString] }
+
+    func setViewMode(_ mode: String, for boardID: UUID) {
+        var modes = viewModes
+        modes[boardID.uuidString] = mode
+        write(modes.map { "\($0.key)=\($0.value)" }.sorted().joined(separator: "\n"), to: "viewModes")
+    }
+
+    var bishopIconStyle: String? {
+        get { read("bishopIconStyle") }
+        set { write(newValue, to: "bishopIconStyle") }
+    }
+
+    private var viewModes: [String: String] {
+        let lines = read("viewModes")?.split(separator: "\n") ?? []
+        return Dictionary(lines.compactMap { line -> (String, String)? in
+            let parts = line.split(separator: "=", maxSplits: 1)
+            return parts.count == 2 ? (String(parts[0]), String(parts[1])) : nil
+        }, uniquingKeysWith: { _, last in last })
+    }
+
+    private func read(_ name: String) -> String? {
+        try? String(contentsOf: url.deletingLastPathComponent().appending(path: name), encoding: .utf8)
+    }
+
+    private func write(_ text: String?, to name: String) {
+        let file = url.deletingLastPathComponent().appending(path: name)
+        guard let text else {
+            try? FileManager.default.removeItem(at: file)
+            return
+        }
+        try? FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try? text.write(to: file, atomically: true, encoding: .utf8)
+    }
 }

@@ -375,7 +375,7 @@ items:
     test_strategy: >-
       화면 상태 모델 테스트: 보기 전환·위치 이동(들어가기·위로·경로·없어진 Wing·Board 전환), 위치별 항목 순서, 드롭 결과와 revision,
       열기 위임, 보관 차단, 설정 기억. UI 테스트는 전환과 Wing 들어가기·나오기 핵심 흐름만.
-    status: pending
+    status: done
     priority: high
     dependencies: [W12, W14, W15]
     source_refs:
