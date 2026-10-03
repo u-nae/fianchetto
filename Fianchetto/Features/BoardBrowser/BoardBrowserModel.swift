@@ -35,6 +35,11 @@ final class BoardBrowserModel {
         var pickTargets: () -> [URL]?
         /// 연결 대상 변경 선택 창(종류에 맞는 것 하나). 취소하면 nil.
         var pickReplacement: (LinkedTarget.Kind) -> URL?
+        /// 이력 날짜 구역의 '오늘'과 날짜로 찾기의 처음 값.
+        var now: () -> Date = { Date() }
+        /// 시스템 시간대가 들어 있는 달력. 바뀐 시간대를 따르도록 부를 때마다 읽는다.
+        var calendar: () -> Calendar = { Calendar.autoupdatingCurrent }
+        var locale: Locale = .autoupdatingCurrent
     }
 
     /// Bishop 연결 결과 안내. 다시 시도는 처음 요청 그대로 실행한다.
@@ -181,6 +186,20 @@ final class BoardBrowserModel {
 
     private let dependencies: Dependencies
 
+    /// 인스펙터 안의 '항목 | 이력' 탭(W17, DESIGN.md 16.1). 다시 실행하면 항목 탭으로 시작한다.
+    enum InspectorTab: Hashable, Sendable {
+        case item
+        case history
+    }
+
+    private(set) var inspectorTab: InspectorTab = .item
+    /// Board 사이드바가 보이는지. 화면이 NavigationSplitView 열 표시와 묶는다. 저장하지 않으므로 다시 실행하면 보인다.
+    var isSidebarVisible = true
+    /// 이력 탭을 열 때의 사이드바 상태. 이력 탭을 닫으면 이 상태로 돌린다(16.1).
+    private var sidebarBeforeHistory: Bool?
+    /// 이력 탭의 목록·날짜로 찾기·고른 revision.
+    let history: HistoryPanelModel
+
     /// 구성 영역 보기 방식(W28, 0020). Board별로 기억한다.
     enum ViewMode: String, Sendable {
         case list
@@ -205,13 +224,65 @@ final class BoardBrowserModel {
 
     /// 오른쪽 열(인스펙터)을 펼쳤는지. 화면 설정이며 바꾸면 바로 기억한다(구성 기록과 무관).
     var isInspectorPresented: Bool {
-        didSet { dependencies.lastBoard.isInspectorHidden = !isInspectorPresented }
+        didSet {
+            dependencies.lastBoard.isInspectorHidden = !isInspectorPresented
+            // 인스펙터를 접으면 이력 탭을 닫은 것으로 다룬다(접힘 + 이력 탭 상태는 없다).
+            if !isInspectorPresented, inspectorTab == .history { closeHistoryTab() }
+        }
     }
 
     init(dependencies: Dependencies) {
         self.dependencies = dependencies
+        var openedStore: () -> ProjectStore? = { nil }
+        history = HistoryPanelModel(
+            environment: .init(now: dependencies.now, calendar: dependencies.calendar, locale: dependencies.locale),
+            store: { openedStore() }
+        )
         isInspectorPresented = !dependencies.lastBoard.isInspectorHidden
         bishopIconStyle = dependencies.lastBoard.bishopIconStyle.flatMap(BishopIconStyle.init(rawValue:)) ?? .symbol
+        openedStore = { [weak self] in self?.openedStore?.store }
+    }
+
+    // MARK: 이력 탭(W17)
+
+    /// 보기 메뉴 '이력 보기'(⌘Y)와 툴바 이력 버튼이 켜지는 조건.
+    var canShowHistory: Bool { selectedBoardID != nil }
+
+    /// '이력 보기': 인스펙터가 접혀 있으면 펴며 이력 탭을 열고, 이력 탭에서 다시 하면 항목 탭으로 돌아간다(16.1).
+    func toggleHistory() async {
+        guard canShowHistory else { return }
+        if isInspectorPresented, inspectorTab == .history {
+            closeHistoryTab()
+        } else {
+            isInspectorPresented = true
+            await openHistoryTab()
+        }
+    }
+
+    /// 인스펙터 안 세그먼트로 탭을 바꾼다.
+    func selectInspectorTab(_ tab: InspectorTab) async {
+        switch tab {
+        case .history where inspectorTab != .history && canShowHistory: await openHistoryTab()
+        case .item where inspectorTab == .history: closeHistoryTab()
+        default: break
+        }
+    }
+
+    private func openHistoryTab() async {
+        inspectorTab = .history
+        if sidebarBeforeHistory == nil {
+            sidebarBeforeHistory = isSidebarVisible
+            isSidebarVisible = false
+        }
+        await history.open()
+    }
+
+    private func closeHistoryTab() {
+        inspectorTab = .item
+        if let before = sidebarBeforeHistory {
+            isSidebarVisible = before
+            sidebarBeforeHistory = nil
+        }
     }
 
     /// 보기 메뉴 "인스펙터 보기/가리기"(⌥⌘I)와 툴바 버튼.
@@ -513,7 +584,7 @@ final class BoardBrowserModel {
         case let .committed(_, snapshot):
             nodeForm = nil
             if selectedBoardID == form.boardID {
-                current = .loaded(snapshot)
+                await adopt(snapshot)
                 switch form.purpose {
                 case let .addGroup(parentID), let .addWebLink(parentID): reveal(parentID)
                 case .rename, .changeURL: break
@@ -587,7 +658,7 @@ final class BoardBrowserModel {
         case let .committed(_, snapshot):
             rename = nil
             await reloadBoards()
-            if selectedBoardID == boardID { current = .loaded(snapshot) }
+            if selectedBoardID == boardID { await adopt(snapshot) }
         case .unchanged:
             rename = nil
         case .rejected(.edit(.blankName)):
@@ -805,7 +876,7 @@ final class BoardBrowserModel {
         switch outcome {
         case let .committed(_, snapshot):
             guard selectedBoardID == boardID else { return }
-            current = .loaded(snapshot)
+            await adopt(snapshot)
             selectedNodeID = nodeID
             reveal(parentID)
         case .unchanged:
@@ -917,7 +988,7 @@ final class BoardBrowserModel {
         }
         switch outcome {
         case let .committed(_, snapshot):
-            if selectedBoardID == boardID { current = .loaded(snapshot) }
+            if selectedBoardID == boardID { await adopt(snapshot) }
         case .unchanged:
             break
         case .rejected(.archived):
@@ -1201,7 +1272,7 @@ final class BoardBrowserModel {
         switch outcome {
         case let .committed(_, snapshot):
             guard selectedBoardID == pending.boardID else { return }
-            current = .loaded(snapshot)
+            await adopt(snapshot)
             selectedNodeID = nil
         case .unchanged:
             break
@@ -1300,7 +1371,7 @@ final class BoardBrowserModel {
         case let .committed(_, snapshot):
             statusEpoch += 1
             if selectedBoardID == preview.projectID {
-                current = .loaded(snapshot)
+                await adopt(snapshot)
                 linkStatuses[preview.nodeID] = nil
             }
         case .unchanged:
@@ -1331,7 +1402,7 @@ final class BoardBrowserModel {
         switch outcome {
         case let .committed(_, snapshot):
             if selectedBoardID == request.projectID {
-                current = .loaded(snapshot)
+                await adopt(snapshot)
                 reveal(request.parentID)
             }
         case .unchanged:
@@ -1376,6 +1447,7 @@ final class BoardBrowserModel {
         selectedBoardID = boardID
         selectedNodeID = nil
         viewMode = dependencies.lastBoard.viewMode(for: boardID).flatMap(ViewMode.init(rawValue:)) ?? .list
+        history.reset(boardID: boardID)
         iconPath = []
         hasIconLocation = false
         backStack = []
@@ -1388,6 +1460,13 @@ final class BoardBrowserModel {
         } catch {
             current = .unreadable
         }
+        if inspectorTab == .history { await history.open() }
+    }
+
+    /// 저장에 성공한 구성을 현재 구성으로 삼고, 이력 탭이 열려 있었으면 새 revision을 목록 맨 위에 더한다.
+    private func adopt(_ snapshot: ConfigurationSnapshot) async {
+        current = .loaded(snapshot)
+        await history.loadNewer()
     }
 }
 

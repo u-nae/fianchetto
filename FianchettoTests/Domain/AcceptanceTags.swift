@@ -6,6 +6,7 @@ extension Tag {
     @Tag static var A02: Self
     @Tag static var A03: Self
     @Tag static var A04: Self
+    @Tag static var A05: Self
     @Tag static var A07: Self
     @Tag static var A12: Self
     @Tag static var A13: Self

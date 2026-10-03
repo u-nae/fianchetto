@@ -1,0 +1,11 @@
+schema_version: "1.0"
+run_id: t-w17-730c38c9
+decisions:
+  - question_id: Q-W17-1
+    task_id: W17
+    question: "'날짜로 찾기'에서 시각을 분 단위로 고를 때, 그 분 안에 기록된 revision을 포함할까요?"
+    recommended_default: A
+    answer: A
+    followed_recommendation: true
+    answer_source: AskUserQuestion
+    answered_at: "2026-10-03T15:10:00+09:00"

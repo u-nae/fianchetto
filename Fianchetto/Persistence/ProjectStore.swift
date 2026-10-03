@@ -150,6 +150,22 @@ actor ProjectStore {
         try adapter.revisionSummaries(projectID: projectID)
     }
 
+    func revisionSummaries(projectID: UUID, below sequence: Int?, limit: Int) throws(StoreReadError) -> [RevisionSummary] {
+        try adapter.revisionSummaries(projectID: projectID, below: sequence, limit: limit)
+    }
+
+    func revisionSummaries(projectID: UUID, sequences range: ClosedRange<Int>) throws(StoreReadError) -> [RevisionSummary] {
+        try adapter.revisionSummaries(projectID: projectID, sequences: range)
+    }
+
+    func latestRevision(projectID: UUID, atOrBefore instant: Date) throws(StoreReadError) -> RevisionSummary? {
+        try adapter.latestRevision(projectID: projectID, atOrBefore: instant)
+    }
+
+    func revisionSummary(_ id: UUID) throws(StoreReadError) -> RevisionSummary? {
+        try adapter.revisionSummary(id)
+    }
+
     /// 한 revision의 구성. 선택한 revision만 디코딩한다(PRD §8 경량화).
     func snapshot(revisionID: UUID) throws(StoreReadError) -> ConfigurationSnapshot {
         try adapter.snapshot(revisionID: revisionID)
