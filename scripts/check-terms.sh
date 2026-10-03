@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# W07-terms-in-catalog, W08-menu-command(Bishop 추가), W09-commands(연결 대상 변경), W10-commands-no-delete(이름 변경·보관), W11-commands(Wing·웹 링크·이름·URL)
+# W07-terms-in-catalog, W08-menu-command(Bishop 추가), W09-commands(연결 대상 변경), W10-commands-no-delete(이름 변경·보관), W11-commands(Wing·웹 링크·이름·URL), W29-catalog(아이콘·용도·Bishop · 폴더)
 # 화면 용어(0006)가 String Catalog에 있고, 화면 문구(카탈로그와 Features·App의 문자열 리터럴)에 구현 용어가 없는지 검사한다.
 # 사용법: check-terms.sh [앱 소스 루트]   (기본값: 저장소의 Fianchetto/)
 set -euo pipefail
 
 ROOT="${1:-$(cd "$(dirname "$0")/.." && pwd)/Fianchetto}"
 CATALOG="$ROOT/Localizable.xcstrings"
-REQUIRED=("Board 만들기" "보관된 Board" "Bishop" "Bishop 추가" "연결 대상 변경" "Board 이름 변경" "Board 보관" "보관 해제" "Wing 추가" "웹 링크 추가" "이름 변경" "URL 변경" "Wing" "웹 링크" "위로 이동" "아래로 이동" "이동" "Bishop 제거" "Wing 제거" "웹 링크 제거" "제거" "열기" "Finder에서 보기" "다시 선택…" "상태 새로고침" "권한 필요" "대상 없음" "볼륨 연결 필요" "확인 실패" "아이콘으로 보기" "목록으로 보기")
+REQUIRED=("Board 만들기" "보관된 Board" "Bishop" "Bishop 추가" "연결 대상 변경" "Board 이름 변경" "Board 보관" "보관 해제" "Wing 추가" "웹 링크 추가" "이름 변경" "URL 변경" "Wing" "웹 링크" "위로 이동" "아래로 이동" "이동" "Bishop 제거" "Wing 제거" "웹 링크 제거" "제거" "열기" "Finder에서 보기" "다시 선택…" "상태 새로고침" "권한 필요" "대상 없음" "볼륨 연결 필요" "확인 실패" "아이콘으로 보기" "목록으로 보기" "아이콘" "기본" "문서" "데이터" "이미지" "코드" "참고" "발표" "할 일" "디자인" "Bishop · 폴더")
 # 대소문자를 구분하는 금지어와 구분하지 않는 금지어.
 FORBIDDEN_EXACT=("DB" "JSON")
 # "그룹"은 0017에서 Wing으로 바꾼 옛 화면 용어다. 다시 들어오지 않게 막는다.

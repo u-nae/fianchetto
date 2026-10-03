@@ -7,9 +7,12 @@ enum SnapshotDecodingError: Error, Equatable, Sendable {
     case malformed
 }
 
-/// 구성 스냅샷 JSON(schema version 1)의 기록과 읽기.
+/// 구성 스냅샷 JSON의 기록과 읽기. 쓰기는 현재 버전(2), 읽기는 1·2를 받는다.
+/// 버전 2는 Node 용도(purpose, 0021)를 더했다. 버전 1에는 용도가 없으므로 그대로 읽으면 용도 없음이다.
+/// 더 새 버전은 값을 조용히 잃지 않도록 거부한다.
 enum SnapshotCodec {
-    static let currentSchemaVersion = 1
+    static let currentSchemaVersion = 2
+    static let readableSchemaVersions: Set<Int> = [1, 2]
 
     private struct Envelope: Codable {
         var schemaVersion: Int
@@ -37,7 +40,7 @@ enum SnapshotCodec {
         } catch {
             throw .malformed
         }
-        guard probe.schemaVersion == currentSchemaVersion else {
+        guard let version = probe.schemaVersion, readableSchemaVersions.contains(version) else {
             throw .unsupportedSchemaVersion(probe.schemaVersion)
         }
         do {

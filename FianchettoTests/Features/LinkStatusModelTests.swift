@@ -138,7 +138,7 @@ struct LinkStatusModelTests {
             #expect(o.model.displayedStatus(of: backend) == nil)
             #expect(LinkStatusPresentation.of(.healthy) == nil)
             let node = try #require(o.model.loadedSnapshot?.node(named: "backend"))
-            #expect(o.model.accessibilityLabel(for: node) == "backend, Bishop")
+            #expect(o.model.accessibilityLabel(for: node) == "backend, Bishop · 폴더")
             #expect(o.model.inspector?.status == nil)
         }
     }

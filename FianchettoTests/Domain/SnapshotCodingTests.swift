@@ -30,13 +30,13 @@ struct SnapshotCodingTests {
         let data = try SnapshotCodec.encode(SnapshotFixtures.serviceA())
 
         let object = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
-        #expect(object["schemaVersion"] as? Int == 1)
-        #expect(SnapshotCodec.currentSchemaVersion == 1)
+        #expect(object["schemaVersion"] as? Int == 2)
+        #expect(SnapshotCodec.currentSchemaVersion == 2)
     }
 
     @Test("[W02-unsupported-schema-version-rejected] 지원하지 않는 schema version의 JSON은 읽지 않는다", arguments: [
         (#"{"schemaVersion":0,"projectName":"서비스 A","nodes":[]}"#, 0 as Int?),
-        (#"{"schemaVersion":2,"projectName":"서비스 A","nodes":[]}"#, 2 as Int?),
+        (#"{"schemaVersion":3,"projectName":"서비스 A","nodes":[]}"#, 3 as Int?),
         (#"{"projectName":"서비스 A","nodes":[]}"#, nil as Int?),
     ])
     func unsupportedSchemaVersionIsRejected(json: String, version: Int?) {

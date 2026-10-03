@@ -38,7 +38,8 @@ enum NodeShapeRule {
         parent: ParentKind,
         kind: NodeKind,
         reference: ReferenceFields,
-        url: URLShape
+        url: URLShape,
+        hasPurpose: Bool = false
     ) -> SnapshotViolationKind? {
         switch parent {
         case .file, .folder, .webLink: return .parentNotGroup // R1~R3
@@ -48,7 +49,7 @@ enum NodeShapeRule {
         case .group:
             if reference != .none { return .unexpectedReference } // R4·R5
             if url != .absent { return .unexpectedURL } // R6·R7
-            return nil // R8
+            return hasPurpose ? .purposeNotAllowed : nil // R8 (용도는 Bishop만, 0021)
         case .file, .folder:
             switch reference {
             case .none: return .missingReference // R9·R10
@@ -60,7 +61,7 @@ enum NodeShapeRule {
             switch url {
             case .absent: return .missingURL // R21
             case .other: return .invalidURL // R22
-            case .httpOrHTTPS: return nil // R23
+            case .httpOrHTTPS: return hasPurpose ? .purposeNotAllowed : nil // R23 (용도는 Bishop만, 0021)
             }
         }
     }

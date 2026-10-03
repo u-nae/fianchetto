@@ -33,6 +33,8 @@ enum ConfigurationEdit: Sendable {
     /// Node와 모든 자손을 제거한다.
     case remove(UUID)
     case replaceTarget(UUID, kind: LinkedTarget.Kind, path: String, identity: TargetIdentity)
+    /// Bishop 용도를 바꾼다. nil은 기본(배지 없음). 알려진 키만 받는다(0021).
+    case changePurpose(UUID, String?)
 }
 
 /// 거부 사유. 여럿이면 선언 순서상 앞선 사유 하나를 돌려준다(존재 → 종류 → 배치 → 이름 → 값 → 위치).
@@ -46,6 +48,7 @@ enum EditRejection: String, Error, Sendable {
     case targetKindMismatch = "target_kind_mismatch"
     case invalidPath = "invalid_path"
     case invalidURL = "invalid_url"
+    case invalidPurpose = "invalid_purpose"
     case invalidPosition = "invalid_position"
 }
 
@@ -158,6 +161,12 @@ private struct Draft {
             guard identity != .sameTarget else { return }
             snapshot.nodes[index].referenceID = makeID()
             snapshot.nodes[index].recordedPath = path
+
+        case let .changePurpose(id, purpose):
+            let index = try requireNode(id)
+            guard snapshot.nodes[index].kind == .file || snapshot.nodes[index].kind == .folder else { throw .notLinkedItem }
+            if let purpose, BishopPurpose(rawValue: purpose) == nil { throw .invalidPurpose }
+            snapshot.nodes[index].purpose = purpose
         }
     }
 

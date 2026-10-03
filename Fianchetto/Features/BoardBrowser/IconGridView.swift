@@ -9,8 +9,12 @@ struct TileIconView: View {
         switch icon {
         case let .systemSymbol(name):
             Image(systemName: name).resizable().scaledToFit().fontWeight(.light).frame(width: size, height: size)
-        case .bishop:
-            Image(.fianchettoBishop).resizable().scaledToFit().frame(width: size, height: size)
+        case let .bishop(purpose):
+            if let purpose {
+                PurposeBadgedBishop(purpose: purpose, size: size)
+            } else {
+                Image(.fianchettoBishop).resizable().scaledToFit().frame(width: size, height: size)
+            }
         case .bishopFolder:
             Image(.fianchettoBishopFolder).resizable().scaledToFit().frame(width: size, height: size)
         case let .fileType(identifier):
@@ -20,16 +24,80 @@ struct TileIconView: View {
         }
     }
 
+    /// 파일 종류 아이콘의 Bishop 배지(DESIGN 18.5): 반전 단색. 원은 글자 색, 미트라는 바탕 색이라 강조 색 설정과 상관없이 대비가 높다.
     private func badged(_ image: Image) -> some View {
-        image.resizable().scaledToFit().frame(width: size, height: size)
+        let diameter = size * 0.42
+        return image.resizable().scaledToFit().frame(width: size, height: size)
             .overlay(alignment: .bottomTrailing) {
                 Image(.fianchettoBishop)
                     .resizable().scaledToFit()
-                    .foregroundStyle(.white)
-                    .padding(size * 0.06)
-                    .background(Circle().fill(Color.accentColor))
-                    .frame(width: size * 0.42, height: size * 0.42)
+                    .foregroundStyle(Color(nsColor: .textBackgroundColor))
+                    .padding(diameter * 0.18)
+                    .frame(width: diameter, height: diameter)
+                    .background(Circle().fill(Color.primary))
+                    .overlay(Circle().strokeBorder(Color(nsColor: .textBackgroundColor), lineWidth: max(0.5, size / 40)))
             }
+    }
+}
+
+/// Bishop 심볼 + 용도 배지(DESIGN 18.3). 배지 둘레(0.62배) 원만큼 심볼을 오려 내고 배지(0.38배, .semibold)를 겹친다.
+/// 오려 내기가 이 그룹 안에서만 적용되도록 세 층을 하나의 compositingGroup으로 묶는다(선택 바탕을 지우지 않는다).
+/// 색은 따로 넣지 않고 바깥 foregroundStyle을 따른다.
+private struct PurposeBadgedBishop: View {
+    let purpose: BishopPurpose
+    let size: CGFloat
+
+    var body: some View {
+        ZStack(alignment: .bottomTrailing) {
+            Image(.fianchettoBishop).resizable().scaledToFit().frame(width: size, height: size)
+            Circle()
+                .frame(width: size * 0.62, height: size * 0.62)
+                .offset(x: size * 0.12, y: size * 0.12)
+                .blendMode(.destinationOut)
+            Image(systemName: PurposePresentation.symbol(for: purpose))
+                .resizable().scaledToFit()
+                .fontWeight(.semibold)
+                .frame(width: size * 0.38, height: size * 0.38)
+        }
+        .frame(width: size, height: size)
+        .compositingGroup()
+    }
+}
+
+/// 용도 배지 기호(DESIGN 18.2). 저장 키는 바뀌지 않고 기호만 이 표에서 바꾼다.
+enum PurposePresentation {
+    static func symbol(for purpose: BishopPurpose) -> String {
+        switch purpose {
+        case .document: "doc.text.fill"
+        case .data: "tablecells.fill"
+        case .image: "photo.fill"
+        case .code: "chevron.left.forwardslash.chevron.right"
+        case .reference: "book.closed.fill"
+        case .presentation: "play.rectangle.fill"
+        case .todo: "checklist"
+        case .design: "paintbrush.pointed.fill"
+        }
+    }
+}
+
+/// "아이콘" 고르기 메뉴 항목: 기본 + 8종, 지금 값(모르는 키는 기본)에 체크 표시(DESIGN 18.4). 메뉴 막대·오른쪽 클릭이 같이 쓴다.
+struct PurposeMenuItems: View {
+    let current: BishopPurpose?
+    let text: (BishopPurpose?) -> String
+    let choose: (BishopPurpose?) -> Void
+
+    static let choices: [BishopPurpose?] = [nil] + BishopPurpose.allCases.map(Optional.some)
+
+    var body: some View {
+        ForEach(Self.choices, id: \.self) { purpose in
+            Toggle(isOn: Binding(get: { current == purpose }, set: { _ in choose(purpose) })) {
+                if let purpose {
+                    Label(text(purpose), systemImage: PurposePresentation.symbol(for: purpose))
+                } else {
+                    Text(text(nil))
+                }
+            }
+        }
     }
 }
 

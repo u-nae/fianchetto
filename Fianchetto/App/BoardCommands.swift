@@ -27,6 +27,13 @@ struct BoardCommands: Commands {
                 .disabled(!isEnabled(\.canMoveSelectedDown))
             Button("이동…") { model?.beginMove() }
                 .disabled(!isEnabled(\.canMoveSelected))
+            // Bishop 용도 아이콘(W29, DESIGN 18.4).
+            Menu("아이콘") {
+                PurposeMenuItems(current: model?.selectedPurpose, text: { model?.purposeText($0) ?? "" }) { purpose in
+                    Task { await model?.setPurposeOfSelected(purpose) }
+                }
+            }
+            .disabled(!isEnabled(\.canSetPurposeOfSelected))
             Divider()
             Button("제거…") { model?.beginRemove() }
                 .keyboardShortcut(.delete, modifiers: .command)

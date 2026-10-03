@@ -9,6 +9,7 @@ enum SnapshotViolationKind: String, Sendable {
     case missingURL = "missing_url"
     case invalidURL = "invalid_url"
     case unexpectedURL = "unexpected_url"
+    case purposeNotAllowed = "purpose_not_allowed"
     // 트리·이름 규칙
     case cycle
     case missingParent = "missing_parent"
@@ -68,7 +69,8 @@ enum SnapshotValidator {
                 parent: parent,
                 kind: node.kind,
                 reference: NodeShapeRule.referenceFields(referenceID: node.referenceID, recordedPath: node.recordedPath),
-                url: NodeShapeRule.urlShape(node.url)
+                url: NodeShapeRule.urlShape(node.url),
+                hasPurpose: node.purpose != nil
             )
             if let shape { report(shape) }
 

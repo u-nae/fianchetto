@@ -176,7 +176,7 @@ struct BoardBrowserModelTests {
             let backend = try #require(snapshot.node(named: "backend"))
             #expect(harness.model.childrenIfExpandable(backend) == nil)
             #expect(harness.model.kindText(for: development) == "Wing")
-            #expect(harness.model.kindText(for: backend) == "Bishop")
+            #expect(harness.model.kindText(for: backend) == "Bishop · 폴더") // 폴더 Bishop(W29, 0022 F1)
             #expect(harness.model.kindText(for: try #require(snapshot.node(named: "API 명세"))) == "웹 링크")
         }
     }
@@ -191,7 +191,7 @@ struct BoardBrowserModelTests {
             let snapshot = try #require(harness.model.loadedSnapshot)
 
             harness.model.selectedNodeID = try #require(snapshot.node(named: "backend")).id
-            #expect(harness.model.inspector == NodeInspection(displayName: "backend", kind: "Bishop(폴더)", target: "/dev/legacy-api"))
+            #expect(harness.model.inspector == NodeInspection(displayName: "backend", kind: "Bishop · 폴더", target: "/dev/legacy-api", purpose: "기본"))
 
             harness.model.selectedNodeID = try #require(snapshot.node(named: "API 명세")).id
             #expect(harness.model.inspector == NodeInspection(displayName: "API 명세", kind: "웹 링크", target: "https://example.com/api"))
@@ -460,7 +460,7 @@ struct BoardBrowserModelTests {
             let archived = try #require(harness.model.archivedBoards.first)
             #expect(harness.model.accessibilityLabel(for: archived).contains("옛 프로젝트"))
             #expect(harness.model.accessibilityLabel(for: archived).contains("보관됨"))
-            for (name, kind) in [("개발", "Wing"), ("backend", "Bishop"), ("API 명세", "웹 링크")] {
+            for (name, kind) in [("개발", "Wing"), ("backend", "Bishop · 폴더"), ("API 명세", "웹 링크")] {
                 let label = harness.model.accessibilityLabel(for: try #require(snapshot.node(named: name)))
                 #expect(label.contains(name) && label.contains(kind))
             }

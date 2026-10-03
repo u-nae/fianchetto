@@ -8,6 +8,8 @@ struct NodeInspection: Equatable {
     var target: String?
     /// 확인한 연결 상태 문구. 정상이거나 확인 전이면 nil.
     var status: String?
+    /// Bishop의 용도 문구(모르는 키는 "기본"). Bishop이 아니면 nil.
+    var purpose: String?
 }
 
 /// 트리 한 행. 하위 항목은 펼칠 수 있는 그룹에만 있다.
@@ -351,15 +353,18 @@ final class BoardBrowserModel {
     func kindText(for node: ConfigurationNode) -> String {
         switch node.kind {
         case .group: String(localized: "Wing")
-        case .file, .folder: String(localized: "Bishop")
+        case .file: String(localized: "Bishop")
+        case .folder: String(localized: "Bishop · 폴더")
         case .webLink: String(localized: "웹 링크")
         }
     }
 
     func accessibilityLabel(for node: ConfigurationNode) -> String {
-        let base = "\(node.displayName), \(kindText(for: node))"
-        guard let status = displayedStatus(of: node.id) else { return base }
-        return "\(base), \(statusText(status))"
+        // 이름, 종류, (상태), (용도) 순서다(DESIGN 17.7). 모르는 용도 키는 붙이지 않는다.
+        var parts = [node.displayName, kindText(for: node)]
+        if let status = displayedStatus(of: node.id) { parts.append(statusText(status)) }
+        if let purpose = node.knownPurpose { parts.append(purposeText(purpose)) }
+        return parts.joined(separator: ", ")
     }
 
     var inspector: NodeInspection? {
@@ -368,13 +373,14 @@ final class BoardBrowserModel {
         else { return nil }
         let kind = switch node.kind {
         case .group: String(localized: "Wing")
-        case .file: String(localized: "Bishop(파일)")
-        case .folder: String(localized: "Bishop(폴더)")
+        case .file: String(localized: "Bishop")
+        case .folder: String(localized: "Bishop · 폴더")
         case .webLink: String(localized: "웹 링크")
         }
         return NodeInspection(
             displayName: node.displayName, kind: kind, target: node.recordedPath ?? node.url,
-            status: displayedStatus(of: node.id).map(statusText)
+            status: displayedStatus(of: node.id).map(statusText),
+            purpose: node.kind == .file || node.kind == .folder ? purposeText(node.knownPurpose) : nil
         )
     }
 
@@ -866,6 +872,58 @@ final class BoardBrowserModel {
         case .unreachable(.volumeUnavailable): String(localized: "열지 못했습니다. 상태: 볼륨 연결 필요")
         case .unreachable(.checkFailed): String(localized: "열지 못했습니다. 상태: 확인 실패")
         case .launchFailed, .unreadable: String(localized: "열지 못했습니다.")
+        }
+    }
+
+    // MARK: Bishop 용도(W29)
+
+    /// 메뉴 막대·인스펙터·오른쪽 클릭의 "아이콘" 고르기가 켜지는 조건: 편집할 수 있는 Board에서 Bishop을 골랐을 때.
+    var canSetPurposeOfSelected: Bool { canEditSelectedBoard && isBishopSelected }
+
+    /// 인스펙터 "아이콘" 줄을 보이는 조건. 보관된 Board에서도 보이되 꺼진다.
+    var isBishopSelected: Bool { selectedNode.map { $0.kind == .file || $0.kind == .folder } == true }
+
+    /// 체크 표시할 지금 용도. 없거나 모르는 키면 nil(기본).
+    var selectedPurpose: BishopPurpose? { selectedNode?.knownPurpose }
+
+    func purposeText(_ purpose: BishopPurpose?) -> String {
+        switch purpose {
+        case nil: String(localized: "기본")
+        case .document: String(localized: "문서")
+        case .data: String(localized: "데이터")
+        case .image: String(localized: "이미지")
+        case .code: String(localized: "코드")
+        case .reference: String(localized: "참고")
+        case .presentation: String(localized: "발표")
+        case .todo: String(localized: "할 일")
+        case .design: String(localized: "디자인")
+        }
+    }
+
+    func setPurposeOfSelected(_ purpose: BishopPurpose?) async {
+        guard canSetPurposeOfSelected, let node = selectedNode else { return }
+        await requestPurpose(node.id, purpose?.rawValue)
+    }
+
+    /// 용도 변경 요청 하나를 저장한다. 같은 값이면 서비스가 무변경으로 돌려준다.
+    func requestPurpose(_ nodeID: UUID, _ key: String?) async {
+        guard let boardID = selectedBoardID, let service = openedStore?.service else { return }
+        let outcome: ConfigurationCommitOutcome
+        do {
+            outcome = try await service.apply(.changePurpose(nodeID, key), to: boardID)
+        } catch {
+            linkNotice = LinkNotice(kind: .saveFailed, request: nil)
+            return
+        }
+        switch outcome {
+        case let .committed(_, snapshot):
+            if selectedBoardID == boardID { current = .loaded(snapshot) }
+        case .unchanged:
+            break
+        case .rejected(.archived):
+            linkNotice = LinkNotice(kind: .archived, request: nil)
+        case .rejected:
+            linkNotice = LinkNotice(kind: .saveFailed, request: nil)
         }
     }
 

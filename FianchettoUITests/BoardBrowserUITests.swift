@@ -154,6 +154,14 @@ final class BoardBrowserUITests: XCTestCase {
         for title in ["위로 이동", "아래로 이동", "이동…"] {
             XCTAssertTrue(editMenu.menuItems[title].exists, title)
         }
+        // W29-pick-disabled: Bishop 용도 "아이콘" 하위 메뉴가 편집 메뉴에 있고, 고른 Bishop이 없으면 항목이 꺼져 있다.
+        // 하위 메뉴를 가진 항목 자체는 AppKit이 켜 두므로 하위 항목으로 확인한다.
+        let purposeMenu = editMenu.menuItems["아이콘"]
+        XCTAssertTrue(purposeMenu.exists)
+        purposeMenu.hover()
+        let documentPurpose = purposeMenu.menuItems["문서"]
+        XCTAssertTrue(documentPurpose.waitForExistence(timeout: 5))
+        XCTAssertFalse(documentPurpose.isEnabled, "고른 Bishop이 없으면 용도 항목이 꺼져 있다")
         app.typeKey(.escape, modifierFlags: [])
         // 단축키는 XCUITest가 노출하지 않으므로, ⌘N이 이 명령을 실행하는지로 확인한다.
         app.typeKey("n", modifierFlags: .command)
