@@ -1,0 +1,25 @@
+schema_version: "1.0"
+run_id: t-w28-5021855b
+questions:
+  - question_id: Q-W28-1
+    task_id: W28
+    blocking: true
+    ambiguity: >-
+      0020 초안은 "보기 방식과 현재 위치는 Board별 화면 설정"이라 적었고, DESIGN.md 17.1은 "마지막 보기 방식을 기억한다(앱 전체)"라 적었다.
+      보기 방식과 아이콘 보기 위치를 무엇 단위로, 다시 실행 뒤에도 기억하는지가 서로 다르다.
+    evidence: docs/decisions/0020-icon-view.md; docs/DESIGN.md#17-아이콘-보기
+    question: 아이콘 보기/목록 보기 선택과 아이콘 보기의 현재 위치를 어떻게 기억할까요?
+    options:
+      - id: A
+        label: Board별 보기, 위치는 세션만
+        detail: Board마다 마지막 보기 방식을 다시 실행해도 기억한다. 위치는 앱을 쓰는 동안만 두고 Board 전환·다시 실행 때 최상위로 시작한다.
+      - id: B
+        label: Board별 보기와 위치 모두 기억
+        detail: 다시 실행해도 Board별 보기와 보던 Wing으로 돌아간다. 없어진 Wing 처리와 오랜만에 열 때 혼란이 늘어난다.
+      - id: C
+        label: 앱 전체 보기 하나, 위치는 세션만
+        detail: DESIGN 17.1의 현재 내용. 가장 단순하다.
+    recommended_default: A
+    recommendation_rationale: Board마다 구조가 달라 보기 선호가 다를 수 있고, 깊은 위치 복원은 혼란과 예외 처리를 늘린다.
+    answer: A
+    answer_source: AskUserQuestion

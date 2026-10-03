@@ -360,6 +360,54 @@ items:
     acceptance_refs: [A07]
     subtasks: []
 
+  # W28은 사용자 결정(0020)으로 추가했고 W17보다 먼저 진행한다. ID는 기존 번호를 바꾸지 않으려고 뒤에서 붙였다.
+  - id: W28
+    title: 아이콘 보기와 Wing 단위 탐색
+    description: 구성 영역을 목록(트리) 보기와 아이콘 보기 중에서 고를 수 있게 하고, 아이콘 보기는 Wing 한 단계씩 탐색한다.
+    details: >-
+      보기 메뉴 아이콘(⌘1)·목록(⌘2)과 툴바 세그먼트로 전환한다(기본 목록, 마지막 보기 기억). 아이콘 보기는 현재 위치(최상위 또는 Wing)
+      한 단계의 항목을 구성 순서대로 격자로 보이고, Wing 이중 클릭·⌘↓로 들어가며 ⌘↑·뒤로(⌘[)·경로 막대로 돌아간다. Bishop·웹 링크
+      이중 클릭·⌘↓는 열기(W14)다. Wing 타일 위에 놓으면 그 안 끝으로 옮기고(W12 규칙, revision 하나), 빈 곳·빈 Wing 화면에는 Finder 파일만 받아 지금 위치 끝에 연결한다.
+      타일 사이 순서 바꾸기는 첫 버전에서 빼고 위로·아래로 이동(⌥⌘↑↓)을 쓴다. 선택·메뉴·키보드·VoiceOver는 목록 보기와 같은 명령을 쓴다.
+      연결 상태(W15)는 기호와 문구로 함께 표시한다. 보기 방식(Board별, 다시 실행해도 기억)과 현재 위치(화면 세션)는 화면 설정이며 revision을 만들지 않는다. 설정의 '파일 종류 아이콘'
+      모드(기록 당시 경로 확장자 기준 일반 아이콘 + Bishop 배지)를 포함하며, 타일·행 기호는 디스크에 접근하지 않는다(실제 파일 아이콘 금지).
+      보관된 Board에서는 탐색·열기만 하고 편집을 막는다(0009). 시각 명세는 DESIGN.md 17장·18.5.
+    test_strategy: >-
+      화면 상태 모델 테스트: 보기 전환·위치 이동(들어가기·위로·경로·없어진 Wing·Board 전환), 위치별 항목 순서, 드롭 결과와 revision,
+      열기 위임, 보관 차단, 설정 기억. UI 테스트는 전환과 Wing 들어가기·나오기 핵심 흐름만.
+    status: done
+    priority: high
+    dependencies: [W12, W14, W15]
+    source_refs:
+      - docs/decisions/0020-icon-view.md
+      - docs/TECH_STACK.md#ui-구성
+      - docs/DESIGN.md
+    acceptance_refs: [A04, A02]
+    subtasks: []
+
+  # W29도 사용자 결정(0021·0022)으로 추가했다. 순서: W28 → W29 → W17.
+  - id: W29
+    title: Bishop 용도 아이콘
+    description: Bishop마다 용도(문서·데이터·이미지·코드·참고·할 일 등)를 골라 미트라에 용도 배지로 표시하고, 구성 이력에 남긴다.
+    details: >-
+      용도는 Bishop(파일·폴더) Node의 선택 속성이며 Wing·웹 링크에는 없다. 안정적인 영문 키로 저장하고 화면 문구·기호는 DESIGN.md 18장을 따른다.
+      바꾸면 편집 연산 하나·revision 하나(원인 "아이콘 변경")이고, 같은 값이면 무변경이다. 과거 구성·비교(W16 분류 추가)·복원·새 Board·
+      내보내기에 함께 따라간다. 스냅샷은 기존 저장 위치(JSON)에 선택 필드로 더해 기존 revision을 그대로 읽는다. 보관된 Board에서는 바꿀 수 없다(0009).
+      목록·아이콘 보기 모두에 배지를 보인다.
+    test_strategy: >-
+      Domain: 용도 변경 연산(무변경·비 Bishop 거부·알 수 없는 키 거부), 스냅샷 왕복과 기존 형식 읽기, W16 차이 분류.
+      서비스·화면 상태: revision 하나와 원인, 저장 실패, 보관 차단, 메뉴·오른쪽 클릭 진입점.
+    status: pending
+    priority: high
+    dependencies: [W03, W05, W16, W28]
+    source_refs:
+      - docs/decisions/0021-bishop-purpose.md
+      - docs/decisions/0022-bishop-badge-visuals.md
+      - docs/DESIGN.md
+      - docs/PRD.md#7-기록-정책과-저장-안정성
+    acceptance_refs: [A04, A07]
+    subtasks: []
+
   - id: W17
     title: 이력 목록과 날짜 시점 조회
     description: revision 목록을 순번 순서로 보여 주고 날짜·시각으로 당시의 마지막 기록을 찾는다.

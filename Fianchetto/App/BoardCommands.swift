@@ -33,6 +33,26 @@ struct BoardCommands: Commands {
                 .disabled(!isEnabled(\.canRemoveSelected))
         }
         // 보기 메뉴: 시스템의 사이드바 항목 뒤에 오른쪽 열(인스펙터) 접기를 둔다.
+        CommandGroup(before: .sidebar) {
+            // 구성 보기 방식과 아이콘 보기 탐색(W28, DESIGN 17장). Finder와 같은 단축키다.
+            Button("아이콘으로 보기") { model?.showIcons() }
+                .keyboardShortcut("1")
+                .disabled(model?.selectedBoardID == nil)
+            Button("목록으로 보기") { model?.showList() }
+                .keyboardShortcut("2")
+                .disabled(model?.selectedBoardID == nil)
+            Divider()
+            Button("들어가기") { Task { await model?.enterSelected() } }
+                .keyboardShortcut(.downArrow, modifiers: .command)
+                .disabled(!isEnabled(\.canEnterSelected))
+            Button("상위 Wing으로") { model?.goUp() }
+                .keyboardShortcut(.upArrow, modifiers: .command)
+                .disabled(!isEnabled(\.canGoUp))
+            Button("뒤로") { model?.goBack() }
+                .keyboardShortcut("[")
+                .disabled(!isEnabled(\.canGoBack))
+            Divider()
+        }
         CommandGroup(after: .sidebar) {
             Button(model?.isInspectorPresented == false ? "인스펙터 보기" : "인스펙터 가리기") { model?.toggleInspector() }
                 .keyboardShortcut("i", modifiers: [.command, .option])

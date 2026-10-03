@@ -6,7 +6,7 @@ set -euo pipefail
 
 ROOT="${1:-$(cd "$(dirname "$0")/.." && pwd)/Fianchetto}"
 CATALOG="$ROOT/Localizable.xcstrings"
-REQUIRED=("Board 만들기" "보관된 Board" "Bishop" "Bishop 추가" "연결 대상 변경" "Board 이름 변경" "Board 보관" "보관 해제" "Wing 추가" "웹 링크 추가" "이름 변경" "URL 변경" "Wing" "웹 링크" "위로 이동" "아래로 이동" "이동" "Bishop 제거" "Wing 제거" "웹 링크 제거" "제거" "열기" "Finder에서 보기" "다시 선택…" "상태 새로고침" "권한 필요" "대상 없음" "볼륨 연결 필요" "확인 실패")
+REQUIRED=("Board 만들기" "보관된 Board" "Bishop" "Bishop 추가" "연결 대상 변경" "Board 이름 변경" "Board 보관" "보관 해제" "Wing 추가" "웹 링크 추가" "이름 변경" "URL 변경" "Wing" "웹 링크" "위로 이동" "아래로 이동" "이동" "Bishop 제거" "Wing 제거" "웹 링크 제거" "제거" "열기" "Finder에서 보기" "다시 선택…" "상태 새로고침" "권한 필요" "대상 없음" "볼륨 연결 필요" "확인 실패" "아이콘으로 보기" "목록으로 보기")
 # 대소문자를 구분하는 금지어와 구분하지 않는 금지어.
 FORBIDDEN_EXACT=("DB" "JSON")
 # "그룹"은 0017에서 Wing으로 바꾼 옛 화면 용어다. 다시 들어오지 않게 막는다.

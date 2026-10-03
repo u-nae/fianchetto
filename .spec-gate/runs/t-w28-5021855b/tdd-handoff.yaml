@@ -1,0 +1,202 @@
+schema_version: "1.0"
+run_id: t-w28-5021855b
+verdict: READY
+source:
+  baseline:
+    - path: docs/PRD.md
+      fingerprint: 9194c2af1e2024e9a8b9603694c81b01ca618e5303438a7350f15461d1b836ad
+    - path: docs/TECH_STACK.md
+      fingerprint: 695c5a16d41f2b9cd96cf2bfce412e5f845fa9d2d06392eeaa44684b78e7d6f7
+  decision_records:
+    path: docs/decisions
+    fingerprint: a7d2178d0203b49c5d7fe2abf4596e44f0e55aa52832e41993d06a729c01178e
+  work_items_artifact: docs/work-items.yaml
+  work_items_fingerprint: 6d6ce2852343a694b0ea0c4bc384db7e6cafedaff8a64291ea56cd29a0e70c8c
+  normalized_artifact: .spec-gate/runs/t-w28-5021855b/normalized-tasks.yaml
+source_tasks:
+  - task_id: W28
+    title: 아이콘 보기와 Wing 단위 탐색
+    route: GHERKIN
+    acceptance_refs:
+      - A04
+      - A02
+accepted_specifications:
+  - task_id: W28
+    route: GHERKIN
+    path: .spec-gate/runs/t-w28-5021855b/specs/revision-2/task-W28.feature
+test_obligations:
+  - obligation_id: W28-view-mode-per-board
+    task_id: W28
+    kind: scenario
+    description: 보기 방식은 처음 목록이고 Board마다 따로, 다시 실행해도 기억하며 위치는 최상위로 시작하고 revision을 만들지 않는다(Q-W28-1)
+    source: .spec-gate/runs/t-w28-5021855b/specs/revision-2/task-W28.feature#보기 방식은 처음엔 목록이고 Board마다 따로 기억한다
+  - obligation_id: W28-switch-location
+    task_id: W28
+    kind: scenario
+    description: 아이콘 보기로 바꾸면 선택이 있으면 그 부모, 없으면 이번 세션 위치(없어졌으면 가장 가까운 상위), 그것도 없으면 최상위에서 시작하고 선택을 유지한다
+    source: .spec-gate/runs/t-w28-5021855b/specs/revision-2/task-W28.feature#아이콘 보기로 바꿀 때 선택이나 이번 세션의 위치에서 시작한다
+  - obligation_id: W28-one-level-in-order
+    task_id: W28
+    kind: scenario
+    description: 아이콘 보기는 현재 위치 한 단계만 구성 순서대로 보이고 경로 막대와 항목 수를 보인다
+    source: .spec-gate/runs/t-w28-5021855b/specs/revision-2/task-W28.feature#아이콘 보기는 현재 위치 한 단계의 항목을 구성 순서대로 보인다
+  - obligation_id: W28-enter-wing
+    task_id: W28
+    kind: scenario
+    description: Wing 이중 클릭·들어가기(⌘↓)는 그 Wing으로 이동하고 선택을 비우며 경로 막대·제목·부제를 바꾼다
+    source: .spec-gate/runs/t-w28-5021855b/specs/revision-2/task-W28.feature#Wing에 들어가면 그 Wing의 항목을 보이고 선택은 비운다
+  - obligation_id: W28-navigate-back
+    task_id: W28
+    kind: scenario
+    description: 상위로(⌘↑)·뒤로(⌘[)·경로 막대로 돌아가고 방금 있던 자식 Wing을 선택한다
+    source: .spec-gate/runs/t-w28-5021855b/specs/revision-2/task-W28.feature#위로·뒤로·경로 막대로 돌아가면 방금 있던 Wing을 선택한다
+  - obligation_id: W28-back-history
+    task_id: W28
+    kind: scenario
+    description: 뒤로 기록은 뒤로를 뺀 모든 위치 이동을 쌓고 기록이 다하면 뒤로를 끈다
+    source: .spec-gate/runs/t-w28-5021855b/specs/revision-2/task-W28.feature#뒤로 기록은 뒤로를 뺀 모든 위치 이동을 쌓는다
+  - obligation_id: W28-back-to-removed-wing
+    task_id: W28
+    kind: scenario
+    description: 뒤로 대상 Wing이 없어졌으면 남은 가장 가까운 상위로 간다
+    source: .spec-gate/runs/t-w28-5021855b/specs/revision-2/task-W28.feature#뒤로 기록 속 Wing이 없어졌으면 남아 있는 가장 가까운 상위로 간다
+  - obligation_id: W28-navigation-capabilities
+    task_id: W28
+    kind: scenario
+    description: 최상위·기록 없음에서는 위로·뒤로가, 목록 보기에서는 위로·들어가기·뒤로가, Board를 바꾼 뒤에는 뒤로가 실행할 수 없다
+    source: .spec-gate/runs/t-w28-5021855b/specs/revision-2/task-W28.feature#실행할 수 없는 탐색 명령은 꺼져 있다
+  - obligation_id: W28-open-from-tile
+    task_id: W28
+    kind: scenario
+    description: Bishop·웹 링크 이중 클릭·들어가기는 열기(W14)이고 위치·revision을 바꾸지 않는다
+    source: .spec-gate/runs/t-w28-5021855b/specs/revision-2/task-W28.feature#Bishop·웹 링크를 이중 클릭하거나 들어가기를 실행하면 연다
+    acceptance_refs:
+      - A02
+  - obligation_id: W28-location-fallback
+    task_id: W28
+    kind: scenario
+    description: 보던 Wing이 없어지면 남은 가장 가까운 상위, Board를 바꾸면 최상위로 간다
+    source: .spec-gate/runs/t-w28-5021855b/specs/revision-2/task-W28.feature#보고 있던 Wing이 없어지면 남아 있는 가장 가까운 상위로 간다
+  - obligation_id: W28-empty-wing
+    task_id: W28
+    kind: scenario
+    description: 빈 Wing은 빈 화면과 경로·항목 0개를 보이고 그곳에 놓은 파일을 그 Wing에 연결한다
+    source: .spec-gate/runs/t-w28-5021855b/specs/revision-2/task-W28.feature#빈 Wing에 들어가면 빈 화면을 보이고 그곳에 파일을 놓을 수 있다
+  - obligation_id: W28-add-to-current-location
+    task_id: W28
+    kind: scenario
+    description: 아이콘 보기의 Wing·웹 링크·Bishop 추가는 선택과 상관없이 현재 위치 끝에 revision 하나로 들어가고 바로 보인다
+    source: .spec-gate/runs/t-w28-5021855b/specs/revision-2/task-W28.feature#아이콘 보기에서 추가하면 선택과 상관없이 지금 위치의 끝에 들어간다
+    acceptance_refs:
+      - A04
+  - obligation_id: W28-add-cancel
+    task_id: W28
+    kind: scenario
+    description: 아이콘 보기의 추가 취소는 아무것도 바꾸지 않는다
+    source: .spec-gate/runs/t-w28-5021855b/specs/revision-2/task-W28.feature#아이콘 보기에서 추가를 취소하면 아무것도 바뀌지 않는다
+    acceptance_refs:
+      - A04
+  - obligation_id: W28-drop-move
+    task_id: W28
+    kind: scenario
+    description: Wing 타일 위는 그 안 끝으로 move revision 하나로 옮기고, 자기 자신·Bishop·웹 링크 타일·같은 층 빈 곳은 받지 않고 기록하지 않는다
+    source: .spec-gate/runs/t-w28-5021855b/specs/revision-2/task-W28.feature#앱 안 항목을 놓은 곳에 따라 옮기거나 받지 않는다
+    acceptance_refs:
+      - A04
+  - obligation_id: W28-drop-link
+    task_id: W28
+    kind: scenario
+    description: Finder 파일은 Wing 타일·빈 곳에서 연결하고 Bishop 타일 위는 받지 않는다(W08)
+    source: .spec-gate/runs/t-w28-5021855b/specs/revision-2/task-W28.feature#Finder에서 끌어온 파일은 Wing 타일이나 빈 곳에 놓으면 연결한다
+  - obligation_id: W28-drop-link-on-weblink
+    task_id: W28
+    kind: scenario
+    description: Finder 파일을 웹 링크 타일에 놓으면 받지 않는다
+    source: .spec-gate/runs/t-w28-5021855b/specs/revision-2/task-W28.feature#Finder 파일을 웹 링크 타일에 놓으면 받지 않는다
+  - obligation_id: W28-drop-save-failure
+    task_id: W28
+    kind: scenario
+    description: 드롭 이동 저장 실패는 안내하고 타일·위치·revision을 유지한다
+    source: .spec-gate/runs/t-w28-5021855b/specs/revision-2/task-W28.feature#드롭으로 옮기다 저장에 실패하면 안내하고 그대로 둔다
+  - obligation_id: W28-select-checks-status
+    task_id: W28
+    kind: scenario
+    description: 타일 선택(클릭·방향키)은 그 Bishop을 한 번 확인해 상태를 기호·문구·접근성 라벨로 보이고 기록하지 않는다(PRD §8, W15)
+    source: .spec-gate/runs/t-w28-5021855b/specs/revision-2/task-W28.feature#타일을 선택하면 그 Bishop만 연결 상태를 한 번 확인한다
+  - obligation_id: W28-navigation-no-check
+    task_id: W28
+    kind: scenario
+    description: 보기 전환·들어가기·위로·뒤로는 접근 정보를 해석하지 않는다(PRD §8)
+    source: .spec-gate/runs/t-w28-5021855b/specs/revision-2/task-W28.feature#탐색과 보기 전환은 연결 상태를 확인하지 않는다
+  - obligation_id: W28-arrow-selection
+    task_id: W28
+    kind: scenario
+    description: 방향키는 열 수 기준으로 격자 선택을 옮기고 경계에서는 그대로이며 선택이 없으면 첫 타일을 고른다
+    source: .spec-gate/runs/t-w28-5021855b/specs/revision-2/task-W28.feature#방향키는 격자 안에서 선택을 옮긴다
+  - obligation_id: W28-arrow-empty-wing
+    task_id: W28
+    kind: scenario
+    description: 빈 Wing에서는 방향키가 아무것도 고르지 않고 위치·revision을 바꾸지 않는다
+    source: .spec-gate/runs/t-w28-5021855b/specs/revision-2/task-W28.feature#빈 Wing에서는 방향키가 아무것도 고르지 않는다
+  - obligation_id: W28-shared-commands
+    task_id: W28
+    kind: scenario
+    description: 아이콘 보기에서도 위로 이동 등 편집 명령이 같은 revision 규칙으로 동작하고 선택을 유지한다
+    source: .spec-gate/runs/t-w28-5021855b/specs/revision-2/task-W28.feature#아이콘 보기에서도 편집 명령은 목록 보기와 같다
+    acceptance_refs:
+      - A04
+  - obligation_id: W28-bishop-icon-setting
+    task_id: W28
+    kind: scenario
+    description: Bishop 아이콘 설정에 따라 기호 심볼 또는 확장자 기준 일반 아이콘(없거나 모르면 일반 문서)+배지를 쓰고 대상에 접근하지 않으며 Wing·웹 링크는 그대로다
+    source: .spec-gate/runs/t-w28-5021855b/specs/revision-2/task-W28.feature#Bishop 아이콘 설정은 디스크 접근 없이 기호를 정한다
+  - obligation_id: W28-bishop-icon-setting-remembered
+    task_id: W28
+    kind: scenario
+    description: Bishop 아이콘 설정은 다시 실행해도 기억하고 기록하지 않는다
+    source: .spec-gate/runs/t-w28-5021855b/specs/revision-2/task-W28.feature#Bishop 아이콘 설정은 다시 실행해도 기억한다
+  - obligation_id: W28-archived
+    task_id: W28
+    kind: scenario
+    description: 보관된 Board의 아이콘 보기는 탐색·열기만 되고 앱 안·Finder 드롭, 추가, 이동은 받지 않거나 꺼진다(0009)
+    source: .spec-gate/runs/t-w28-5021855b/specs/revision-2/task-W28.feature#보관된 Board에서는 아이콘 보기로 탐색·열기만 하고 편집은 막는다
+  - obligation_id: W28-commands
+    task_id: W28
+    kind: scenario
+    description: 보기 메뉴의 전환·탐색 명령과 툴바 세그먼트, 설정의 Bishop 아이콘 선택이 있고 문구가 String Catalog에 있다
+    source: .spec-gate/runs/t-w28-5021855b/specs/revision-2/task-W28.feature#보기 명령이 메뉴와 툴바에 있다
+acceptance_coverage:
+  A02:
+    - W28-open-from-tile
+  A04:
+    - W28-add-to-current-location
+    - W28-add-cancel
+    - W28-drop-move
+    - W28-shared-commands
+decision_log: .spec-gate/runs/t-w28-5021855b/decision-log.yaml
+critic_report: .spec-gate/runs/t-w28-5021855b/critic-pass-3.yaml
+non_blocking_notes:
+  - finding_id: F-W28-21
+    task_id: W28
+    note: The switch keeps the selection, but the no-check scenario starts with nothing selected. An implementation that checks the selected Bishop again when the view changes would still pass. That is the case where the rule matters.
+  - finding_id: F-W28-22
+    task_id: W28
+    note: "The assumption adds Back history entries for location moves caused by a view switch. DESIGN 17.5 in #33 does not list them, and no scenario shows them. The Back-to-removed-Wing scenario works only because its switch does not move the location. Two readers could therefore build different Back histories."
+  - finding_id: F-W28-23
+    task_id: W28
+    note: For app-internal drops, rejection is shown only on a file Bishop tile. The folder-Bishop invariant is covered only for Finder drops. An implementation that treats a folder Bishop tile like a Wing for app-internal moves would pass. The W12 move rule lowers the risk, but this task does not show it.
+  - finding_id: F-W28-24
+    task_id: W28
+    note: The obligation says the scenario proves web links stay unchanged under the file-type setting. The Examples table has no web-link row.
+  - finding_id: F-W28-25
+    task_id: W28
+    note: On an editable Board, the scenarios for enter, up, Back, and the path bar never check that the revision count stays the same. The only navigation check runs on an archived Board, where nothing can be recorded anyway. An implementation that records location changes would fail only the view-mode relaunch scenario, and only by accident.
+  - finding_id: F-W28-26
+    task_id: W28
+    note: "The major finding F-W28-12 is closed. The switch rule (selection's parent, otherwise the session location, otherwise the top level) is now stated once, cited to Q-W28-1, and gets a no-selection example that uses an earlier location. The fallback rows and the Back-to-removed-Wing Given follow it. F-W28-13 is closed: the fallback target \"개발\" now differs from the current location, the top level. F-W28-14, -15, -16, -17, and -18 are closed: @A04 on cancel, a Back-disabled row for list view and Board switch, the post-gate work-item alignment recorded in assumptions[0], the empty-Wing arrow scenario, and the step that says it replaces the Background."
+  - finding_id: F-W28-27
+    task_id: W28
+    note: Carried over from F-W28-20. A02 is proven only as "the open request leaves from the icon view". Relaunch access and the recovery display stay with W14 and W15. This is acceptable for a view-level task.
+  - finding_id: F-W28-28
+    task_id: W28
+    note: "The accepted specification matches DESIGN 17 only in PR #33. On this branch, DESIGN 17.1 (\"앱 전체\") and 17.4 (an empty-space drop moves the item) still disagree, and so do the W28 work-item details and 0020 (location per Board). The manifest records that these will be aligned after the gate. Changing work-items.yaml or 0020 invalidates this run's fingerprint, so make those changes after the handoff, as integration.md requires. Make sure #33 merges before the TDD cycle reads DESIGN 17."

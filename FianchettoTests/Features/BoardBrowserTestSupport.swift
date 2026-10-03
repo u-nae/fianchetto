@@ -8,6 +8,10 @@ import Testing
 final class InMemoryLastBoard: LastBoardRecord {
     var lastBoardID: UUID?
     var isInspectorHidden = false
+    var viewModes: [UUID: String] = [:]
+    var bishopIconStyle: String?
+    func viewMode(for boardID: UUID) -> String? { viewModes[boardID] }
+    func setViewMode(_ mode: String, for boardID: UUID) { viewModes[boardID] = mode }
     init(_ id: UUID? = nil) { lastBoardID = id }
 }
 

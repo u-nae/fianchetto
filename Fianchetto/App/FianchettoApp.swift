@@ -20,5 +20,8 @@ struct FianchettoApp: App {
         .commands {
             BoardCommands(model: model)
         }
+        Settings {
+            AppSettingsView(model: model)
+        }
     }
 }

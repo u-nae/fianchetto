@@ -179,6 +179,28 @@ final class BoardBrowserModel {
 
     private let dependencies: Dependencies
 
+    /// 구성 영역 보기 방식(W28, 0020). Board별로 기억한다.
+    enum ViewMode: String, Sendable {
+        case list
+        case icons
+    }
+
+    enum GridDirection: Sendable {
+        case left, right, up, down
+    }
+
+    private(set) var viewMode: ViewMode = .list
+    /// 아이콘 보기 위치: 최상위부터 지금 Wing까지의 UUID 경로(빈 배열 = 최상위). 화면 세션 동안만 둔다.
+    private var iconPath: [UUID] = []
+    /// 이번 Board 세션에 아이콘 보기를 쓴 적이 있는지(선택 없이 바꿀 때 이어 쓸 위치가 있는지).
+    private var hasIconLocation = false
+    private var backStack: [[UUID]] = []
+
+    /// 설정의 Bishop 아이콘 방식. 바꾸면 바로 기억한다.
+    var bishopIconStyle: BishopIconStyle {
+        didSet { dependencies.lastBoard.bishopIconStyle = bishopIconStyle.rawValue }
+    }
+
     /// 오른쪽 열(인스펙터)을 펼쳤는지. 화면 설정이며 바꾸면 바로 기억한다(구성 기록과 무관).
     var isInspectorPresented: Bool {
         didSet { dependencies.lastBoard.isInspectorHidden = !isInspectorPresented }
@@ -187,6 +209,7 @@ final class BoardBrowserModel {
     init(dependencies: Dependencies) {
         self.dependencies = dependencies
         isInspectorPresented = !dependencies.lastBoard.isInspectorHidden
+        bishopIconStyle = dependencies.lastBoard.bishopIconStyle.flatMap(BishopIconStyle.init(rawValue:)) ?? .symbol
     }
 
     /// 보기 메뉴 "인스펙터 보기/가리기"(⌥⌘I)와 툴바 버튼.
@@ -597,7 +620,13 @@ final class BoardBrowserModel {
     // MARK: Bishop 추가와 드롭
 
     /// 선택한 항목에 따른 연결 위치: 그룹이면 그 안, 그 밖의 항목이면 그 부모, 선택이 없으면 최상위. 모두 끝에 넣는다.
+    /// 아이콘 보기에서는 선택과 상관없이 지금 위치다(Finder의 새 폴더 관례, DESIGN 17.5).
     private var insertionParent: UUID? {
+        if viewMode == .icons { return iconLocationID }
+        return listInsertionParent
+    }
+
+    private var listInsertionParent: UUID? {
         guard case let .loaded(snapshot) = current,
               let id = selectedNodeID, let node = snapshot.nodes.first(where: { $0.id == id })
         else { return nil }
@@ -838,6 +867,186 @@ final class BoardBrowserModel {
         case .unreachable(.checkFailed): String(localized: "열지 못했습니다. 상태: 확인 실패")
         case .launchFailed, .unreadable: String(localized: "열지 못했습니다.")
         }
+    }
+
+    // MARK: 아이콘 보기(W28)
+
+    func showIcons() {
+        guard selectedBoardID != nil else { return }
+        if let node = selectedNode {
+            iconPath = path(to: node.parentID)
+        } else if hasIconLocation {
+            iconPath = resolvedIconPath
+        } else {
+            iconPath = []
+        }
+        hasIconLocation = true
+        setViewMode(.icons)
+    }
+
+    func showList() {
+        guard selectedBoardID != nil else { return }
+        setViewMode(.list)
+    }
+
+    private func setViewMode(_ mode: ViewMode) {
+        viewMode = mode
+        if let boardID = selectedBoardID { dependencies.lastBoard.setViewMode(mode.rawValue, for: boardID) }
+    }
+
+    /// 지금 보고 있는 Wing. 최상위면 nil. 보던 Wing이 없어졌으면 남은 가장 가까운 상위다.
+    var iconLocationID: UUID? { resolvedIconPath.last }
+
+    private var resolvedIconPath: [UUID] { resolve(iconPath) }
+
+    /// 경로에서 아직 있는 Wing까지만 남긴다(없어진 Wing부터 아래는 버린다).
+    private func resolve(_ path: [UUID]) -> [UUID] {
+        guard case let .loaded(snapshot) = current else { return [] }
+        var result: [UUID] = []
+        for id in path {
+            guard let node = snapshot.nodes.first(where: { $0.id == id }), node.kind == .group, node.parentID == result.last else { break }
+            result.append(id)
+        }
+        return result
+    }
+
+    /// 최상위부터 그 Wing까지의 경로.
+    private func path(to groupID: UUID?) -> [UUID] {
+        guard case let .loaded(snapshot) = current else { return [] }
+        var result: [UUID] = []
+        var next = groupID
+        var seen: Set<UUID> = []
+        while let id = next, seen.insert(id).inserted, let node = snapshot.nodes.first(where: { $0.id == id }) {
+            result.insert(id, at: 0)
+            next = node.parentID
+        }
+        return result
+    }
+
+    /// 아이콘 보기 현재 위치 한 단계의 항목(구성 순서).
+    var iconItems: [ConfigurationNode] { children(of: iconLocationID) }
+
+    var pathBarNames: [String] {
+        guard case let .loaded(snapshot) = current else { return [] }
+        let wings = resolvedIconPath.compactMap { id in snapshot.nodes.first { $0.id == id }?.displayName }
+        return [snapshot.projectName] + wings
+    }
+
+    /// 경로 막대 칸: 최상위(id nil)부터 지금 Wing까지.
+    var pathBarEntries: [(id: UUID?, name: String)] {
+        let names = pathBarNames
+        let ids: [UUID?] = [nil] + resolvedIconPath.map(Optional.some)
+        return Array(zip(ids, names)).map { (id: $0.0, name: $0.1) }
+    }
+
+    var iconItemCountText: String { String(localized: "항목 \(iconItems.count)개") }
+
+    var iconTitle: String { pathBarNames.last ?? "" }
+    var iconSubtitle: String? { resolvedIconPath.isEmpty ? nil : pathBarNames.first }
+
+    var canGoUp: Bool { viewMode == .icons && !resolvedIconPath.isEmpty }
+    var canGoBack: Bool { viewMode == .icons && !backStack.isEmpty }
+    var canEnterSelected: Bool { viewMode == .icons && selectedNode != nil }
+
+    /// Wing 안으로 들어간다. 선택은 비운다.
+    func enter(_ wingID: UUID) {
+        guard case let .loaded(snapshot) = current, snapshot.nodes.first(where: { $0.id == wingID })?.kind == .group else { return }
+        navigate(to: path(to: wingID))
+    }
+
+    /// 보기 메뉴 "들어가기"(⌘↓): Wing이면 들어가고 Bishop·웹 링크면 연다.
+    func enterSelected() async {
+        guard canEnterSelected, let node = selectedNode else { return }
+        await activateTile(node.id)
+    }
+
+    /// 타일 이중 클릭.
+    func activateTile(_ nodeID: UUID) async {
+        guard case let .loaded(snapshot) = current, let node = snapshot.nodes.first(where: { $0.id == nodeID }) else { return }
+        if node.kind == .group {
+            enter(nodeID)
+        } else {
+            await open(nodeID)
+        }
+    }
+
+    func goUp() {
+        guard canGoUp else { return }
+        navigate(to: Array(resolvedIconPath.dropLast()))
+    }
+
+    /// 경로 막대의 칸. nil이면 최상위.
+    func goTo(_ wingID: UUID?) {
+        guard viewMode == .icons else { return }
+        navigate(to: path(to: wingID))
+    }
+
+    func goBack() {
+        guard canGoBack, let previous = backStack.popLast() else { return }
+        move(to: resolve(previous))
+    }
+
+    /// 뒤로 기록에 지금 위치를 쌓고 옮긴다(뒤로 자체는 쌓지 않는다).
+    private func navigate(to newPath: [UUID]) {
+        let old = resolvedIconPath
+        guard newPath != old else { return }
+        backStack.append(old)
+        move(to: newPath)
+    }
+
+    /// 위치를 바꾼다. 상위로 가면 방금 있던 자식 Wing을 선택하고, 그 밖에는 선택을 비운다.
+    private func move(to newPath: [UUID]) {
+        let old = resolvedIconPath
+        iconPath = newPath
+        hasIconLocation = true
+        if old.count > newPath.count, Array(old.prefix(newPath.count)) == newPath {
+            selectedNodeID = old[newPath.count]
+        } else {
+            selectedNodeID = nil
+        }
+    }
+
+    /// 방향키: 열 수 기준으로 이웃을 고른다. 경계에서는 그대로이고, 선택이 없으면 첫 타일을 고른다. Bishop이면 상태를 확인한다.
+    func selectNeighbor(_ direction: GridDirection, columns: Int) async {
+        let items = iconItems
+        guard !items.isEmpty, columns > 0 else { return }
+        guard let current = selectedNodeID, let index = items.firstIndex(where: { $0.id == current }) else {
+            await selectNode(items[0].id)
+            return
+        }
+        let next: Int = switch direction {
+        case .left: index % columns == 0 ? index : index - 1
+        case .right: (index % columns == columns - 1 || index + 1 >= items.count) ? index : index + 1
+        case .up: index - columns >= 0 ? index - columns : index
+        case .down: index + columns < items.count ? index + columns : index
+        }
+        guard next != index else { return }
+        await selectNode(items[next].id)
+    }
+
+    /// 앱 안 항목 드롭(아이콘 보기): Wing 타일 위만 받는다. 빈 곳(같은 층)·Bishop·웹 링크·자기 자신은 받지 않는다(DESIGN 17.4).
+    func canAcceptIconNodeDrop(_ nodeID: UUID, onTile tileID: UUID?) -> Bool {
+        guard let tileID, tileID != nodeID, case let .loaded(snapshot) = current,
+              snapshot.nodes.first(where: { $0.id == tileID })?.kind == .group
+        else { return false }
+        return canAcceptNodeDrop(nodeID, on: tileID)
+    }
+
+    @discardableResult
+    func dropNodeInIconView(_ nodeID: UUID, onTile tileID: UUID?) async -> Bool {
+        guard canAcceptIconNodeDrop(nodeID, onTile: tileID) else { return false }
+        return await dropNode(nodeID, on: tileID)
+    }
+
+    /// Finder 파일 드롭(아이콘 보기): Wing 타일 위는 그 안, 빈 곳은 지금 위치. Bishop·웹 링크 타일은 받지 않는다.
+    func canAcceptIconFileDrop(onTile tileID: UUID?) -> Bool {
+        canAcceptDrop(on: tileID ?? iconLocationID)
+    }
+
+    @discardableResult
+    func dropFilesInIconView(_ urls: [URL], onTile tileID: UUID?) async -> Bool {
+        guard canAcceptIconFileDrop(onTile: tileID) else { return false }
+        return await drop(urls, on: tileID ?? iconLocationID)
     }
 
     // MARK: 연결 상태와 다시 선택
@@ -1108,6 +1317,10 @@ final class BoardBrowserModel {
     private func loadCurrent(of boardID: UUID) async {
         selectedBoardID = boardID
         selectedNodeID = nil
+        viewMode = dependencies.lastBoard.viewMode(for: boardID).flatMap(ViewMode.init(rawValue:)) ?? .list
+        iconPath = []
+        hasIconLocation = false
+        backStack = []
         linkStatuses = [:]
         expandedGroupIDs = []
         statusEpoch += 1

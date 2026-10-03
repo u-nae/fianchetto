@@ -73,6 +73,43 @@ final class BoardBrowserUITests: XCTestCase {
         XCTAssertTrue(app.descendants(matching: .any)["node-row-Data"].waitForExistence(timeout: 5))
     }
 
+    /// W28-commands: 아이콘 보기로 바꾸고, Wing 타일 이중 클릭으로 들어갔다가 보기 메뉴로 위로 나온다.
+    @MainActor
+    func test_W28_iconViewEnterAndGoUp() {
+        let test = UITestApp(name: "icons")
+        test.launch()
+        defer { test.terminate() }
+        let app = test.app
+        XCTAssertTrue(app.staticTexts["Board가 없습니다"].waitForExistence(timeout: 10))
+        test.activateForKeyboard()
+        app.typeKey("n", modifierFlags: .command)
+        test.type("Icons", into: app.textFields["board-name-field"])
+        app.typeKey(.return, modifierFlags: [])
+        XCTAssertTrue(app.descendants(matching: .any)["board-row-Icons"].waitForExistence(timeout: 5))
+        app.menuBars.menuBarItems["파일"].click()
+        app.menuBars.menuBarItems["파일"].menuItems["Wing 추가…"].click()
+        test.type("Dev", into: app.textFields["node-name-field"])
+        app.typeKey(.return, modifierFlags: [])
+        XCTAssertTrue(app.descendants(matching: .any)["node-row-Dev"].waitForExistence(timeout: 5))
+
+        let viewMenu = app.menuBars.menuBarItems["보기"]
+        viewMenu.click()
+        for title in ["아이콘으로 보기", "목록으로 보기", "들어가기", "상위 Wing으로", "뒤로"] {
+            XCTAssertTrue(viewMenu.menuItems[title].exists, title)
+        }
+        viewMenu.menuItems["아이콘으로 보기"].click()
+        let tile = app.descendants(matching: .any)["icon-tile-Dev"]
+        XCTAssertTrue(tile.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.descendants(matching: .any)["path-bar"].exists)
+
+        tile.doubleClick()
+        XCTAssertTrue(app.staticTexts["Wing이 비어 있습니다"].waitForExistence(timeout: 5))
+
+        viewMenu.click()
+        viewMenu.menuItems["상위 Wing으로"].click()
+        XCTAssertTrue(tile.waitForExistence(timeout: 5))
+    }
+
     /// W07-ui-menu-command: 파일 메뉴에 ⌘N의 "Board 만들기…"가 있다.
     @MainActor
     func test_W07_fileMenuHasCreateBoardCommand() {
