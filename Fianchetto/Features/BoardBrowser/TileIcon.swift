@@ -17,6 +17,8 @@ extension ConfigurationNode {
 /// 목록 행·아이콘 타일의 기호. 대상 파일에 접근하지 않고 Node 값만으로 정한다(0020, PRD §8).
 enum TileIcon: Equatable, Sendable {
     case systemSymbol(String)
+    /// Wing 심볼. 실제 폴더와 구분되는 가상 묶음이다(0025).
+    case wing
     /// Bishop 심볼(+용도 배지). 폴더 Bishop도 용도가 있으면 이 모양이다(폴더 배지를 용도 배지가 대신한다, 0022 F1).
     case bishop(purpose: BishopPurpose?)
     /// 용도가 없는 폴더 Bishop.
@@ -31,7 +33,7 @@ enum TileIcon: Equatable, Sendable {
 
     static func of(_ node: ConfigurationNode, style: BishopIconStyle) -> TileIcon {
         switch (node.kind, style) {
-        case (.group, _): .systemSymbol("folder")
+        case (.group, _): .wing
         case (.webLink, _): .systemSymbol("link")
         case (.file, .symbol): .bishop(purpose: node.knownPurpose)
         case (.folder, .symbol): node.knownPurpose.map { .bishop(purpose: $0) } ?? .bishopFolder

@@ -103,12 +103,11 @@ Asset Catalog(`Fianchetto/Assets.xcassets`)의 Color Set으로 정의한다. 코
 
 | 쓰임 | 현재 기호 | 위치 |
 |---|---|---|
-| Board | `fianchetto.board`(커스텀, 0025. W17 병합 뒤 `square.grid.2x2`에서 교체) | 사이드바 Board 행, 경로 막대 |
-| Wing(가상 그룹) | `fianchetto.wing`(커스텀, 0025. W17 병합 뒤 `folder`에서 교체) | 트리 행(`NodeRow`), 아이콘 타일, 경로 막대, 이동 창 |
+| Board | `fianchetto.board`(커스텀, 0025) | 사이드바 Board 행, 경로 막대의 최상위 칸, 이동 창의 최상위 |
+| Wing(가상 그룹) | `fianchetto.wing`(커스텀, 0025) | 트리 행(`NodeRow`), 아이콘 타일, 경로 막대, 이동 창, 툴바 'Wing 추가' |
 | Bishop(파일) | `fianchetto.bishop`(커스텀, 0013) | 트리 행 |
 | Bishop(폴더) | `fianchetto.bishop.folder`(커스텀, 0013) | 트리 행 |
 | 웹 링크 | `link` | 트리 행 |
-| 최상위(이동 창) | `square.stack` | 이동 창 |
 | 보관된 Board 표시 | `archivebox` | 읽기 전용 띠 |
 | Board 없음 | 체스판 일러스트(`ChessboardIllustration`, 0016) | 빈 화면 |
 | 구성 비어 있음 | 체스판 일러스트(`ChessboardIllustration`, 0016) | 빈 화면 |
@@ -138,7 +137,8 @@ Asset Catalog(`Fianchetto/Assets.xcassets`)의 Color Set으로 정의한다. 코
 - 위계: Bishop 미트라가 주인공이다. Board·Wing은 칸과 선만 쓰고 말 실루엣을 쓰지 않는다. 웹 링크(`link`)와 상태 기호는 시스템 기호를 유지한다.
   테마 기호는 Board·Wing·Bishop 세 가지에서 멈춘다.
 - 제작: Bishop과 같은 생성 스크립트(`scripts/design/generate-bishop-symbols.swift`), 24 격자, 선 굵기 1.6, S·M·L 세 크기, 색 없는 단색 템플릿.
-- 참조: `Image(.fianchettoBoard)`, `Image(.fianchettoWing)`. 화면 코드의 교체는 W17 병합 뒤 별도 PR로 한다(0025).
+- 참조: `Image(.fianchettoBoard)`, `Image(.fianchettoWing)`. 목록·아이콘 보기는 `TileIcon.wing`으로 그린다. 툴바 'Wing 추가'도 Wing 심볼을 쓴다
+  ('Bishop 추가'가 더하기 표시 없는 미트라인 것과 맞춘다).
 
 ## 6. 앱 아이콘 (0014 확정)
 
@@ -197,8 +197,10 @@ W15에서 연결 상태를 트리에 표시한다. 상태 이름은 W14 안내 �
 ## 11. 접근성·테스트가 의존하는 것
 
 - **바꾸면 안 되는 접근성 식별자**(UI 테스트가 쓴다): `board-row-<이름>`, `node-row-<이름>`, `board-name-field`,
-  `node-name-field`, `node-url-field`, `move-destination-<이름>`, `removal-message`(W13). 행의 `accessibilityElement(children: .ignore)`와
-  `accessibilityLabel`, 선택 행의 `.isSelected` trait도 유지한다.
+  `node-name-field`, `node-url-field`, `move-destination-<이름>`, `removal-message`(W13), `path-bar`·`icon-tile-<이름>`·`view-mode`(W28),
+  `inspector-toggle`, `bishop-icon-style`(W28), `history-tab`·`history-toggle`·`revision-row-<순번>`·`date-lookup`(W17).
+  행의 `accessibilityElement(children: .ignore)`와 `accessibilityLabel`, 선택 행의 `.isSelected` trait도 유지한다.
+  W18 이후 쓰기로 제안한 식별자(`past-banner`, `return-to-current`, 19.6의 비교 식별자)는 구현되면 이 목록으로 옮긴다.
 - 메뉴 항목 제목과 단축키를 바꾸지 않는다. 바꾸려면 `BoardBrowserUITests`·`NativeCommandUITests`의 메뉴 검사도 같은 변경에서 고친다.
 - 확인 항목: 라이트·다크·고대비(시스템 설정 > 손쉬운 사용 > 디스플레이 > 대비 증가)·투명도 줄이기·VoiceOver로 트리 읽기·
   키보드만으로 모든 명령 실행.
@@ -322,7 +324,8 @@ W15에서 연결 상태를 트리에 표시한다. 상태 이름은 W14 안내 �
 - 과거와 현재를 색만으로 구분하지 않는다. 띠(기호+문구)가 기준이다.
 
 ### 16.5 식별자(제안)
-- `history-tab`, `revision-row-<순번>`, `past-banner`, `return-to-current`, `date-lookup`. UI 테스트가 쓰기 시작하면 11장 목록으로 옮긴다.
+- W17에서 구현된 `history-tab`, `history-toggle`(툴바 버튼), `revision-row-<순번>`, `date-lookup`은 11장 목록으로 옮겼다.
+  W18용 제안: `past-banner`, `return-to-current`. 구현되면 11장으로 옮긴다.
 
 ## 17. 아이콘 보기 (W28, 0020·0022)
 
