@@ -32,6 +32,12 @@ struct BoardCommands: Commands {
                 .keyboardShortcut(.delete, modifiers: .command)
                 .disabled(!isEnabled(\.canRemoveSelected))
         }
+        // 보기 메뉴: 시스템의 사이드바 항목 뒤에 오른쪽 열(인스펙터) 접기를 둔다.
+        CommandGroup(after: .sidebar) {
+            Button(model?.isInspectorPresented == false ? "인스펙터 보기" : "인스펙터 가리기") { model?.toggleInspector() }
+                .keyboardShortcut("i", modifiers: [.command, .option])
+                .disabled(model == nil)
+        }
         // 첫 버전에는 도움말 문서가 없으므로, 눌러도 "도움말을 사용할 수 없음"만 뜨는 기본 항목을 뺀다(메뉴 검색은 시스템이 유지한다).
         CommandGroup(replacing: .help) {}
         CommandGroup(replacing: .newItem) {

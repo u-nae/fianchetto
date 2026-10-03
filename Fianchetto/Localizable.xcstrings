@@ -251,6 +251,12 @@
     "이미 연결된 대상입니다." : {
       "extractionState" : "manual"
     },
+    "인스펙터 가리기" : {
+      "extractionState" : "manual"
+    },
+    "인스펙터 보기" : {
+      "extractionState" : "manual"
+    },
     "저장하지 못했습니다. 다시 시도하세요." : {
       "extractionState" : "manual"
     },

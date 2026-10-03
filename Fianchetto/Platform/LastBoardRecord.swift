@@ -1,9 +1,11 @@
 import Foundation
 
-/// 마지막으로 선택한 Board UUID 하나(PRD §6 기본 창). 구성 이력과 무관한 화면 설정이다.
+/// 화면 설정: 마지막으로 선택한 Board UUID(PRD §6 기본 창)와 오른쪽 열(인스펙터)을 접었는지. 구성 이력과 무관하다.
 @MainActor
 protocol LastBoardRecord: AnyObject {
     var lastBoardID: UUID? { get set }
+    /// 기본은 펼침이라, 접었을 때만 true로 기록한다.
+    var isInspectorHidden: Bool { get set }
 }
 
 @MainActor
@@ -18,6 +20,11 @@ final class UserDefaultsLastBoard: LastBoardRecord {
     var lastBoardID: UUID? {
         get { defaults.string(forKey: key).flatMap(UUID.init(uuidString:)) }
         set { defaults.set(newValue?.uuidString, forKey: key) }
+    }
+
+    var isInspectorHidden: Bool {
+        get { defaults.bool(forKey: "inspectorHidden") }
+        set { defaults.set(newValue, forKey: "inspectorHidden") }
     }
 }
 
@@ -41,4 +48,19 @@ final class FileLastBoard: LastBoardRecord {
             }
         }
     }
+
+    /// 같은 테스트 폴더의 표시 파일이 있으면 접힘이다.
+    var isInspectorHidden: Bool {
+        get { FileManager.default.fileExists(atPath: inspectorURL.path) }
+        set {
+            if newValue {
+                try? FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+                FileManager.default.createFile(atPath: inspectorURL.path, contents: Data())
+            } else {
+                try? FileManager.default.removeItem(at: inspectorURL)
+            }
+        }
+    }
+
+    private var inspectorURL: URL { url.deletingLastPathComponent().appending(path: "inspectorHidden") }
 }

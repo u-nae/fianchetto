@@ -179,8 +179,19 @@ final class BoardBrowserModel {
 
     private let dependencies: Dependencies
 
+    /// 오른쪽 열(인스펙터)을 펼쳤는지. 화면 설정이며 바꾸면 바로 기억한다(구성 기록과 무관).
+    var isInspectorPresented: Bool {
+        didSet { dependencies.lastBoard.isInspectorHidden = !isInspectorPresented }
+    }
+
     init(dependencies: Dependencies) {
         self.dependencies = dependencies
+        isInspectorPresented = !dependencies.lastBoard.isInspectorHidden
+    }
+
+    /// 보기 메뉴 "인스펙터 보기/가리기"(⌥⌘I)와 툴바 버튼.
+    func toggleInspector() {
+        isInspectorPresented.toggle()
     }
 
     // MARK: 시작과 복구

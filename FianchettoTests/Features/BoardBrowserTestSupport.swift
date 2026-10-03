@@ -7,6 +7,7 @@ import Testing
 @MainActor
 final class InMemoryLastBoard: LastBoardRecord {
     var lastBoardID: UUID?
+    var isInspectorHidden = false
     init(_ id: UUID? = nil) { lastBoardID = id }
 }
 
