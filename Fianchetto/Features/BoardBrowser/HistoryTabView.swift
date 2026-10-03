@@ -9,12 +9,17 @@ struct HistoryTabView: View {
         let notice = history.notice
         VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: 4) {
+                // 인스펙터 폭이 좁아도 줄이 깨지지 않게 라벨을 칸 위에 둔다.
+                Text("날짜로 찾기")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
                 DatePicker(
                     "날짜로 찾기",
                     selection: Binding(get: { history.lookupDate }, set: { picked in Task { await history.lookUp(picked) } }),
                     displayedComponents: [.date, .hourAndMinute]
                 )
                 .datePickerStyle(.field)
+                .labelsHidden()
                 .accessibilityIdentifier("date-lookup")
                 if history.lookupFoundNothing {
                     Label(history.lookupNothingText, systemImage: "calendar.badge.exclamationmark")

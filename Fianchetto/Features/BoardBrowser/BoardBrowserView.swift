@@ -43,9 +43,14 @@ struct BoardBrowserView: View {
                         }
                         .toolbar {
                             ToolbarItem(placement: .primaryAction) {
-                                Button("이력", systemImage: "clock.arrow.circlepath") {
-                                    Task { await model.toggleHistory() }
+                                // 켜짐 상태로 지금 이력 탭을 보고 있는지 툴바에서도 알린다.
+                                Toggle(isOn: Binding(
+                                    get: { inspectorPresented && model.inspectorTab == .history },
+                                    set: { _ in Task { await model.toggleHistory() } }
+                                )) {
+                                    Label("이력", systemImage: "clock.arrow.circlepath")
                                 }
+                                .toggleStyle(.button)
                                 .help("이력")
                                 .disabled(!model.canShowHistory)
                                 .accessibilityIdentifier("history-toggle")
