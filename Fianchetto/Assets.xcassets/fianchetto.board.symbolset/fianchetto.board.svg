@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Generator: scripts/design/generate-bishop-symbols.swift-->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="3300" height="2200">
+ <!--glyph: "fianchetto.board", point size: 100.0-->
+ <g id="Notes">
+  <text style="stroke:none;fill:black;font-family:sans-serif;font-size:13;" transform="matrix(1 0 0 1 263 1933)">Template v.3.0</text>
+ </g>
+ <g id="Guides">
+  <line id="Baseline-S" style="fill:none;stroke:#27AAE1;opacity:1;stroke-width:0.5;" x1="263" x2="3036" y1="696" y2="696"/>
+  <line id="Capline-S" style="fill:none;stroke:#27AAE1;opacity:1;stroke-width:0.5;" x1="263" x2="3036" y1="625.541" y2="625.541"/>
+  <line id="Baseline-M" style="fill:none;stroke:#27AAE1;opacity:1;stroke-width:0.5;" x1="263" x2="3036" y1="1126" y2="1126"/>
+  <line id="Capline-M" style="fill:none;stroke:#27AAE1;opacity:1;stroke-width:0.5;" x1="263" x2="3036" y1="1055.54" y2="1055.54"/>
+  <line id="Baseline-L" style="fill:none;stroke:#27AAE1;opacity:1;stroke-width:0.5;" x1="263" x2="3036" y1="1556" y2="1556"/>
+  <line id="Capline-L" style="fill:none;stroke:#27AAE1;opacity:1;stroke-width:0.5;" x1="263" x2="3036" y1="1485.54" y2="1485.54"/>
+      <line id="left-margin-Regular-S" style="fill:none;stroke:#00AEEF;stroke-width:0.5;opacity:1.0;" x1="1391.3" x2="1391.3" y1="600.785" y2="720.121"/>
+      <line id="right-margin-Regular-S" style="fill:none;stroke:#00AEEF;stroke-width:0.5;opacity:1.0;" x1="1469.099" x2="1469.099" y1="600.785" y2="720.121"/>
+      <line id="left-margin-Regular-M" style="fill:none;stroke:#00AEEF;stroke-width:0.5;opacity:1.0;" x1="1391.3" x2="1391.3" y1="1030.785" y2="1150.121"/>
+      <line id="right-margin-Regular-M" style="fill:none;stroke:#00AEEF;stroke-width:0.5;opacity:1.0;" x1="1490.660" x2="1490.660" y1="1030.785" y2="1150.121"/>
+      <line id="left-margin-Regular-L" style="fill:none;stroke:#00AEEF;stroke-width:0.5;opacity:1.0;" x1="1391.3" x2="1391.3" y1="1460.785" y2="1580.121"/>
+      <line id="right-margin-Regular-L" style="fill:none;stroke:#00AEEF;stroke-width:0.5;opacity:1.0;" x1="1519.474" x2="1519.474" y1="1460.785" y2="1580.121"/>
+ </g>
+ <g id="Symbols">
+      <g id="Regular-S" transform="matrix(1 0 0 1 1391.3 696)">
+       <path d="M74.197 -58.641L74.197 -11.818C74.197 -5.253 68.876 0.068 62.311 0.068L15.488 0.068C8.923 0.068 3.602 -5.253 3.602 -11.818L3.602 -58.641C3.602 -65.206 8.923 -70.527 15.488 -70.527L62.311 -70.527C68.876 -70.527 74.197 -65.206 74.197 -58.641ZM28.094 -64.764L28.094 -46.035L9.365 -46.035L9.365 -24.424L28.094 -24.424L28.094 -5.695L49.705 -5.695L49.705 -24.424L68.434 -24.424L68.434 -46.035L49.705 -46.035L49.705 -64.764ZM49.705 -24.424L28.094 -24.424L28.094 -46.035L49.705 -46.035Z"/>
+      </g>
+      <g id="Regular-M" transform="matrix(1 0 0 1 1391.3 1126)">
+       <path d="M94.760 -65.130L94.760 -5.330C94.760 3.054 87.964 9.850 79.580 9.850L19.780 9.850C11.396 9.850 4.600 3.054 4.600 -5.330L4.600 -65.130C4.600 -73.513 11.396 -80.309 19.780 -80.309L79.580 -80.309C87.964 -80.309 94.760 -73.513 94.760 -65.130ZM35.880 -72.949L35.880 -49.029L11.960 -49.029L11.960 -21.430L35.880 -21.430L35.880 2.490L63.480 2.490L63.480 -21.430L87.400 -21.430L87.400 -49.029L63.480 -49.029L63.480 -72.949ZM63.480 -21.430L35.880 -21.430L35.880 -49.029L63.480 -49.029Z"/>
+      </g>
+      <g id="Regular-L" transform="matrix(1 0 0 1 1391.3 1556)">
+       <path d="M122.240 -73.800L122.240 3.341C122.240 14.156 113.473 22.924 102.658 22.924L25.516 22.924C14.701 22.924 5.934 14.156 5.934 3.341L5.934 -73.800C5.934 -84.615 14.701 -93.383 25.516 -93.383L102.658 -93.383C113.473 -93.383 122.240 -84.615 122.240 -73.800ZM46.285 -83.888L46.285 -53.032L15.428 -53.031L15.428 -17.428L46.285 -17.428L46.285 13.429L81.889 13.429L81.889 -17.428L112.746 -17.428L112.746 -53.031L81.889 -53.032L81.889 -83.888ZM81.889 -17.428L46.285 -17.428L46.285 -53.032L81.889 -53.032Z"/>
+      </g>
+ </g>
+</svg>

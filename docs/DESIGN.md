@@ -103,7 +103,8 @@ Asset Catalog(`Fianchetto/Assets.xcassets`)의 Color Set으로 정의한다. 코
 
 | 쓰임 | 현재 기호 | 위치 |
 |---|---|---|
-| Wing(가상 그룹) | `folder` | 트리 행(`NodeRow`) |
+| Board | `fianchetto.board`(커스텀, 0025. W17 병합 뒤 `square.grid.2x2`에서 교체) | 사이드바 Board 행, 경로 막대 |
+| Wing(가상 그룹) | `fianchetto.wing`(커스텀, 0025. W17 병합 뒤 `folder`에서 교체) | 트리 행(`NodeRow`), 아이콘 타일, 경로 막대, 이동 창 |
 | Bishop(파일) | `fianchetto.bishop`(커스텀, 0013) | 트리 행 |
 | Bishop(폴더) | `fianchetto.bishop.folder`(커스텀, 0013) | 트리 행 |
 | 웹 링크 | `link` | 트리 행 |
@@ -127,6 +128,17 @@ Asset Catalog(`Fianchetto/Assets.xcassets`)의 Color Set으로 정의한다. 코
   곳에서 심볼이 비어 보인다. 툴바는 `.large`를 요청해서, M만 있을 때 'Bishop 추가' 버튼이 빈 원으로 보였다(2026-10-03에 S·L 추가로 고침).
 - 한계: 굵기(weight) 보간은 없다. 굵기를 바꿔도 모양이 같다. 굵기 대응이 필요해지면 Ultralight·Black 기준 굵기를 같은 점 구조로 추가한다.
 - 렌더링: 한 레이어(Monochrome)다. 색은 넣지 않고 사용처의 `foregroundStyle`을 따른다.
+
+### 5.3 Board·Wing 커스텀 심볼 (0025 확정)
+
+- `fianchetto.board`: 둥근 사각 윤곽선(반경 2.5) 안에 3×3 체스판의 다섯 칸을 채운다. 앱 아이콘(대각선 분할)과 빈 화면 체스판(0016)과 같은 줄기다.
+  시스템 `square.grid.2x2`는 아이콘 보기 전환 버튼(17.1)에만 쓰고 Board에는 쓰지 않는다. 둘이 같은 모양이면 의미가 겹치기 때문이다.
+- `fianchetto.wing`: `folder` 윤곽선 안에 대각으로 놓인 작은 칸 두 개를 넣는다. '담는다'는 느낌은 지키고, 실제 폴더(파일 종류 모드의 폴더 아이콘,
+  폴더 Bishop)와 구분되는 가상 묶음임을 보여 준다.
+- 위계: Bishop 미트라가 주인공이다. Board·Wing은 칸과 선만 쓰고 말 실루엣을 쓰지 않는다. 웹 링크(`link`)와 상태 기호는 시스템 기호를 유지한다.
+  테마 기호는 Board·Wing·Bishop 세 가지에서 멈춘다.
+- 제작: Bishop과 같은 생성 스크립트(`scripts/design/generate-bishop-symbols.swift`), 24 격자, 선 굵기 1.6, S·M·L 세 크기, 색 없는 단색 템플릿.
+- 참조: `Image(.fianchettoBoard)`, `Image(.fianchettoWing)`. 화면 코드의 교체는 W17 병합 뒤 별도 PR로 한다(0025).
 
 ## 6. 앱 아이콘 (0014 확정)
 
@@ -327,7 +339,7 @@ W15에서 연결 상태를 트리에 표시한다. 상태 이름은 W14 안내 �
 - 연결 상태(0010)가 정상이 아니면 아이콘 오른쪽 아래에 상태 기호 배지(바탕만큼 오려 낸 원)를 두고, 이름 아래 셋째 줄에 상태 문구(`.caption2`, `.secondary`)를 쓴다. 색만으로 알리지 않는다.
 
 ### 17.3 타일 기호
-- 기본값(기호 타일): Wing은 `folder`, 파일 Bishop은 Bishop 심볼(18장 용도 배지 포함), 폴더 Bishop은 Bishop 폴더 심볼, 웹 링크는 `link`. 목록 보기와 같은 기호를 크게 쓴다.
+- 기본값(기호 타일): Wing은 `fianchetto.wing`(0025), 파일 Bishop은 Bishop 심볼(18장 용도 배지 포함), 폴더 Bishop은 Bishop 폴더 심볼, 웹 링크는 `link`. 목록 보기와 같은 기호를 크게 쓴다.
 - 설정의 '파일 종류 아이콘'(18.4)을 켜면 Bishop만 확장자 기준 macOS 일반 아이콘 + Bishop 배지로 바뀐다. Wing·웹 링크는 그대로다.
 
 ### 17.4 선택·드롭
@@ -374,7 +386,7 @@ W15에서 연결 상태를 트리에 표시한다. 상태 이름은 W14 안내 �
 ## 18. Bishop 용도 배지와 아이콘 설정 (W29, 0021·0022)
 
 ### 18.1 대상과 의미
-- Bishop(파일·폴더)만 고를 수 있다. Wing은 `folder`, 웹 링크는 `link`로 고정한다.
+- Bishop(파일·폴더)만 고를 수 있다. Wing은 `fianchetto.wing`, 웹 링크는 `link`로 고정한다.
 - 용도는 구성의 일부다(0021). 바꾸면 revision이 생기고 이력에 '아이콘 변경'이 남으며, 과거 구성·복원·새 Board·내보내기에 따라간다.
 
 ### 18.2 배지 목록

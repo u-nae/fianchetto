@@ -1,4 +1,4 @@
-// Bishop 커스텀 심볼(0013)의 SF Symbols 템플릿을 만든다.
+// Bishop(0013)·Board·Wing(0025) 커스텀 심볼의 SF Symbols 템플릿을 만든다.
 // 24 격자의 선 디자인을 채운 윤곽선으로 바꿔 Regular 굵기의 S·M·L 세 크기를 담는다(굵기 보간 없음).
 // 크기마다 글리프가 있어야 `.imageScale(.small/.large)`(툴바는 .large)에서 비지 않는다.
 // 사용: swift scripts/design/generate-bishop-symbols.swift Fianchetto/Assets.xcassets
@@ -48,6 +48,41 @@ let shrink = CGAffineTransform(a: s, b: 0, c: 0, d: s, tx: 9.6 - 12 * s, ty: 11.
 let badge = folderBadge()
 let knockout = badge.union(badge.copy(strokingWithWidth: SW + 2 * 1.4, lineCap: .round, lineJoin: .round, miterLimit: 10))
 let folder = outline(mitreParts(shrink)).subtracting(knockout).union(outline([badge]))
+
+// Board(0025): 둥근 사각 윤곽선 안에 3×3 체스판의 다섯 칸을 채운다.
+func boardGlyph() -> CGPath {
+    let frame = CGMutablePath()
+    frame.addRoundedRect(in: CGRect(x: 3, y: 3, width: 18, height: 18), cornerWidth: 2.5, cornerHeight: 2.5)
+    var result = outline([frame])
+    let clip = CGPath(roundedRect: CGRect(x: 3, y: 3, width: 18, height: 18), cornerWidth: 2.5, cornerHeight: 2.5, transform: nil)
+    for row in 0..<3 {
+        for column in 0..<3 where (row + column).isMultiple(of: 2) {
+            let square = CGPath(rect: CGRect(x: 3 + CGFloat(column) * 6, y: 3 + CGFloat(row) * 6, width: 6, height: 6), transform: nil)
+            result = result.union(square.intersection(clip))
+        }
+    }
+    return result
+}
+
+// Wing(0025): folder 윤곽선 안에 대각으로 놓인 작은 칸 두 개. 실제 폴더와 구분되는 '가상 묶음'이다.
+func wingGlyph() -> CGPath {
+    let p = CGMutablePath()
+    p.move(to: CGPoint(x: 2.8, y: 7))
+    p.addQuadCurve(to: CGPoint(x: 4.3, y: 5.2), control: CGPoint(x: 2.8, y: 5.2))
+    p.addLine(to: CGPoint(x: 9, y: 5.2)); p.addLine(to: CGPoint(x: 11, y: 7.2))
+    p.addLine(to: CGPoint(x: 19.7, y: 7.2))
+    p.addQuadCurve(to: CGPoint(x: 21.2, y: 8.7), control: CGPoint(x: 21.2, y: 7.2))
+    p.addLine(to: CGPoint(x: 21.2, y: 17.8))
+    p.addQuadCurve(to: CGPoint(x: 19.7, y: 19.3), control: CGPoint(x: 21.2, y: 19.3))
+    p.addLine(to: CGPoint(x: 4.3, y: 19.3))
+    p.addQuadCurve(to: CGPoint(x: 2.8, y: 17.8), control: CGPoint(x: 2.8, y: 19.3))
+    p.closeSubpath()
+    var result = outline([p])
+    for origin in [CGPoint(x: 8.2, y: 10), CGPoint(x: 11.8, y: 13.6)] {
+        result = result.union(CGPath(roundedRect: CGRect(origin: origin, size: CGSize(width: 3.6, height: 3.6)), cornerWidth: 0.4, cornerHeight: 0.4, transform: nil))
+    }
+    return result
+}
 
 // Template v3 geometry: Regular-S baseline y=696, capline 625.541 (cap height 70.459).
 let scale: CGFloat = 4.6
@@ -120,7 +155,8 @@ func template(_ path: CGPath, name: String) -> String {
 }
 
 let catalog = CommandLine.arguments[1]
-for (name, path) in [("fianchetto.bishop", file), ("fianchetto.bishop.folder", folder)] {
+for (name, path) in [("fianchetto.bishop", file), ("fianchetto.bishop.folder", folder),
+                     ("fianchetto.board", boardGlyph()), ("fianchetto.wing", wingGlyph())] {
     let set = "\(catalog)/\(name).symbolset"
     try FileManager.default.createDirectory(atPath: set, withIntermediateDirectories: true)
     try template(path, name: name).write(toFile: "\(set)/\(name).svg", atomically: true, encoding: .utf8)
