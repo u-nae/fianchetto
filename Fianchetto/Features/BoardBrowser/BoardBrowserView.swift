@@ -158,14 +158,19 @@ private struct BoardRow: View {
     let board: ProjectListing
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            HStack {
-                Text(board.name)
-                if let status = model.statusText(for: board) {
-                    Text(status).font(.caption).foregroundStyle(.secondary)
+        // Board 심볼(0025). square.grid.2x2는 아이콘 보기 전환 버튼에만 쓴다.
+        Label {
+            VStack(alignment: .leading, spacing: 2) {
+                HStack {
+                    Text(board.name)
+                    if let status = model.statusText(for: board) {
+                        Text(status).font(.caption).foregroundStyle(.secondary)
+                    }
                 }
+                Text(model.createdText(for: board)).font(.caption2).foregroundStyle(.secondary)
             }
-            Text(model.createdText(for: board)).font(.caption2).foregroundStyle(.secondary)
+        } icon: {
+            Image(.fianchettoBoard)
         }
         .tag(board.id)
         .accessibilityElement(children: .ignore)
@@ -217,7 +222,7 @@ private struct ConfigurationTreeView: View {
                 }
                 .help("Bishop 추가")
                 .disabled(!model.canAddToBoard)
-                Button("Wing 추가", systemImage: "folder.badge.plus") { model.beginAddGroup() }
+                Button { model.beginAddGroup() } label: { Label("Wing 추가", image: .fianchettoWing) }
                     .help("Wing 추가")
                     .disabled(!model.canAddToBoard)
             }
@@ -471,7 +476,7 @@ private struct MoveSheet: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("이동할 위치").font(.headline)
             List(dialog.destinations, selection: $selection) { destination in
-                Label(destination.name, systemImage: destination.target == .root ? "square.stack" : "folder")
+                Label { Text(destination.name) } icon: { Image(destination.target == .root ? .fianchettoBoard : .fianchettoWing) }
                     .padding(.leading, CGFloat(max(destination.depth - 1, 0)) * 16)
                     .accessibilityIdentifier("move-destination-\(destination.name)")
             }

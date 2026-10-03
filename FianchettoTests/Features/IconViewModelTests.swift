@@ -637,14 +637,15 @@ struct IconViewModelTests {
             #expect(o.model.bishopIconStyle == .symbol)
             #expect(TileIcon.of(try node("README.md"), style: .symbol) == .bishop(purpose: nil))
             #expect(TileIcon.of(try node("backend"), style: .symbol) == .bishopFolder)
-            #expect(TileIcon.of(try node("개발"), style: .symbol) == .systemSymbol("folder"))
+            // Wing은 실제 폴더와 구분되는 전용 심볼이다(0025). 설정과 상관없이 같다.
+            #expect(TileIcon.of(try node("개발"), style: .symbol) == .wing)
             #expect(TileIcon.of(try node("API 명세"), style: .symbol) == .systemSymbol("link"))
 
             o.model.bishopIconStyle = .fileType
             #expect(TileIcon.of(try node("설계.key"), style: .fileType) == .fileType(identifier: TileIcon.typeIdentifier(forExtension: "key")))
             #expect(TileIcon.of(makefile, style: .fileType) == .fileType(identifier: TileIcon.genericDocumentIdentifier))
             #expect(TileIcon.of(try node("backend"), style: .fileType) == .genericFolder)
-            #expect(TileIcon.of(try node("개발"), style: .fileType) == .systemSymbol("folder"))
+            #expect(TileIcon.of(try node("개발"), style: .fileType) == .wing)
             #expect(TileIcon.of(try node("API 명세"), style: .fileType) == .systemSymbol("link"))
             #expect(o.harness.bookmarks.scopedResolutions.isEmpty)
             #expect(try await o.revisions() == before)

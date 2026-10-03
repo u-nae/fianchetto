@@ -9,6 +9,8 @@ struct TileIconView: View {
         switch icon {
         case let .systemSymbol(name):
             Image(systemName: name).resizable().scaledToFit().fontWeight(.light).frame(width: size, height: size)
+        case .wing:
+            Image(.fianchettoWing).resizable().scaledToFit().frame(width: size, height: size)
         case let .bishop(purpose):
             if let purpose {
                 PurposeBadgedBishop(purpose: purpose, size: size)
@@ -269,7 +271,8 @@ private struct PathBar: View {
                 Button {
                     model.goTo(entry.id)
                 } label: {
-                    Label(entry.name, systemImage: entry.id == nil ? "square.grid.2x2" : "folder")
+                    // 최상위는 Board, 그 아래는 Wing 심볼이다(0025).
+                    Label { Text(entry.name) } icon: { Image(entry.id == nil ? .fianchettoBoard : .fianchettoWing) }
                         .font(.caption)
                 }
                 .buttonStyle(.plain)
