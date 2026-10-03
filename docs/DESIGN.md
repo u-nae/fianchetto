@@ -198,9 +198,10 @@ W15에서 연결 상태를 트리에 표시한다. 상태 이름은 W14 안내 �
 
 - **바꾸면 안 되는 접근성 식별자**(UI 테스트가 쓴다): `board-row-<이름>`, `node-row-<이름>`, `board-name-field`,
   `node-name-field`, `node-url-field`, `move-destination-<이름>`, `removal-message`(W13), `path-bar`·`icon-tile-<이름>`·`view-mode`(W28),
-  `inspector-toggle`, `bishop-icon-style`(W28), `history-tab`·`history-toggle`·`revision-row-<순번>`·`date-lookup`(W17).
+  `inspector-toggle`, `bishop-icon-style`(W28), `history-tab`·`history-toggle`·`revision-row-<순번>`·`date-lookup`(W17),
+  `past-banner`·`return-to-current`·`past-item-card`(W18).
   행의 `accessibilityElement(children: .ignore)`와 `accessibilityLabel`, 선택 행의 `.isSelected` trait도 유지한다.
-  W18 이후 쓰기로 제안한 식별자(`past-banner`, `return-to-current`, 19.6의 비교 식별자)는 구현되면 이 목록으로 옮긴다.
+  W19 이후 쓰기로 제안한 식별자(19.6의 비교 식별자)는 구현되면 이 목록으로 옮긴다.
 - 메뉴 항목 제목과 단축키를 바꾸지 않는다. 바꾸려면 `BoardBrowserUITests`·`NativeCommandUITests`의 메뉴 검사도 같은 변경에서 고친다.
 - 확인 항목: 라이트·다크·고대비(시스템 설정 > 손쉬운 사용 > 디스플레이 > 대비 증가)·투명도 줄이기·VoiceOver로 트리 읽기·
   키보드만으로 모든 명령 실행.
@@ -328,7 +329,7 @@ W15에서 연결 상태를 트리에 표시한다. 상태 이름은 W14 안내 �
 
 ### 16.5 식별자(제안)
 - W17에서 구현된 `history-tab`, `history-toggle`(툴바 버튼), `revision-row-<순번>`, `date-lookup`은 11장 목록으로 옮겼다.
-  W18용 제안: `past-banner`, `return-to-current`. 구현되면 11장으로 옮긴다.
+  W18에서 구현된 `past-banner`, `return-to-current`, `past-item-card`('고른 항목' 카드)도 11장 목록으로 옮겼다.
 
 ## 17. 아이콘 보기 (W28, 0020·0022)
 
