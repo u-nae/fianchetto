@@ -10,6 +10,8 @@ struct NodeState: Equatable, Sendable {
     var recordedPath: String?
     /// 웹 링크 URL.
     var url: String?
+    /// Bishop 용도 키(저장 값 그대로, 0021).
+    var purpose: String? = nil
 }
 
 enum NodeChangeKind: Hashable, Sendable, CaseIterable {
@@ -22,6 +24,7 @@ enum NodeChangeKind: Hashable, Sendable, CaseIterable {
     case reordered
     case targetReplaced
     case urlChanged
+    case purposeChanged
 }
 
 /// 한 Node의 변화. 여러 분류를 함께 담는다. 추가는 before가, 제거는 after가 없다.
@@ -64,6 +67,7 @@ enum ConfigurationDiffer {
             if reordered.contains(node.id) { kinds.insert(.reordered) }
             if before.referenceID != node.referenceID { kinds.insert(.targetReplaced) }
             if before.url != node.url { kinds.insert(.urlChanged) }
+            if before.purpose != node.purpose { kinds.insert(.purposeChanged) }
             guard !kinds.isEmpty else { continue }
             changes.append(NodeChange(nodeID: node.id, nodeKind: node.kind, kinds: kinds, before: old.state(of: before), after: new.state(of: node)))
         }
@@ -160,7 +164,7 @@ enum ConfigurationDiffer {
         func state(of node: ConfigurationNode) -> NodeState {
             NodeState(
                 displayName: node.displayName, location: location(of: node), parentID: node.parentID,
-                sortIndex: node.sortIndex, recordedPath: node.recordedPath, url: node.url
+                sortIndex: node.sortIndex, recordedPath: node.recordedPath, url: node.url, purpose: node.purpose
             )
         }
 

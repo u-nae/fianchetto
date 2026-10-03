@@ -116,6 +116,7 @@ struct ConfigurationServiceTests {
             case .move: (.move(ids.backend, toParent: nil, position: nil), [])
             case .remove: (.remove(ids.link), [])
             case .replaceTarget: (.replaceTarget(ids.backend, kind: .folder, path: "/dev/new-api", identity: .differentTarget), [Data([3])])
+            case .changePurpose: (.changePurpose(ids.backend, "code"), [])
             }
 
             let outcome = try await harness.service.apply(edit, to: project, access: access)

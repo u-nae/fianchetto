@@ -326,6 +326,12 @@ struct NodeContextMenu: View {
             Button("다시 선택…") { run { await model.reselectSelectedTarget() } }
             Button("연결 대상 변경…") { run { await model.beginReplaceTarget() } }
                 .disabled(!model.canAddToBoard)
+            Menu("아이콘") {
+                PurposeMenuItems(current: node.knownPurpose, text: model.purposeText) { purpose in
+                    run { await model.setPurposeOfSelected(purpose) }
+                }
+            }
+            .disabled(!model.canAddToBoard)
         case .webLink:
             Button("열기") { run { await model.openSelected() } }
             Divider()
@@ -561,6 +567,21 @@ private struct NodeInspectorView: View {
                 }
                 if model.canReplaceSelectedTarget {
                     Button("연결 대상 변경") { Task { await model.beginReplaceTarget() } }
+                }
+                if let id = model.selectedNodeID, model.isBishopSelected {
+                    Picker("아이콘", selection: Binding(get: { model.selectedPurpose }, set: { purpose in
+                        Task { await model.setPurposeOfSelected(purpose) }
+                    })) {
+                        ForEach(PurposeMenuItems.choices, id: \.self) { purpose in
+                            if let purpose {
+                                Label(model.purposeText(purpose), systemImage: PurposePresentation.symbol(for: purpose)).tag(purpose)
+                            } else {
+                                Text(model.purposeText(nil)).tag(purpose)
+                            }
+                        }
+                    }
+                    .disabled(!model.canSetPurposeOfSelected)
+                    .id(id)
                 }
             }
             .padding()

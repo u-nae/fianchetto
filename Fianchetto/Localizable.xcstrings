@@ -8,6 +8,10 @@
     "Bishop \"%@\"" : {
       "extractionState" : "manual"
     },
+    "Bishop · 폴더" : {
+      "comment" : "연결 폴더의 종류 표시(W29). Bishop은 영문 고유 용어 그대로.",
+      "extractionState" : "manual"
+    },
     "Bishop 아이콘" : {
       "extractionState" : "manual"
     },
@@ -116,6 +120,10 @@
     "그 항목 안으로는 옮길 수 없습니다." : {
       "extractionState" : "manual"
     },
+    "기본" : {
+      "comment" : "Bishop 용도: 지정 없음. 모르는 값도 이 항목으로 보인다(W29).",
+      "extractionState" : "manual"
+    },
     "기존" : {
       "extractionState" : "manual"
     },
@@ -137,6 +145,10 @@
     "대상 없음" : {
       "extractionState" : "manual"
     },
+    "데이터" : {
+      "comment" : "Bishop 용도(W29).",
+      "extractionState" : "manual"
+    },
     "데이터를 열 수 없습니다" : {
       "extractionState" : "manual"
     },
@@ -155,10 +167,22 @@
     "들어가기" : {
       "extractionState" : "manual"
     },
+    "디자인" : {
+      "comment" : "Bishop 용도(W29).",
+      "extractionState" : "manual"
+    },
     "만들기" : {
       "extractionState" : "manual"
     },
     "목록으로 보기" : {
+      "extractionState" : "manual"
+    },
+    "문서" : {
+      "comment" : "Bishop 용도(W29).",
+      "extractionState" : "manual"
+    },
+    "발표" : {
+      "comment" : "Bishop 용도(W29).",
       "extractionState" : "manual"
     },
     "변경" : {
@@ -198,6 +222,10 @@
       "extractionState" : "manual"
     },
     "아래로 이동" : {
+      "extractionState" : "manual"
+    },
+    "아이콘" : {
+      "comment" : "Bishop 용도 아이콘 고르기 메뉴·인스펙터 줄 이름(W29).",
       "extractionState" : "manual"
     },
     "아이콘으로 보기" : {
@@ -281,6 +309,10 @@
     "이미 연결된 대상입니다." : {
       "extractionState" : "manual"
     },
+    "이미지" : {
+      "comment" : "Bishop 용도(W29).",
+      "extractionState" : "manual"
+    },
     "인스펙터 가리기" : {
       "extractionState" : "manual"
     },
@@ -305,10 +337,18 @@
     "종류" : {
       "extractionState" : "manual"
     },
+    "참고" : {
+      "comment" : "Bishop 용도(W29).",
+      "extractionState" : "manual"
+    },
     "최상위" : {
       "extractionState" : "manual"
     },
     "취소" : {
+      "extractionState" : "manual"
+    },
+    "코드" : {
+      "comment" : "Bishop 용도(W29).",
       "extractionState" : "manual"
     },
     "파일 종류 아이콘" : {
@@ -318,6 +358,10 @@
       "extractionState" : "manual"
     },
     "표시 이름" : {
+      "extractionState" : "manual"
+    },
+    "할 일" : {
+      "comment" : "Bishop 용도(W29).",
       "extractionState" : "manual"
     },
     "항목 %lld개" : {

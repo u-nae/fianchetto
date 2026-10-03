@@ -635,7 +635,7 @@ struct IconViewModelTests {
             let before = try await o.revisions()
 
             #expect(o.model.bishopIconStyle == .symbol)
-            #expect(TileIcon.of(try node("README.md"), style: .symbol) == .bishop)
+            #expect(TileIcon.of(try node("README.md"), style: .symbol) == .bishop(purpose: nil))
             #expect(TileIcon.of(try node("backend"), style: .symbol) == .bishopFolder)
             #expect(TileIcon.of(try node("개발"), style: .symbol) == .systemSymbol("folder"))
             #expect(TileIcon.of(try node("API 명세"), style: .symbol) == .systemSymbol("link"))

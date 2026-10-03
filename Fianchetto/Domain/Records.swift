@@ -34,6 +34,7 @@ enum RevisionCause: Hashable, Sendable {
         case move
         case remove
         case replaceTarget
+        case changePurpose
     }
 
     case created

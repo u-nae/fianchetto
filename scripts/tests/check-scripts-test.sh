@@ -97,7 +97,7 @@ terms_tree() { # terms_tree <루트> <카탈로그 키 JSON> <Swift 문자열>
   printf '{ "sourceLanguage" : "ko", "strings" : { %s }, "version" : "1.0" }\n' "$2" >"$1/Localizable.xcstrings"
   printf 'import SwiftUI\nlet text = %s\n' "$3" >"$1/Features/View.swift"
 }
-required='"Board 만들기" : {}, "보관된 Board" : {}, "Bishop" : {}, "Bishop 추가" : {}, "연결 대상 변경" : {}, "Board 이름 변경" : {}, "Board 보관" : {}, "보관 해제" : {}, "Wing 추가" : {}, "웹 링크 추가" : {}, "이름 변경" : {}, "URL 변경" : {}, "Wing" : {}, "웹 링크" : {}, "위로 이동" : {}, "아래로 이동" : {}, "이동" : {}, "Bishop 제거" : {}, "Wing 제거" : {}, "웹 링크 제거" : {}, "제거" : {}, "열기" : {}, "Finder에서 보기" : {}, "다시 선택…" : {}, "상태 새로고침" : {}, "권한 필요" : {}, "대상 없음" : {}, "볼륨 연결 필요" : {}, "확인 실패" : {}, "아이콘으로 보기" : {}, "목록으로 보기" : {}'
+required='"Board 만들기" : {}, "보관된 Board" : {}, "Bishop" : {}, "Bishop 추가" : {}, "연결 대상 변경" : {}, "Board 이름 변경" : {}, "Board 보관" : {}, "보관 해제" : {}, "Wing 추가" : {}, "웹 링크 추가" : {}, "이름 변경" : {}, "URL 변경" : {}, "Wing" : {}, "웹 링크" : {}, "위로 이동" : {}, "아래로 이동" : {}, "이동" : {}, "Bishop 제거" : {}, "Wing 제거" : {}, "웹 링크 제거" : {}, "제거" : {}, "열기" : {}, "Finder에서 보기" : {}, "다시 선택…" : {}, "상태 새로고침" : {}, "권한 필요" : {}, "대상 없음" : {}, "볼륨 연결 필요" : {}, "확인 실패" : {}, "아이콘으로 보기" : {}, "목록으로 보기" : {}, "아이콘" : {}, "기본" : {}, "문서" : {}, "데이터" : {}, "이미지" : {}, "코드" : {}, "참고" : {}, "발표" : {}, "할 일" : {}, "디자인" : {}, "Bishop · 폴더" : {}'
 terms_tree "$workdir/terms-ok" "$required" '"Board 만들기"'
 expect "필수 용어가 있고 금지어가 없으면 통과한다" 0 "$SCRIPTS/check-terms.sh" "$workdir/terms-ok"
 terms_tree "$workdir/terms-missing" '"Board 만들기" : {}' '"Board 만들기"'

@@ -21,6 +21,8 @@ struct ConfigurationNode: Codable, Hashable, Sendable {
     var recordedPath: String?
     /// webLink만: HTTP/HTTPS URL(0002). 검증이 잘못된 값을 보고할 수 있도록 문자열로 보존한다.
     var url: String?
+    /// file·folder만: 용도 키(0021). 알려진 값은 BishopPurpose이며, 모르는 키도 그대로 보존한다.
+    var purpose: String?
 
     init(
         id: UUID,
@@ -30,7 +32,8 @@ struct ConfigurationNode: Codable, Hashable, Sendable {
         sortIndex: Int,
         referenceID: UUID? = nil,
         recordedPath: String? = nil,
-        url: String? = nil
+        url: String? = nil,
+        purpose: String? = nil
     ) {
         self.id = id
         self.kind = kind
@@ -40,7 +43,20 @@ struct ConfigurationNode: Codable, Hashable, Sendable {
         self.referenceID = referenceID
         self.recordedPath = recordedPath
         self.url = url
+        self.purpose = purpose
     }
+}
+
+/// Bishop 용도의 알려진 저장 키(0021). 키는 바꾸지 않고, 화면 문구·기호는 DESIGN 18.2 표를 따른다.
+enum BishopPurpose: String, CaseIterable, Sendable {
+    case document
+    case data
+    case image
+    case code
+    case reference
+    case presentation
+    case todo
+    case design
 }
 
 /// 특정 시점의 프로젝트 이름과 전체 Node 구성. 동등성은 Node 목록의 저장 순서를 무시한다.

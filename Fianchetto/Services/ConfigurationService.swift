@@ -154,6 +154,7 @@ struct ConfigurationService: Sendable {
         case .move: .move
         case .remove: .remove
         case .replaceTarget: .replaceTarget
+        case .changePurpose: .changePurpose
         }
     }
 
