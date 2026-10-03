@@ -1,0 +1,11 @@
+schema_version: "1.0"
+run_id: t-w28-5021855b
+decisions:
+  - question_id: Q-W28-1
+    task_id: W28
+    question: 아이콘 보기/목록 보기 선택과 아이콘 보기의 현재 위치를 어떻게 기억할까요?
+    recommended_default: A
+    answer: A
+    followed_recommendation: true
+    answer_source: AskUserQuestion
+    answered_at: "2026-10-03T14:00:00+09:00"
