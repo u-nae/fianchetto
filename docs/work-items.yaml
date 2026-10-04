@@ -441,7 +441,7 @@ items:
     test_strategy: >-
       화면 상태 테스트: 편집 동작 비활성, 경로 차이 표시 판정, 대상 교체 이후 과거 항목이 이전 reference를
       여는지(어댑터 주입). 과거 화면에서 다른 대상 재연결 거부.
-    status: pending
+    status: done
     priority: high
     dependencies: [W09, W15, W17]
     source_refs:

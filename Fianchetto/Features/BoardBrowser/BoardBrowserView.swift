@@ -193,6 +193,9 @@ private struct ConfigurationTreeView: View {
                     .padding(8)
                     .background(.quaternary)
             }
+            if model.isViewingPast {
+                PastConfigurationBanner(model: model)
+            }
             content
         }
         .toolbar {
@@ -341,6 +344,31 @@ struct NodeContextMenu: View {
     var inIconView = false
 
     var body: some View {
+        if model.isViewingPast {
+            pastItems
+        } else {
+            currentItems
+        }
+    }
+
+    /// 과거 구성(16.4): 열기·Finder에서 보기·다시 선택(같은 대상만)과 아이콘 보기의 Wing 들어가기만 둔다.
+    @ViewBuilder private var pastItems: some View {
+        switch node.kind {
+        case .file, .folder:
+            Button("열기") { run { await model.openSelected() } }
+            Button("Finder에서 보기") { run { await model.revealSelected() } }
+            Divider()
+            Button("다시 선택…") { run { await model.reselectSelectedTarget() } }
+        case .webLink:
+            Button("열기") { run { await model.openSelected() } }
+        case .group where inIconView:
+            Button("들어가기") { run { await model.activateTile(node.id) } }
+        case .group:
+            EmptyView()
+        }
+    }
+
+    @ViewBuilder private var currentItems: some View {
         switch node.kind {
         case .file, .folder:
             Button("열기") { run { await model.openSelected() } }
@@ -559,6 +587,36 @@ private struct ReplacementSheet: View {
     }
 }
 
+/// 과거 구성 띠(DESIGN.md 16.3): 기호 + '과거 구성 · 읽기 전용'과 '현재로 돌아가기', 둘째 줄에 순번과 실제 기록 시각.
+/// '현재와 비교'(W19)와 '이 구성으로…'(W20·W21)는 각 작업 항목이 동작과 함께 더한다. VoiceOver는 문구를 한 요소로 읽는다.
+private struct PastConfigurationBanner: View {
+    let model: BoardBrowserModel
+
+    var body: some View {
+        HStack(alignment: .center, spacing: 8) {
+            VStack(alignment: .leading, spacing: 2) {
+                Label(model.pastBannerTitle, systemImage: "clock.arrow.circlepath")
+                    .font(.callout.bold())
+                if let detail = model.pastBannerDetail {
+                    Text(detail)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .monospacedDigit()
+                }
+            }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(model.pastBannerAccessibilityLabel ?? model.pastBannerTitle)
+            .accessibilityIdentifier("past-banner")
+            Spacer()
+            Button("현재로 돌아가기") { Task { await model.returnToCurrent() } }
+                .accessibilityIdentifier("return-to-current")
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(8)
+        .background(.quaternary)
+    }
+}
+
 /// 오른쪽 열(인스펙터): 맨 위 '항목 | 이력' 세그먼트로 항목 상세와 이력을 같은 자리에서 바꾼다(DESIGN.md 16.1).
 private struct InspectorPanel: View {
     let model: BoardBrowserModel
@@ -579,7 +637,7 @@ private struct InspectorPanel: View {
                 NodeInspectorView(model: model)
                     .frame(maxHeight: .infinity, alignment: .top)
             case .history:
-                HistoryTabView(history: model.history)
+                HistoryTabView(history: model.history, model: model)
             }
         }
         // 날짜나 시스템 시간대가 바뀌면 날짜 구역 머리글과 행 시각을 다시 계산한다.

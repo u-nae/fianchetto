@@ -58,6 +58,8 @@ final class BoardBrowserModel {
             case moveIntoNonGroup
             /// 대상을 열거나 Finder에서 보여 주지 못했다.
             case openFailed(OpenFailure)
+            /// 과거 구성에서 다른 대상을 골랐다. 같은 대상의 접근 복구만 된다(W18).
+            case pastSameTargetOnly
         }
 
         /// 안내를 띄운 동작. 알림 제목을 정한다.
@@ -183,6 +185,8 @@ final class BoardBrowserModel {
     private(set) var linkNotice: LinkNotice?
     /// 연결 대상 변경 확인 창.
     private(set) var replacement: ReplacementPreview?
+    /// 과거 모드에서 확인한 항목의 지금 위치(W18). 모드가 바뀌면 비운다.
+    private(set) var pastLocations: [UUID: NodeLocation] = [:]
 
     private let dependencies: Dependencies
 
@@ -241,6 +245,7 @@ final class BoardBrowserModel {
         isInspectorPresented = !dependencies.lastBoard.isInspectorHidden
         bishopIconStyle = dependencies.lastBoard.bishopIconStyle.flatMap(BishopIconStyle.init(rawValue:)) ?? .symbol
         openedStore = { [weak self] in self?.openedStore?.store }
+        history.selectionChanged = { [weak self] in await self?.viewedConfigurationChanged() }
     }
 
     // MARK: 이력 탭(W17)
@@ -391,7 +396,7 @@ final class BoardBrowserModel {
 
     /// 그룹과 그 상위 그룹을 모두 펼친다. 최상위(nil)면 아무것도 하지 않는다.
     private func reveal(_ groupID: UUID?) {
-        guard case let .loaded(snapshot) = current else { return }
+        guard case let .loaded(snapshot) = shown else { return }
         var next = groupID
         var seen: Set<UUID> = []
         while let id = next, seen.insert(id).inserted, let node = snapshot.nodes.first(where: { $0.id == id }) {
@@ -401,7 +406,7 @@ final class BoardBrowserModel {
     }
 
     func children(of parentID: UUID?) -> [ConfigurationNode] {
-        guard case let .loaded(snapshot) = current else { return [] }
+        guard case let .loaded(snapshot) = shown else { return [] }
         return snapshot.nodes.filter { $0.parentID == parentID }.sorted { $0.sortIndex < $1.sortIndex }
     }
 
@@ -439,7 +444,7 @@ final class BoardBrowserModel {
     }
 
     var inspector: NodeInspection? {
-        guard case let .loaded(snapshot) = current,
+        guard case let .loaded(snapshot) = shown,
               let id = selectedNodeID, let node = snapshot.nodes.first(where: { $0.id == id })
         else { return nil }
         let kind = switch node.kind {
@@ -501,7 +506,8 @@ final class BoardBrowserModel {
     // MARK: 메뉴 켜짐 판단 값
     // 각 값은 해당 동작이 실제로 창을 열거나 기록하는 조건과 같다(MenuCapabilityModelTests). 보관된 Board는 편집 동작이 모두 거짓이다(0009).
 
-    private var canEditSelectedBoard: Bool { selectedBoardID != nil && openedStore != nil && !selectedBoardIsArchived }
+    /// 과거 구성을 보는 동안에도 편집 동작은 모두 거짓이다(W18, DESIGN 16.4).
+    private var canEditSelectedBoard: Bool { selectedBoardID != nil && openedStore != nil && !selectedBoardIsArchived && !isViewingPast }
 
     /// Bishop 추가·Wing 추가·웹 링크 추가.
     var canAddToBoard: Bool { canEditSelectedBoard }
@@ -524,7 +530,7 @@ final class BoardBrowserModel {
     }
 
     private func editableBoard() -> UUID? {
-        guard let boardID = selectedBoardID, openedStore != nil else { return nil }
+        guard let boardID = selectedBoardID, openedStore != nil, !isViewingPast else { return nil }
         guard !selectedBoardIsArchived else {
             linkNotice = LinkNotice(kind: .archived, request: nil)
             return nil
@@ -533,7 +539,7 @@ final class BoardBrowserModel {
     }
 
     private var selectedNode: ConfigurationNode? {
-        guard case let .loaded(snapshot) = current, let id = selectedNodeID else { return nil }
+        guard case let .loaded(snapshot) = shown, let id = selectedNodeID else { return nil }
         return snapshot.nodes.first { $0.id == id }
     }
 
@@ -704,7 +710,7 @@ final class BoardBrowserModel {
     }
 
     private var listInsertionParent: UUID? {
-        guard case let .loaded(snapshot) = current,
+        guard case let .loaded(snapshot) = shown,
               let id = selectedNodeID, let node = snapshot.nodes.first(where: { $0.id == id })
         else { return nil }
         return node.kind == .group ? node.id : node.parentID
@@ -727,7 +733,7 @@ final class BoardBrowserModel {
 
     /// 놓은 곳이 최상위(nil)나 그룹이고, 보관되지 않은 Board가 선택돼 있을 때만 받는다.
     func canAcceptDrop(on nodeID: UUID?) -> Bool {
-        guard selectedBoardID != nil, !selectedBoardIsArchived, case let .loaded(snapshot) = current else { return false }
+        guard selectedBoardID != nil, !selectedBoardIsArchived, !isViewingPast, case let .loaded(snapshot) = shown else { return false }
         guard let nodeID else { return true }
         return snapshot.nodes.first { $0.id == nodeID }?.kind == .group
     }
@@ -778,6 +784,8 @@ final class BoardBrowserModel {
             String(localized: "그 항목 안으로는 옮길 수 없습니다.")
         case let .openFailed(failure):
             openFailureText(failure)
+        case .pastSameTargetOnly:
+            String(localized: "과거 구성에서는 같은 대상의 접근만 복구할 수 있습니다.")
         }
     }
 
@@ -835,7 +843,7 @@ final class BoardBrowserModel {
     /// 앱 안에서 끌어온 항목을 받을 수 있는지: 보관되지 않은 Board의 현재 구성에 있는 항목이고,
     /// 놓은 곳이 빈 곳(nil)이거나 연결 폴더가 아닌 이 Board의 항목이어야 한다(PRD §6-C).
     func canAcceptNodeDrop(_ nodeID: UUID, on targetID: UUID?) -> Bool {
-        guard selectedBoardID != nil, !selectedBoardIsArchived, case let .loaded(snapshot) = current,
+        guard selectedBoardID != nil, !selectedBoardIsArchived, !isViewingPast, case let .loaded(snapshot) = shown,
               snapshot.nodes.contains(where: { $0.id == nodeID })
         else { return false }
         guard let targetID else { return true }
@@ -846,7 +854,7 @@ final class BoardBrowserModel {
     /// 그룹 위면 그 안 끝, Bishop 파일·웹 링크 위면 그 앞, 빈 곳이면 최상위 끝으로 옮긴다. 자기 자신 위는 무변경이다.
     @discardableResult
     func dropNode(_ nodeID: UUID, on targetID: UUID?) async -> Bool {
-        guard canAcceptNodeDrop(nodeID, on: targetID), case let .loaded(snapshot) = current else { return false }
+        guard canAcceptNodeDrop(nodeID, on: targetID), case let .loaded(snapshot) = shown else { return false }
         guard targetID != nodeID else { return true }
         guard let targetID, let target = snapshot.nodes.first(where: { $0.id == targetID }) else {
             await requestMove(nodeID, toParent: nil, position: nil)
@@ -921,7 +929,13 @@ final class BoardBrowserModel {
         guard let boardID = selectedBoardID, let opening = openedStore?.opening else { return }
         let isLinked = selectedNode.map { $0.kind == .file || $0.kind == .folder } ?? false
         let epoch = statusEpoch
-        let outcome = await opening.perform(command, projectID: boardID, nodeID: nodeID)
+        let outcome: OpenOutcome
+        if isViewingPast, let node = selectedNode, node.id == nodeID {
+            // 과거 항목은 그 revision의 Node를 그대로 넘긴다(그 참조의 지금 대상, 당시 URL).
+            outcome = await opening.perform(command, node: node)
+        } else {
+            outcome = await opening.perform(command, projectID: boardID, nodeID: nodeID)
+        }
         // 열기도 상태 확인이다(W15): 해석 결과를 그 항목의 상태로 남긴다.
         if isLinked, epoch == statusEpoch {
             switch outcome {
@@ -1030,7 +1044,7 @@ final class BoardBrowserModel {
 
     /// 경로에서 아직 있는 Wing까지만 남긴다(없어진 Wing부터 아래는 버린다).
     private func resolve(_ path: [UUID]) -> [UUID] {
-        guard case let .loaded(snapshot) = current else { return [] }
+        guard case let .loaded(snapshot) = shown else { return [] }
         var result: [UUID] = []
         for id in path {
             guard let node = snapshot.nodes.first(where: { $0.id == id }), node.kind == .group, node.parentID == result.last else { break }
@@ -1041,7 +1055,7 @@ final class BoardBrowserModel {
 
     /// 최상위부터 그 Wing까지의 경로.
     private func path(to groupID: UUID?) -> [UUID] {
-        guard case let .loaded(snapshot) = current else { return [] }
+        guard case let .loaded(snapshot) = shown else { return [] }
         var result: [UUID] = []
         var next = groupID
         var seen: Set<UUID> = []
@@ -1056,7 +1070,7 @@ final class BoardBrowserModel {
     var iconItems: [ConfigurationNode] { children(of: iconLocationID) }
 
     var pathBarNames: [String] {
-        guard case let .loaded(snapshot) = current else { return [] }
+        guard case let .loaded(snapshot) = shown else { return [] }
         let wings = resolvedIconPath.compactMap { id in snapshot.nodes.first { $0.id == id }?.displayName }
         return [snapshot.projectName] + wings
     }
@@ -1079,7 +1093,7 @@ final class BoardBrowserModel {
 
     /// Wing 안으로 들어간다. 선택은 비운다.
     func enter(_ wingID: UUID) {
-        guard case let .loaded(snapshot) = current, snapshot.nodes.first(where: { $0.id == wingID })?.kind == .group else { return }
+        guard case let .loaded(snapshot) = shown, snapshot.nodes.first(where: { $0.id == wingID })?.kind == .group else { return }
         navigate(to: path(to: wingID))
     }
 
@@ -1091,7 +1105,7 @@ final class BoardBrowserModel {
 
     /// 타일 이중 클릭.
     func activateTile(_ nodeID: UUID) async {
-        guard case let .loaded(snapshot) = current, let node = snapshot.nodes.first(where: { $0.id == nodeID }) else { return }
+        guard case let .loaded(snapshot) = shown, let node = snapshot.nodes.first(where: { $0.id == nodeID }) else { return }
         if node.kind == .group {
             enter(nodeID)
         } else {
@@ -1155,7 +1169,7 @@ final class BoardBrowserModel {
 
     /// 앱 안 항목 드롭(아이콘 보기): Wing 타일 위만 받는다. 빈 곳(같은 층)·Bishop·웹 링크·자기 자신은 받지 않는다(DESIGN 17.4).
     func canAcceptIconNodeDrop(_ nodeID: UUID, onTile tileID: UUID?) -> Bool {
-        guard let tileID, tileID != nodeID, case let .loaded(snapshot) = current,
+        guard let tileID, tileID != nodeID, case let .loaded(snapshot) = shown,
               snapshot.nodes.first(where: { $0.id == tileID })?.kind == .group
         else { return false }
         return canAcceptNodeDrop(nodeID, on: tileID)
@@ -1203,6 +1217,17 @@ final class BoardBrowserModel {
               let boardID = selectedBoardID, let links = openedStore?.links
         else { return }
         let epoch = statusEpoch
+        if isViewingPast {
+            // 과거 항목은 그 revision의 참조로 확인하고, 카드에 보일 현재 위치도 함께 구한다(W18).
+            let location = await links.location(of: node)
+            guard epoch == statusEpoch, selectedBoardID == boardID else { return }
+            pastLocations[nodeID] = location
+            switch location {
+            case .resolved: linkStatuses[nodeID] = .healthy
+            case let .unresolved(status): linkStatuses[nodeID] = status
+            }
+            return
+        }
         let status = await links.check(projectID: boardID, nodeID: nodeID)
         guard epoch == statusEpoch, selectedBoardID == boardID, let status else { return }
         linkStatuses[nodeID] = status
@@ -1212,7 +1237,12 @@ final class BoardBrowserModel {
     func refreshStatuses() async {
         guard let boardID = selectedBoardID, let links = openedStore?.links else { return }
         let epoch = statusEpoch
-        let statuses = await links.checkAll(projectID: boardID)
+        let statuses: [UUID: LinkStatus]
+        if isViewingPast, case let .loaded(snapshot) = shown {
+            statuses = await links.checkAll(snapshot.nodes)
+        } else {
+            statuses = await links.checkAll(projectID: boardID)
+        }
         guard epoch == statusEpoch, selectedBoardID == boardID else { return }
         linkStatuses.merge(statuses) { _, new in new }
     }
@@ -1226,6 +1256,10 @@ final class BoardBrowserModel {
         else { return }
         let kind: LinkedTarget.Kind = node.kind == .folder ? .folder : .file
         guard let url = dependencies.pickReplacement(kind) else { return }
+        if isViewingPast {
+            await reselectPast(node, url: url, boardID: boardID, service: service)
+            return
+        }
         do {
             switch try await service.reselect(projectID: boardID, nodeID: node.id, newURL: url) {
             case .recovered:
@@ -1239,6 +1273,99 @@ final class BoardBrowserModel {
         } catch {
             linkNotice = LinkNotice(kind: .saveFailed, request: nil)
         }
+    }
+
+    /// 과거 화면의 다시 선택: 같은 대상의 접근 복구만 하고 다른 대상으로 덮어쓰지 않는다(PRD §6-H, 0012).
+    private func reselectPast(_ node: ConfigurationNode, url: URL, boardID: UUID, service: TargetReplacementService) async {
+        do {
+            switch try await service.reselectPast(node: node, newURL: url) {
+            case .recovered:
+                guard selectedBoardID == boardID else { return }
+                await selectNode(node.id)
+            case .notSameTarget:
+                linkNotice = LinkNotice(kind: .pastSameTargetOnly, request: nil)
+            case let .rejected(rejection):
+                linkNotice = notice(for: rejection, url: url)
+            }
+        } catch {
+            linkNotice = LinkNotice(kind: .saveFailed, request: nil)
+        }
+    }
+
+    // MARK: 과거 구성(W18)
+
+    /// 이력 탭에서 revision을 골라 그 구성을 보고 있다. 가운데 영역·선택·인스펙터가 그 구성을 보이고 편집은 모두 꺼진다.
+    var isViewingPast: Bool { history.selectedSnapshot != nil }
+
+    /// 화면에 보이는 구성: 과거 모드면 고른 revision, 아니면 현재 구성.
+    var shownSnapshot: ConfigurationSnapshot? {
+        if case let .loaded(snapshot) = shown { snapshot } else { nil }
+    }
+
+    private var shown: CurrentConfiguration {
+        history.selectedSnapshot.map(CurrentConfiguration.loaded) ?? current
+    }
+
+    var canReturnToCurrent: Bool { isViewingPast }
+
+    /// 띠의 '현재로 돌아가기', 보기 메뉴 '현재 구성으로 돌아가기'. 이력 탭 '현재 구성' 행과 같은 동작이다.
+    func returnToCurrent() async {
+        await history.select(.current)
+    }
+
+    var pastBannerTitle: String { String(localized: "과거 구성 · 읽기 전용") }
+
+    /// 띠 둘째 줄: '#순번 · 날짜 시각 기록'(실제 기록 시각).
+    var pastBannerDetail: String? {
+        guard isViewingPast, let summary = history.selectedSummary else { return nil }
+        return String(localized: "#\(summary.sequence) · \(history.dateTimeText(summary.recordedAt)) 기록")
+    }
+
+    /// VoiceOver는 띠를 한 요소로 읽는다(16.3).
+    var pastBannerAccessibilityLabel: String? {
+        guard isViewingPast, let summary = history.selectedSummary else { return nil }
+        return String(localized: "과거 구성, 읽기 전용, #\(summary.sequence), \(history.dateTimeText(summary.recordedAt)) 기록")
+    }
+
+    /// 이력 탭 아래쪽 '고른 항목' 카드(16.2). 과거 모드에서 항목을 골랐을 때만 있다.
+    struct PastItemCard: Equatable {
+        var name: String
+        var kind: NodeKind
+        var recordedPath: String?
+        /// 고른 Bishop의 지금 위치. 확인 전이면 nil.
+        var location: NodeLocation?
+        var url: String?
+    }
+
+    var pastItemCard: PastItemCard? {
+        guard isViewingPast, let node = selectedNode else { return nil }
+        let isLinked = node.kind == .file || node.kind == .folder
+        return PastItemCard(
+            name: node.displayName, kind: node.kind,
+            recordedPath: isLinked ? node.recordedPath : nil,
+            location: isLinked ? pastLocations[node.id] : nil,
+            url: node.kind == .webLink ? node.url : nil
+        )
+    }
+
+    var recordedPathLabel: String { String(localized: "당시 경로") }
+    var currentLocationLabel: String { String(localized: "현재 위치") }
+    var movedLocationText: String { String(localized: "당시와 다른 위치") }
+    var recordedURLLabel: String { String(localized: "당시 URL") }
+    var currentContentNotice: String { String(localized: "열면 지금의 파일이 열립니다. 파일 내용의 과거 버전은 보관하지 않습니다.") }
+
+    /// 과거·현재 모드가 바뀌면: 두 모드의 연결 상태를 섞지 않게 비우고, 고른 항목이 새로 보이는 구성에 없으면 비운다.
+    /// 남은 Bishop은 그 구성의 참조로 다시 확인한다.
+    private func viewedConfigurationChanged() async {
+        statusEpoch += 1
+        linkStatuses = [:]
+        pastLocations = [:]
+        guard let id = selectedNodeID else { return }
+        guard shownSnapshot?.nodes.contains(where: { $0.id == id }) == true else {
+            selectedNodeID = nil
+            return
+        }
+        await selectNode(id)
     }
 
     // MARK: 제거
@@ -1318,7 +1445,7 @@ final class BoardBrowserModel {
     }
 
     var canReplaceSelectedTarget: Bool {
-        guard case let .loaded(snapshot) = current, let id = selectedNodeID,
+        guard !isViewingPast, case let .loaded(snapshot) = shown, let id = selectedNodeID,
               let node = snapshot.nodes.first(where: { $0.id == id })
         else { return false }
         return node.kind == .file || node.kind == .folder
@@ -1326,7 +1453,7 @@ final class BoardBrowserModel {
 
     func beginReplaceTarget() async {
         guard let boardID = selectedBoardID, let service = openedStore?.replacement,
-              canReplaceSelectedTarget, case let .loaded(snapshot) = current,
+              canReplaceSelectedTarget, case let .loaded(snapshot) = shown,
               let node = snapshot.nodes.first(where: { $0.id == selectedNodeID })
         else { return }
         guard !selectedBoardIsArchived else {
@@ -1452,6 +1579,7 @@ final class BoardBrowserModel {
         hasIconLocation = false
         backStack = []
         linkStatuses = [:]
+        pastLocations = [:]
         expandedGroupIDs = []
         statusEpoch += 1
         guard let store = openedStore?.store else { return }

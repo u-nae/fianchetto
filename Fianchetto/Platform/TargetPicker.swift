@@ -10,6 +10,10 @@ enum TargetPicker {
         var canCreateDirectories: Bool
     }
 
+    /// 선택 창이 처음 보일 폴더. Debug 빌드의 UI 테스트에서만 정한다(파일 선택 창 안의 경로 입력은 키 합성이 글자를 잃는다).
+    /// 사용자가 확인을 눌러야 고르는 것은 그대로다.
+    static var initialDirectory: URL?
+
     static let configuration = Configuration(
         canChooseFiles: true, canChooseDirectories: true, allowsMultipleSelection: true, canCreateDirectories: false
     )
@@ -38,6 +42,7 @@ enum TargetPicker {
         panel.allowsMultipleSelection = configuration.allowsMultipleSelection
         panel.canCreateDirectories = configuration.canCreateDirectories
         panel.prompt = prompt
+        if let initialDirectory { panel.directoryURL = initialDirectory }
         return panel.runModal() == .OK ? panel.urls : nil
     }
 }

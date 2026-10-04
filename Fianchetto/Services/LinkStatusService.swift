@@ -11,6 +11,13 @@ extension LinkStatus {
     }
 }
 
+/// 과거 항목의 현재 위치(W18, 0003). 해석하지 못하면 위치 대신 상태를 둔다(존재 여부를 단정하지 않는다).
+enum NodeLocation: Equatable, Sendable {
+    /// 지금 해석한 위치(표준화한 경로)와, 기록 당시 경로와 다른 위치인지.
+    case resolved(path: String, differsFromRecorded: Bool)
+    case unresolved(LinkStatus)
+}
+
 /// Bishop의 저장된 접근 정보를 해석해 연결 상태를 구한다. 선택·열기·명시적 새로고침 때만 부른다(PRD §8 경량화).
 /// 해석 중 새 접근 정보가 만들어지면(stale·위치 변경) 같은 참조에 저장하고 revision은 만들지 않는다(불변식 8).
 /// 그 저장이 실패해도 확인 결과는 그대로이며 다음 확인 때 다시 시도한다.
@@ -53,6 +60,30 @@ struct LinkStatusService: Sendable {
         return await status(of: node)
     }
 
+    /// 주어진 Node들(과거 구성 등) 중 Bishop을 한 번씩 확인한다.
+    func checkAll(_ nodes: [ConfigurationNode]) async -> [UUID: LinkStatus] {
+        var result: [UUID: LinkStatus] = [:]
+        for node in nodes where node.kind == .file || node.kind == .folder {
+            result[node.id] = await status(of: node)
+        }
+        return result
+    }
+
+    /// Node의 참조가 지금 가리키는 위치와 기록 당시 경로를 비교한다. 심볼릭 링크는 양쪽 모두 해석한 뒤 비교한다.
+    func location(of node: ConfigurationNode) async -> NodeLocation {
+        switch await resolve(node) {
+        case let .success(url):
+            let current = url.resolvingSymlinksInPath().path
+            let differs = node.recordedPath.map {
+                !PathComparison.isSameLocation(URL(filePath: $0).resolvingSymlinksInPath().path, current)
+            } ?? false
+            // 표시 경로도 심볼릭 링크를 해석한 형태로 맞춘다(/private/var → /var). 당시 경로와 같은 방식으로 보이게 하려는 것이다.
+            return .resolved(path: PathComparison.normalize(current), differsFromRecorded: differs)
+        case let .failure(cause):
+            return .unresolved(LinkStatus(cause))
+        }
+    }
+
     /// Board의 모든 Bishop을 한 번씩 확인한다.
     func checkAll(projectID: UUID) async -> [UUID: LinkStatus] {
         guard let snapshot = try? await store.currentSnapshot(projectID: projectID) else { return [:] }
@@ -63,7 +94,7 @@ struct LinkStatusService: Sendable {
         return result
     }
 
-    private func status(of node: ConfigurationNode) async -> LinkStatus {
+    func status(of node: ConfigurationNode) async -> LinkStatus {
         switch await resolve(node) {
         case .success: .healthy
         case let .failure(cause): LinkStatus(cause)

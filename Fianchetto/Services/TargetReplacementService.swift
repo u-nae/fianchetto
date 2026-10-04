@@ -30,6 +30,15 @@ enum ReselectOutcome: Equatable, Sendable {
     case rejected(ReplacementRejection)
 }
 
+/// 과거 화면의 다시 선택 결과(W18, PRD §6-H). 다른 대상으로 덮어쓰지 않는다.
+enum PastReselectOutcome: Equatable, Sendable {
+    /// 같은 대상이라 그 참조의 접근 정보만 갱신했다(revision 없음, 0012).
+    case recovered
+    /// 다른 대상이거나 판정할 수 없다. 아무것도 바꾸지 않았다.
+    case notSameTarget
+    case rejected(ReplacementRejection)
+}
+
 enum ReplacementOutcome: Equatable, Sendable {
     case committed(RevisionSummary, ConfigurationSnapshot)
     case unchanged
@@ -120,6 +129,34 @@ struct TargetReplacementService: Sendable {
             ))
         }
         guard let referenceID = node.referenceID else { return .rejected(.commit(.edit(.notLinkedItem))) }
+        let creation: BookmarkCreation
+        do {
+            creation = try bookmarks.createBookmark(for: newURL)
+        } catch {
+            return .rejected(.unreachableTarget)
+        }
+        do {
+            try await configuration.store.updateReferenceAccess(referenceID, bookmarkData: creation.bookmarkData, lastResolvedPath: creation.path)
+        } catch {
+            throw .saveFailed
+        }
+        return .recovered
+    }
+
+    /// 과거 구성의 Bishop 다시 선택: 그 revision의 Node 참조와 같은 대상일 때만 접근 정보를 갱신한다(보관된 Board 포함).
+    /// 다른 대상·판정 불가는 notSameTarget이며 확인 창으로 넘기지 않는다. 접근 정보 저장이 실패하면 saveFailed를 던진다.
+    func reselectPast(node: ConfigurationNode, newURL: URL) async throws(ConfigurationServiceError) -> PastReselectOutcome {
+        guard node.kind == .file || node.kind == .folder, let referenceID = node.referenceID else {
+            return .rejected(.commit(.edit(.notLinkedItem)))
+        }
+        let kind: LinkedTarget.Kind
+        do {
+            kind = try bookmarks.kind(of: newURL)
+        } catch {
+            return .rejected(.unreachableTarget)
+        }
+        guard kind.nodeKind == node.kind else { return .rejected(.commit(.edit(.targetKindMismatch))) }
+        guard try await identity(of: node, newURL: newURL) == .sameTarget else { return .notSameTarget }
         let creation: BookmarkCreation
         do {
             creation = try bookmarks.createBookmark(for: newURL)

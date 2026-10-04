@@ -3,6 +3,7 @@ import SwiftUI
 /// 인스펙터 '이력' 탭(DESIGN.md 16.2): 날짜로 찾기, '현재 구성' 행, 기록이 있는 날의 구역과 revision 행.
 struct HistoryTabView: View {
     let history: HistoryPanelModel
+    let model: BoardBrowserModel
 
     var body: some View {
         let selection = history.selection
@@ -55,6 +56,10 @@ struct HistoryTabView: View {
                     }
                 }
             }
+            if let card = model.pastItemCard {
+                Divider()
+                PastItemCardView(model: model, card: card)
+            }
         }
         .accessibilityIdentifier("history-tab")
         .alert(
@@ -63,6 +68,98 @@ struct HistoryTabView: View {
         ) {
             Button("확인", role: .cancel) { history.dismissNotice() }
         }
+    }
+}
+
+/// '고른 항목' 카드(16.2): 과거 구성에서 고른 항목의 이름, 당시 경로, 현재 위치(또는 상태), 다른 위치 표시, 열기.
+private struct PastItemCardView: View {
+    let model: BoardBrowserModel
+    let card: BoardBrowserModel.PastItemCard
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("고른 항목")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+            Text(card.name)
+                .font(.headline)
+            switch card.kind {
+            case .file, .folder:
+                if let recorded = card.recordedPath {
+                    PathLine(label: model.recordedPathLabel, path: PathComparison.normalize(recorded))
+                }
+                switch card.location {
+                case let .resolved(path, differs):
+                    PathLine(label: model.currentLocationLabel, path: path)
+                    if differs {
+                        Label(model.movedLocationText, systemImage: "arrow.turn.down.right")
+                            .font(.caption)
+                    }
+                case let .unresolved(status):
+                    if let presentation = LinkStatusPresentation.of(status) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(model.currentLocationLabel).font(.caption).foregroundStyle(.secondary)
+                            LinkStatusLabel(text: model.statusText(status), presentation: presentation)
+                        }
+                    }
+                case nil:
+                    EmptyView()
+                }
+                HStack {
+                    Button("열기") { Task { await model.openSelected() } }
+                    Button("Finder에서 보기") { Task { await model.revealSelected() } }
+                }
+                Text(model.currentContentNotice)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(3)
+            case .webLink:
+                if let url = card.url {
+                    PathLine(label: model.recordedURLLabel, path: url, abbreviatesHome: false)
+                }
+                Button("열기") { Task { await model.openSelected() } }
+            case .group:
+                EmptyView()
+            }
+        }
+        .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
+        .padding()
+        .accessibilityIdentifier("past-item-card")
+    }
+}
+
+/// 카드의 경로 한 줄: 위에 작은 라벨, 아래에 최대 두 줄·가운데 줄임 경로(홈은 ~). 전체 경로는 도움말 풍선으로 본다.
+/// 긴 경로가 인스펙터 열의 최소 폭을 밀어 올리지 않게 폭을 고정하지 않는다(분할 뷰 제약 갱신이 반복되던 문제).
+private struct PathLine: View {
+    let label: String
+    let path: String
+    var abbreviatesHome = true
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(label)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            Text(abbreviatesHome ? DisplayPath.abbreviated(path) : path)
+                .font(.callout)
+                .lineLimit(2)
+                .truncationMode(.middle)
+                .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
+                .help(path)
+        }
+        .accessibilityElement(children: .combine)
+    }
+}
+
+/// 화면에 보일 경로: 사용자 홈 아래면 ~로 줄인다. 앱 샌드박스의 홈(컨테이너)이 아니라 실제 사용자 홈을 쓴다.
+enum DisplayPath {
+    private static let home: String? = getpwuid(getuid()).flatMap { String(validatingCString: $0.pointee.pw_dir) }
+
+    static func abbreviated(_ path: String, home: String? = DisplayPath.home) -> String {
+        guard let home, !home.isEmpty, home != "/" else { return path }
+        if path == home { return "~" }
+        guard path.hasPrefix(home + "/") else { return path }
+        return "~" + path.dropFirst(home.count)
     }
 }
 
