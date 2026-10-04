@@ -198,9 +198,10 @@ W15에서 연결 상태를 트리에 표시한다. 상태 이름은 W14 안내 �
 
 - **바꾸면 안 되는 접근성 식별자**(UI 테스트가 쓴다): `board-row-<이름>`, `node-row-<이름>`, `board-name-field`,
   `node-name-field`, `node-url-field`, `move-destination-<이름>`, `removal-message`(W13), `path-bar`·`icon-tile-<이름>`·`view-mode`(W28),
-  `inspector-toggle`, `bishop-icon-style`(W28), `history-tab`·`history-toggle`·`revision-row-<순번>`·`date-lookup`(W17).
+  `inspector-toggle`, `bishop-icon-style`(W28), `history-tab`·`history-toggle`·`revision-row-<순번>`·`date-lookup`(W17),
+  `past-banner`·`return-to-current`·`past-item-card`(W18).
   행의 `accessibilityElement(children: .ignore)`와 `accessibilityLabel`, 선택 행의 `.isSelected` trait도 유지한다.
-  W18 이후 쓰기로 제안한 식별자(`past-banner`, `return-to-current`, 19.6의 비교 식별자)는 구현되면 이 목록으로 옮긴다.
+  W19 이후 쓰기로 제안한 식별자(19.6의 비교 식별자)는 구현되면 이 목록으로 옮긴다.
 - 메뉴 항목 제목과 단축키를 바꾸지 않는다. 바꾸려면 `BoardBrowserUITests`·`NativeCommandUITests`의 메뉴 검사도 같은 변경에서 고친다.
 - 확인 항목: 라이트·다크·고대비(시스템 설정 > 손쉬운 사용 > 디스플레이 > 대비 증가)·투명도 줄이기·VoiceOver로 트리 읽기·
   키보드만으로 모든 명령 실행.
@@ -312,8 +313,11 @@ W15에서 연결 상태를 트리에 표시한다. 상태 이름은 W14 안내 �
   '열기'·'Finder에서 보기'와 안내 '열면 지금의 파일이 열립니다. 파일 내용의 과거 버전은 보관하지 않습니다.'를 둔다. 웹 링크는 당시 URL을 보여 준다.
 
 ### 16.3 과거 구성 띠
-- 가운데 영역 위, 보관된 Board 띠와 같은 `.quaternary` 바탕. 첫 줄: 기호 + '과거 구성 · 읽기 전용'(`.callout` 굵게)과 '현재로 돌아가기'.
+- 가운데 영역 위, 보관된 Board 띠와 같은 `.quaternary` 바탕. 첫 줄: 기호 `clock.arrow.circlepath`(이력 버튼과 같은 기호, 7장) +
+  '과거 구성 · 읽기 전용'(`.callout` 굵게)과 '현재로 돌아가기'.
   둘째 줄: '#순번 · 2026년 10월 3일 오후 2:20 기록'(실제 기록 시각)과 '현재와 비교', '이 구성으로…' 메뉴('복원…', '새 Board 만들기…').
+- 단계별 진입점: W18 단계의 띠에는 둘째 줄의 기록 시각만 둔다. '현재와 비교'는 W19, '이 구성으로…'의 '복원…'은 W20, '새 Board 만들기…'는
+  W21이 동작과 함께 더한다. 눌러도 아무 일이 없는 꺼진 버튼은 두지 않는다(0018 도움말 메뉴와 같은 기준).
 - 보관된 Board에서는 '복원…'만 끈다. 조회·비교·새 Board 만들기는 켠다(0009).
 - VoiceOver는 띠를 하나의 요소로 읽는다: '과거 구성, 읽기 전용, #12, 2026년 10월 3일 오후 2:20 기록'.
 
@@ -325,7 +329,7 @@ W15에서 연결 상태를 트리에 표시한다. 상태 이름은 W14 안내 �
 
 ### 16.5 식별자(제안)
 - W17에서 구현된 `history-tab`, `history-toggle`(툴바 버튼), `revision-row-<순번>`, `date-lookup`은 11장 목록으로 옮겼다.
-  W18용 제안: `past-banner`, `return-to-current`. 구현되면 11장으로 옮긴다.
+  W18에서 구현된 `past-banner`, `return-to-current`, `past-item-card`('고른 항목' 카드)도 11장 목록으로 옮겼다.
 
 ## 17. 아이콘 보기 (W28, 0020·0022)
 
