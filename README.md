@@ -26,13 +26,15 @@ Fianchetto는 파일을 옮기거나 복사하지 않고 **연결만** 모읍니
 | **Wing** | 항목을 묶는 가상 폴더. 체스 판의 한쪽 구역(윙)에서 따온 이름이고, 디스크에는 존재하지 않습니다 |
 | 웹 링크 | 기본 브라우저로 여는 http/https 주소 |
 | 체크포인트 | 이름·진행 메모·다음 할 일을 남긴 의미 있는 시점(구현 예정) |
+| 과거 구성 | 이력에 남은 어느 시점의 Board 구성. 읽기 전용으로 보고 지금 구성과 비교할 수 있습니다 |
 
 코드와 데이터 형식에는 중립 용어(Project, Group, Node, ResourceReference)를 씁니다([0006](docs/decisions/0006-board-and-bishop-terms.md), [0017](docs/decisions/0017-group-screen-term-wing.md)).
 
 ## 현재 상태
 
-**구현 진행 중: 작업 항목 27개 중 14개 완료(W01–W14).** 구성 편집과 열기까지 실제로 쓸 수 있습니다.
-이력 조회·비교·복원, 체크포인트, 내보내기·가져오기는 아직 없습니다.
+**구현 진행 중: 작업 항목 29개 중 20개 완료(W01–W18, W28, W29), W19 진행 중.**
+구성 편집·열기, 연결 상태 표시, 이력 조회와 과거 구성 보기, 현재와 과거 구성의 비교(통합 트리)를 쓸 수 있습니다.
+비교의 '나란히' 보기, 복원, 체크포인트, 내보내기·가져오기는 아직 없습니다.
 
 ### 지금 할 수 있는 것
 
@@ -45,16 +47,34 @@ Fianchetto는 파일을 옮기거나 복사하지 않고 **연결만** 모읍니
 | 웹 링크 추가 | 파일 > 웹 링크 추가… | ⌥⌘L |
 | 열기(기본 앱·기본 브라우저, 트리 행 이중 클릭) | 파일 > 열기 | ⌘O |
 | Finder에서 보기 | 파일 > Finder에서 보기 | ⌘R |
+| 다시 선택…(Bishop의 대상을 다시 골라 접근 복구. 다른 대상을 고르면 연결 대상 변경 확인) | 파일 > 다시 선택… | — |
+| 상태 새로고침(연결 상태 다시 확인) | 파일 > 상태 새로고침 | — |
 | Board 이름 변경 · 보관 · 보관 해제 | 파일 메뉴 | — |
 | 항목 이름 변경 · URL 변경 | 편집 메뉴 | — |
 | 위로 이동 · 아래로 이동(형제 순서) | 편집 메뉴 | ⌥⌘↑ · ⌥⌘↓ |
 | 이동…(다른 Wing·최상위로, 또는 트리 안에서 끌어다 놓기) | 편집 > 이동… | — |
-| 제거(현재 구성에서만 빼기, 원본은 그대로) | 편집 > 제거… | ⌘⌫ |
+| Bishop 아이콘(용도: 문서·데이터·이미지·코드·참고·발표·할 일·디자인) | 편집 > 아이콘 | — |
+| 제거(현재 구성에서만 빼기, 원본은 그대로) | 편집 > 제거… | ⌘⌫, 목록·아이콘 보기에서 Delete |
+| 아이콘으로 보기 · 목록으로 보기 | 보기 메뉴 | ⌘1 · ⌘2 |
+| 들어가기 · 상위 Wing으로 · 뒤로(아이콘 보기) | 보기 메뉴 | ⌘↓ · ⌘↑ · ⌘[ |
+| 인스펙터 보기/가리기 | 보기 메뉴 | ⌥⌘I |
+| 이력 보기(기록 목록, 날짜로 찾기) | 보기 > 이력 보기 | ⌘Y |
+| 현재 구성으로 돌아가기(과거 구성을 보는 중) | 보기 메뉴 | — |
+| 현재와 비교 · 비교 닫기 | 보기 메뉴 | 비교 닫기는 Esc |
+
+오른쪽 클릭 메뉴는 항목 종류에 맞는 명령을 메뉴 막대와 같은 이름으로 보여 줍니다. 이력 목록의 행에는 '이 기록과 비교'가 있습니다.
 
 함께 동작하는 것:
 
 - **자동 기록:** 확정한 편집 하나가 구성 기록(revision) 하나로 남습니다. 취소, 바뀐 것이 없는 확정, 열기·조회는 기록하지 않습니다.
-- **옮겨진 파일 추적:** Bishop은 파일을 옮겨도 지금 위치로 엽니다. 찾지 못하면 "대상 없음·권한 필요·볼륨 연결 필요·확인 실패" 중 하나로 알려 줍니다.
+- **옮겨진 파일 추적과 연결 상태:** Bishop은 파일을 옮겨도 지금 위치로 엽니다. 연결에 문제가 있으면 트리 행에
+  "권한 필요·대상 없음·볼륨 연결 필요·확인 실패"를 기호와 문구로 표시합니다.
+- **이력과 과거 구성:** 이력 탭에서 기록을 날짜별로 보고, 날짜·시각으로 그 시점의 기록을 찾습니다. 기록을 고르면 그때의 구성을
+  읽기 전용으로 보여 주고, 당시 연결했던 대상을 지금 파일로 열 수 있습니다. 파일 내용의 과거 버전은 보관하지 않습니다.
+- **구성 비교:** 과거 구성과 현재 구성(또는 두 기록)을 한 트리에서 비교합니다. 추가·제거·이름 변경·이동·순서 변경·대상 교체·URL 변경·
+  아이콘 변경을 기호와 문구로 표시하고, 고른 항목의 이전 → 이후 값을 인스펙터에 보여 줍니다.
+- **아이콘 보기:** Finder처럼 Wing 하나씩 큰 타일로 보며 들어가고 나올 수 있습니다. 설정에서 Bishop 타일을 기호(기본) 대신
+  파일 종류 아이콘으로 바꿀 수 있습니다.
 - **보관된 Board:** 읽기 전용입니다. 편집은 막고 열기·Finder에서 보기는 됩니다.
 - **안전한 저장:** 저장에 실패하면 안내하고 화면과 저장소를 이전 상태로 둡니다. 저장소를 열 수 없으면 빈 저장소로 바꾸지 않고 다시 시도·Finder에서 보기·종료를 제안합니다.
 
@@ -67,16 +87,16 @@ Fianchetto는 파일을 옮기거나 복사하지 않고 **연결만** 모읍니
 | F03 | 표시 이름, Wing 위치, 형제 순서 편집 | 구현됨 |
 | F04 | 연결 대상 교체, 현재 대상 열기·Finder 표시 | 구현됨 |
 | F05 | 구성 변경 자동 기록, 재실행 후 유지 | 구현됨 |
-| F11 | 연결 실패 표시와 재연결 | 열기 실패 안내까지 구현. 트리 상태 표시·재연결은 W15 |
-| F06 | 이력 목록과 날짜·시점별 읽기 전용 구성 조회 | 예정(W17·W18) |
-| F07 | 두 구성의 차이 비교 | 예정(W16·W19) |
+| F11 | 연결 실패 표시와 재연결 | 구현됨 |
+| F06 | 이력 목록과 날짜·시점별 읽기 전용 구성 조회 | 구현됨 |
+| F07 | 두 구성의 차이 비교 | 진행 중(차이 계산 W16·통합 트리 구현, 나란히 보기 남음) |
 | F08 | 과거 구성 복원, 그 구성에서 새 Board 만들기 | 예정(W20·W21) |
 | F09 | 체크포인트(이름, 진행 메모, 다음 할 일) | 예정(W22) |
 | F10 | 체크포인트 이미지 첨부 | 예정(W23) |
 | F12 | Board 내보내기·가져오기 | 예정(W24·W25) |
 
-마지막으로 Release 성능 측정(W26)과 실사용·macOS 15 호환성 검증(W27)을 합니다. 작업 항목 전체는
-[docs/work-items.yaml](docs/work-items.yaml)에 있습니다.
+작업 항목에는 아이콘 보기(W28)와 Bishop 용도 아이콘(W29)이 더해졌습니다. 마지막으로 Release 성능 측정(W26)과
+실사용·macOS 15 호환성 검증(W27)을 합니다. 작업 항목 전체는 [docs/work-items.yaml](docs/work-items.yaml)에 있습니다.
 
 ## 지키는 것
 
@@ -106,6 +126,7 @@ open Fianchetto.xcodeproj        # Xcode에서 scheme "Fianchetto" 선택 후 �
 ```sh
 scripts/verify.sh                    # 전체 검증: 구조·용어·빌드 설정·Debug 테스트(UI 포함)·Release 빌드·entitlement·경고 0개
 SKIP_UI_TESTS=1 scripts/verify.sh    # UI 테스트 제외
+scripts/vm-verify.sh                 # 같은 전체 검증을 Tart 가상 머신 안에서 실행(검증 중 키보드·마우스 사용 가능, 0029)
 xcodebuild -project Fianchetto.xcodeproj -scheme Fianchetto -destination 'platform=macOS,arch=arm64' \
   -derivedDataPath ~/Library/Developer/Xcode/DerivedData/Fianchetto-verify \
   test -skip-testing:FianchettoUITests   # 단위 테스트만
@@ -113,6 +134,11 @@ xcodebuild -project Fianchetto.xcodeproj -scheme Fianchetto -destination 'platfo
 
 - 빌드 산출물은 `~/Documents` 밖(`~/Library/Developer/Xcode/DerivedData/Fianchetto-verify`)에 둡니다. 저장소가
   `~/Documents` 아래에 있으면 UI 테스트 러너가 문서 폴더 접근 승인 창을 띄워 테스트가 멈추기 때문입니다.
+- 호스트에서 UI 테스트를 돌리는 동안에는 키보드·마우스를 쓰지 마세요. 테스트가 입력을 합성합니다. 가상 머신 준비는
+  `docs/decisions/0029-ui-tests-in-tart-vm.md`를 따릅니다.
+- **스냅샷 테스트:** Bishop 타일·배지 같은 작은 화면 부품을 기준 이미지와 비교합니다(라이트·다크, 0028). 기준 이미지를 새로 기록하면
+  `scripts/record-snapshots.sh`로 저장소에 옮기고, 이미지를 확인한 뒤 커밋합니다. 시스템 파일 아이콘처럼 OS와 설치된 앱에 따라
+  달라지는 그림은 기준 이미지에 넣지 않습니다.
 - **데이터 위치:** 앱은 sandbox 컨테이너의 `~/Library/Containers/io.github.u-nae.Fianchetto/Data/Library/Application Support/Fianchetto/`에
   저장합니다. Xcode에서 Debug로 실행해도 같은 저장소를 쓰므로, 시험할 때는 연습용 Board를 만드는 것을 권합니다.
   단위 테스트는 임시 디렉토리만 쓰고, UI 테스트는 별도 테스트 폴더를 씁니다.
@@ -125,14 +151,15 @@ xcodebuild -project Fianchetto.xcodeproj -scheme Fianchetto -destination 'platfo
 ```text
 Fianchetto/
   App/           진입점, 의존성 조립, 메뉴(Commands)
-  Features/      SwiftUI 화면과 @Observable @MainActor 화면 상태 (BoardBrowser)
-  Services/      구성 변경 커밋, Bishop 연결, 대상 교체, 보관, 열기
-  Domain/        순수 Swift 값 타입과 규칙 (구성 스냅샷, 트리 검증, 편집 연산) — Foundation만 사용
+  Features/      SwiftUI 화면과 @Observable @MainActor 화면 상태 (BoardBrowser: 트리·아이콘 보기·이력·비교, Shared)
+  Services/      구성 변경 커밋, Bishop 연결, 대상 교체, 연결 상태 확인, 보관, 열기
+  Domain/        순수 Swift 값 타입과 규칙 (구성 스냅샷, 트리 검증, 편집 연산, 이력, 차이 계산, 비교 트리) — Foundation만 사용
   Persistence/   SwiftData 스키마 V1, 마이그레이션 계획, 저장소 열기·복구, 저장소 어댑터
   Platform/      AppKit·파일 시스템 어댑터 (파일 선택 창, NSWorkspace, 보안 범위 북마크, 로그)
-FianchettoTests/     Swift Testing 단위·서비스·화면 상태 테스트 (실제 SwiftData, 임시 디렉토리)
+  Assets.xcassets 색(Color Set), 앱 아이콘, 커스텀 심볼(Bishop·Board·Wing)
+FianchettoTests/     Swift Testing 단위·서비스·화면 상태 테스트 (실제 SwiftData, 임시 디렉토리), 스냅샷 테스트(Snapshots/)
 FianchettoUITests/   XCUITest 핵심 흐름
-scripts/             검증 스크립트
+scripts/             검증 스크립트, 디자인 자산 생성 스크립트(design/)
 docs/                기준 문서, 결정 기록, 작업 항목, 디자인 규칙
 ```
 
@@ -141,7 +168,7 @@ docs/                기준 문서, 결정 기록, 작업 항목, 디자인 규�
 
 ## 개발 절차
 
-1. **명세 게이트:** 작업 항목(W01–W27)마다 `fianchetto-spec-gate`로 Gherkin 명세를 쓰고 독립 비평을 통과시킵니다.
+1. **명세 게이트:** 작업 항목(W01–W29)마다 `fianchetto-spec-gate`로 Gherkin 명세를 쓰고 독립 비평을 통과시킵니다.
    산출물은 `.spec-gate/runs/`에 남습니다.
 2. **TDD:** 게이트가 넘긴 test obligation을 테스트 이름에 표기하고(`[W14-open-moved-target] …`), 수용 기준(A01–A18)은 태그로 연결합니다.
    구현 뒤 변이 검사로 테스트가 동작을 실제로 잡는지 확인합니다.
@@ -155,8 +182,8 @@ docs/                기준 문서, 결정 기록, 작업 항목, 디자인 규�
 | --- | --- |
 | [docs/PRD.md](docs/PRD.md) | 제품 동작, 데이터 불변식, 수용 기준(A01–A18) |
 | [docs/TECH_STACK.md](docs/TECH_STACK.md) | 기술 선택 |
-| [docs/decisions/](docs/decisions/) | 기준 문서의 공백·모순 해소와 이후 결정 기록(0001–0025) |
+| [docs/decisions/](docs/decisions/) | 기준 문서의 공백·모순 해소와 이후 결정 기록(0001부터 번호순) |
 | [docs/work-items.yaml](docs/work-items.yaml) | 구현 작업 항목과 진행 상태 |
-| [docs/DESIGN.md](docs/DESIGN.md) | 시각 디자인 규칙(초안) |
+| [docs/DESIGN.md](docs/DESIGN.md) | 시각 디자인 규칙(초안): 색, 기호, 상태 표현, 메뉴·키보드, 이력·아이콘 보기·비교 화면 |
 | [docs/design/](docs/design/) | 디자인 레퍼런스(REFERENCES.md)와 네이티브 동작 점검 기록(AUDIT-날짜.md) |
 | [CLAUDE.md](CLAUDE.md) | 개발 규칙 |
