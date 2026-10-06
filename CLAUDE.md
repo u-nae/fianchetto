@@ -28,9 +28,10 @@
 ```sh
 scripts/verify.sh                    # 전체 검증: 구조·빌드 설정·Debug test(UI 포함)·Release build·entitlement·경고 0개
 SKIP_UI_TESTS=1 scripts/verify.sh    # UI 테스트 제외
+scripts/vm-verify.sh                 # 같은 검증을 Tart 가상 머신에서(0029). 사용자가 키보드를 쓰는 중이면 이쪽
 xcodebuild -project Fianchetto.xcodeproj -scheme Fianchetto -destination 'platform=macOS,arch=arm64' \
   -derivedDataPath ~/Library/Developer/Xcode/DerivedData/Fianchetto-verify \
-  test -skip-testing:FianchettoUITests   # 단위 테스트만
+  test -skip-testing:FianchettoUITests   # 단위 테스트만(스키마 이전 테스트 2개는 건너뜀, verify.sh가 따로 실행, 0031)
 ```
 
 - 빌드 산출물(DerivedData)은 `~/Documents` 밖에 둔다. 저장소가 `~/Documents` 아래라서, 안에 두면 UI 테스트 러너가
