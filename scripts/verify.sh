@@ -61,6 +61,25 @@ if ! grep -Eq 'xcstringstool compile .*Fianchetto\.build/.*Fianchetto/Localizabl
   exit 1
 fi
 echo "OK: String Catalog가 앱 target에 포함됨"
+
+# 0031: 테스트 전용 V2 스키마를 쓰는 테스트는 V1 저장소 테스트와 한 프로세스에서 섞이면 테스트 호스트가 종료되므로,
+# 평소 실행에서는 꺼져 있고 여기서 별도 실행으로만 켠다(TEST_RUNNER_ 접두어 환경 변수는 테스트 호스트에 전달된다).
+step "Debug test: 스키마 이전 (별도 실행)"
+schema_suite="SchemaMigrationTests"
+schema_expected=2
+if ! TEST_RUNNER_FIANCHETTO_SCHEMA_MIGRATION_TESTS=1 xcodebuild "${test_args[@]}" test-without-building \
+  -only-testing:"FianchettoTests/$schema_suite" >"$LOGS/test-schema.log" 2>&1; then
+  tail -n 40 "$LOGS/test-schema.log" >&2
+  echo "FAIL: 스키마 이전 테스트 ($LOGS/test-schema.log)" >&2
+  exit 1
+fi
+check_warnings "$LOGS/test-schema.log"
+schema_passed=$(grep -Ec "^Test case '$schema_suite/.*' passed" "$LOGS/test-schema.log" || true)
+if ((schema_passed != schema_expected)); then
+  echo "FAIL: 스키마 이전 테스트 ${schema_passed}개 통과 (기대값 ${schema_expected}개, 꺼진 채 건너뛰었을 수 있다)" >&2
+  exit 1
+fi
+echo "OK: 스키마 이전 테스트 ${schema_passed}개 통과"
 # 테스트용 Debug 빌드에는 Xcode가 테스트 연결용 temporary-exception을 넣으므로, entitlement는 아래
 # 일반 빌드(Release) 산출물에서 검사한다.
 

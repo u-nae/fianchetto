@@ -3,6 +3,8 @@ import SwiftData
 @testable import Fianchetto
 
 /// 테스트 전용 다음 스키마: V1의 다섯 모델에 Revision 선택 필드 `note` 하나를 더한다.
+/// RevisionModel의 엔티티 이름이 앱 V1과 같으므로 SchemaMigrationTests에서만 쓴다. 다른 테스트와 한 프로세스에서 동시에 쓰면
+/// 테스트 호스트가 종료된다(0031).
 enum TestSchemaV2: VersionedSchema {
     static var versionIdentifier: Schema.Version { Schema.Version(2, 0, 0) }
 

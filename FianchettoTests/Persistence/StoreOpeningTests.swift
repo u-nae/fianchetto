@@ -31,7 +31,8 @@ struct StoreOpeningTests {
     }
 
     enum BrokenState: String, CaseIterable, Sendable {
-        case garbage, garbageWithWAL, zeroBytes, auxiliaryFilesOnly, newerSchema, unreadable
+        // 앱보다 새로운 스키마 저장소(incompatible)는 테스트 전용 V2 스키마가 필요해 SchemaMigrationTests에서 따로 본다(0031).
+        case garbage, garbageWithWAL, zeroBytes, auxiliaryFilesOnly, unreadable
     }
 
     @Test("[W04-open-failure-preserves-store] 기존 저장소를 열 수 없으면 원인 범주가 담긴 오류를 돌려주고 파일을 바꾸지 않는다",
@@ -55,11 +56,6 @@ struct StoreOpeningTests {
                 try Data(repeating: 0x5A, count: 4096).write(to: URL(filePath: url.path + "-wal"))
                 try Data(repeating: 0x00, count: 32768).write(to: URL(filePath: url.path + "-shm"))
                 expected = .damaged
-            case .newerSchema:
-                let seed = directory.appending(path: "seed/Fianchetto.store")
-                try createNewerSchemaStore(at: seed)
-                try copyStoreFiles(from: seed, to: url)
-                expected = .incompatible
             case .unreadable:
                 let seed = directory.appending(path: "seed/Fianchetto.store")
                 try withStore(at: seed, seedBasicRecords)
@@ -86,30 +82,6 @@ struct StoreOpeningTests {
         #expect(url.lastPathComponent == "Fianchetto.store")
     }
 
-    @Test("[W04-migration-preserves-v1-data] 스키마 V1에서 만든 데이터는 다음 스키마 버전으로 이전한 뒤에도 유지된다", .tags(.A18))
-    func migrationPreservesV1Data() throws {
-        try withTemporaryDirectory { directory throws in
-            let url = directory.appending(path: "Fianchetto.store")
-            try withStore(at: url, seedBasicRecords)
-
-            let container = try StoreOpener.open(at: url, migrationPlan: TestMigrationPlanV2.self)
-            let context = ModelContext(container)
-
-            let revisions = try context.fetch(FetchDescriptor<TestSchemaV2.RevisionModel>(sortBy: [SortDescriptor(\.sequence)]))
-            #expect(revisions.map(\.id) == [R.r1, R.r2])
-            #expect(revisions.map(\.cause) == ["created", "renameNode"])
-            #expect(revisions.allSatisfy { $0.note == nil })
-            let expected = SnapshotFixtures.serviceA().updating(SnapshotFixtures.backend) { $0.displayName = "api" }
-            #expect(try SnapshotCodec.decode(revisions[1].snapshotData) == expected)
-            let store = StoreAdapter(context: context)
-            #expect(try store.project(R.project) == R.projectRecord())
-            #expect(try store.reference(R.backendReference.id) == R.backendReference)
-            let checkpoints = try context.fetch(FetchDescriptor<SchemaV1.CheckpointModel>())
-            #expect(checkpoints.map(\.id) == [R.c1])
-            #expect(checkpoints.first?.title == R.checkpoint().title)
-        }
-    }
-
     @Test("[W04-schema-v1-declared] 앱의 스키마 버전 목록은 V1에서 시작하고 이전 계획이 그 목록을 따른다", .tags(.A18))
     func schemaV1IsDeclared() {
         #expect(SchemaV1.versionIdentifier == Schema.Version(1, 0, 0))
@@ -122,17 +94,6 @@ struct StoreOpeningTests {
     }
 
     // MARK: 도우미
-
-
-    private func createNewerSchemaStore(at url: URL) throws {
-        let container = try StoreOpener.open(at: url, migrationPlan: TestNewerOnlyPlan.self)
-        let context = ModelContext(container)
-        context.insert(TestSchemaV2.RevisionModel(
-            id: R.r1, projectID: R.project, sequence: 1, recordedAt: date(0),
-            cause: "created", projectName: "서비스 A", snapshotData: Data("{}".utf8)
-        ))
-        try context.save()
-    }
 
     /// 권한이 없는 파일도 비교할 수 있게 잠시 읽기 권한을 주고 바이트를 읽은 뒤 원래 권한으로 되돌린다.
     private func storeFileBytesIgnoringPermissions(_ url: URL) -> [String: Data?] {
