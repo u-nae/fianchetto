@@ -1,9 +1,24 @@
 import SwiftUI
 
+/// 파일 종류 아이콘의 출처. 앱은 macOS 일반 아이콘을 쓰고, 화면 스냅샷(0028)은 OS 버전·설치된 앱과 무관한 고정 이미지를 쓴다.
+struct FileTypeIconSource: Sendable {
+    /// 파일 종류 식별자의 아이콘. nil이면 폴더.
+    var image: @MainActor @Sendable (_ typeIdentifier: String?) -> NSImage
+
+    static let system = FileTypeIconSource { identifier in
+        identifier.map(FileTypeIcons.image(forTypeIdentifier:)) ?? FileTypeIcons.folder
+    }
+}
+
+extension EnvironmentValues {
+    @Entry var fileTypeIconSource: FileTypeIconSource = .system
+}
+
 /// 목록 행·아이콘 타일의 기호 그리기. 파일 종류 아이콘에는 Bishop 배지를 붙인다(DESIGN 17.3·18.5).
 struct TileIconView: View {
     let icon: TileIcon
     var size: CGFloat = 16
+    @Environment(\.fileTypeIconSource) private var fileTypeIcons
 
     var body: some View {
         switch icon {
@@ -20,9 +35,9 @@ struct TileIconView: View {
         case .bishopFolder:
             Image(.fianchettoBishopFolder).resizable().scaledToFit().frame(width: size, height: size)
         case let .fileType(identifier):
-            badged(Image(nsImage: FileTypeIcons.image(forTypeIdentifier: identifier)))
+            badged(Image(nsImage: fileTypeIcons.image(identifier)))
         case .genericFolder:
-            badged(Image(nsImage: FileTypeIcons.folder))
+            badged(Image(nsImage: fileTypeIcons.image(nil)))
         }
     }
 
