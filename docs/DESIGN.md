@@ -200,9 +200,10 @@ W15에서 연결 상태를 트리에 표시한다. 상태 이름은 W14 안내 �
   `node-name-field`, `node-url-field`, `move-destination-<이름>`, `removal-message`(W13), `path-bar`·`icon-tile-<이름>`·`view-mode`(W28),
   `inspector-toggle`, `bishop-icon-style`(W28), `history-tab`·`history-toggle`·`revision-row-<순번>`·`date-lookup`(W17),
   `past-banner`·`return-to-current`·`past-item-card`(W18), `compare-bar`·`compare-before`·`compare-after`·`compare-close`·`compare-summary`·
-  `compare-tree`·`compare-row-<이름>`·`compare-details`·`compare-with-current`(W19).
+  `compare-tree`·`compare-row-<이름>`·`compare-details`·`compare-with-current`(W19 ①), `compare-mode`·`compare-before-tree`·`compare-after-tree`·
+  `compare-before-title`·`compare-after-title`(W19 ②).
   행의 `accessibilityElement(children: .ignore)`와 `accessibilityLabel`, 선택 행의 `.isSelected` trait도 유지한다.
-  제안 단계 식별자(19.6의 `compare-mode`)는 구현되면 이 목록으로 옮긴다.
+  새 화면의 제안 식별자는 구현되면 이 목록으로 옮긴다.
 - 메뉴 항목 제목과 단축키를 바꾸지 않는다. 바꾸려면 `BoardBrowserUITests`·`NativeCommandUITests`의 메뉴 검사도 같은 변경에서 고친다.
 - 확인 항목: 라이트·다크·고대비(시스템 설정 > 손쉬운 사용 > 디스플레이 > 대비 증가)·투명도 줄이기·VoiceOver로 트리 읽기·
   키보드만으로 모든 명령 실행.
@@ -548,7 +549,9 @@ W15에서 연결 상태를 트리에 표시한다. 상태 이름은 W14 안내 �
   - 고른 행이 없으면 '항목을 고르세요'(`sidebar.right`), 고른 행에 바뀐 값이 없으면 '바뀐 내용 없음'(`equal.circle`, 설명 없음)을 보인다.
 
 ### 19.5 나란히 두 트리
-- 가운데 영역을 반으로 나눠 왼쪽에 이전 구성, 오른쪽에 이후 구성 트리를 둔다. 각 열 위에 대상 이름('#9 · 10월 1일 오후 5:02', '현재 구성')을 쓴다.
+- 가운데 영역을 반으로 나눠 왼쪽에 이전 구성, 오른쪽에 이후 구성 트리를 두고 가운데에 구분선(`Divider`)을 둔다.
+  각 열 위에 대상 이름('#9 · 2026년 10월 1일 오후 5:02', '현재 구성')을 `.caption` 굵게, `.secondary`로 쓴다.
+- 'Board 이름' 행은 두 열 모두에 둔다. 각 열이 그 구성의 전체 트리이기 때문이다. 고르면 두 열에서 함께 강조한다.
 - 두 트리 모두 표시 전용이다. 고른 항목은 양쪽에서 함께 강조하고, 고르면 반대쪽도 그 행으로 스크롤한다. 고른 항목의 조상은 양쪽에서 펼친다.
   스크롤을 늘 붙여 움직이는 동기화는 하지 않는다.
 - 한쪽에만 있는 항목(추가·제거)을 고르면 반대쪽은 강조하지 않는다. 빈 자리를 따로 표시하지 않는다.
@@ -575,7 +578,7 @@ W15에서 연결 상태를 트리에 표시한다. 상태 이름은 W14 안내 �
 - 키보드: 비교 닫기는 Esc, '비교 닫기' 버튼, 보기 메뉴의 '비교 닫기'로 한다. Esc는 '비교 닫기' 버튼의 기본 취소 동작(`.cancelAction`)이라
   초점이 대상 메뉴나 트리에 있어도 닫힌다. 시트가 열려 있으면 시트의 Esc가 먼저다. 메뉴 막대 항목에는 Esc를 표시하지 않는다.
   방향키는 지금 초점이 있는 트리 안에서 움직인다.
-- 식별자: W19 ①에서 구현된 것은 11장 목록으로 옮겼다. `compare-mode`(보기 방식 세그먼트)는 W19 ②에서 쓰기로 제안한다.
+- 식별자: W19 ①·②에서 구현된 것은 모두 11장 목록으로 옮겼다.
 
 ### 19.7 구현 순서(권장)
 - 명세 게이트는 W19 하나로 두 방식을 함께 통과시킨다. 구현은 PR 두 개로 나눈다: ① 공통 부분 + 통합 트리(세그먼트 없음), ② 나란히 두 트리 + '통합 | 나란히' 세그먼트.
