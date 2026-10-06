@@ -11,12 +11,24 @@ import Testing
 enum SnapshotSupport {
     static let perceptualPrecision: Float = 0.98
 
+    /// 파일 종류 아이콘 자리 표시: 문서는 연회색 둥근 사각, 폴더는 연파랑 둥근 사각. 배지 대비를 보기에 충분하다.
+    static let placeholderIcons = FileTypeIconSource { identifier in
+        let color = identifier == nil ? NSColor(srgbRed: 0.55, green: 0.75, blue: 0.95, alpha: 1) : NSColor(srgbRed: 0.9, green: 0.9, blue: 0.9, alpha: 1)
+        return NSImage(size: NSSize(width: 64, height: 64), flipped: false) { rect in
+            color.setFill()
+            NSBezierPath(roundedRect: rect.insetBy(dx: 8, dy: 4), xRadius: 6, yRadius: 6).fill()
+            return true
+        }
+    }
+
     /// 창 배경 위에 view를 그린 2배율 이미지.
     static func render<Content: View>(_ content: Content, scheme: ColorScheme) -> NSImage {
         // 강조색은 앱 팔레트(AccentColor, 0011)로 고정한다. Color.accentColor는 테스트 호스트에서 기기의 시스템 강조색을 따라
         // 기록 기기마다 결과가 달라지므로 쓰지 않는다(시스템 강조색이 '다중 색상'일 때의 앱 모습이 기준).
         let framed = content
             .tint(Color(.accent))
+            // 시스템 파일 종류 아이콘은 OS 버전·설치된 앱마다 달라 고정 이미지로 바꾼다(배지만 비교한다).
+            .environment(\.fileTypeIconSource, placeholderIcons)
             .padding(8)
             .background(Color(nsColor: .windowBackgroundColor))
             .environment(\.colorScheme, scheme)
