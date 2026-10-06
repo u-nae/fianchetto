@@ -1,0 +1,4 @@
+// 설치해서 쓸 앱을 개인 Apple Development 인증서로 서명하려면 이 파일을 Config/Local.xcconfig로 복사하고 팀 ID를 채운다(0033).
+// Local.xcconfig는 .gitignore에 있어 커밋되지 않는다. 팀 ID는 Xcode > Settings > Accounts에서 확인한다.
+DEVELOPMENT_TEAM = YOURTEAMID
+CODE_SIGN_IDENTITY = Apple Development

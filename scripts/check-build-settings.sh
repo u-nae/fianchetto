@@ -40,6 +40,34 @@ for configuration in "${CONFIGURATIONS[@]}"; do
   done
 done
 
+# 0033: 앱 번들 ID는 Debug와 Release가 다르다(설치한 앱과 개발용 앱의 저장소를 나눈다).
+# 서명은 Config/Signing.xcconfig 기본값(ad-hoc)이고, git에 넣지 않는 Config/Local.xcconfig가 있을 때만 바뀐다.
+expect_setting() { # expect_setting <target> <configuration> <key> <기대값>
+  local actual
+  actual=$(xcodebuild -project "$PROJECT" -target "$1" -configuration "$2" -showBuildSettings 2>/dev/null |
+    awk -v key="$3" '$1 == key && $2 == "=" { sub(/^[^=]*= /, ""); print; exit }')
+  if [[ "$actual" != "$4" ]]; then
+    echo "FAIL: $1/$2 $3 = '${actual}' (기대값 '$4')" >&2
+    failures=$((failures + 1))
+  fi
+}
+expect_setting Fianchetto Debug PRODUCT_BUNDLE_IDENTIFIER "io.github.u-nae.Fianchetto.debug"
+expect_setting Fianchetto Release PRODUCT_BUNDLE_IDENTIFIER "io.github.u-nae.Fianchetto"
+if [[ ! -f Config/Local.xcconfig ]]; then
+  for configuration in "${CONFIGURATIONS[@]}"; do
+    for target in "${TARGETS[@]}"; do expect_setting "$target" "$configuration" CODE_SIGN_IDENTITY "-"; done
+  done
+fi
+# 가상 머신 사본에는 .git이 없으므로 git 명령 대신 .gitignore 줄을 본다.
+if ! grep -qxF 'Config/Local.xcconfig' .gitignore; then
+  echo "FAIL: Config/Local.xcconfig가 .gitignore에 없다(개인 팀 ID가 커밋될 수 있다)" >&2
+  failures=$((failures + 1))
+fi
+if grep -q 'CODE_SIGN_IDENTITY\|DEVELOPMENT_TEAM' "$PROJECT/project.pbxproj"; then
+  echo "FAIL: project.pbxproj에 서명 값이 있다(Config/Signing.xcconfig로 옮긴다)" >&2
+  failures=$((failures + 1))
+fi
+
 # 외부 패키지: 0028이 허용한 테스트 전용 패키지만 둔다. 앱 target은 패키지에 의존하지 않는다.
 ALLOWED_PACKAGES=("https://github.com/pointfreeco/swift-snapshot-testing")
 if grep -q 'XCLocalSwiftPackageReference' "$PROJECT/project.pbxproj"; then
@@ -65,4 +93,4 @@ fi
 if ((failures > 0)); then
   exit 1
 fi
-echo "OK: 빌드 설정 (${TARGETS[*]} × ${CONFIGURATIONS[*]}), 외부 패키지는 테스트 전용 허용 목록만(0028)"
+echo "OK: 빌드 설정 (${TARGETS[*]} × ${CONFIGURATIONS[*]}), 번들 ID·서명 기본값(0033), 외부 패키지는 테스트 전용 허용 목록만(0028)"

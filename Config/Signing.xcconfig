@@ -1,0 +1,7 @@
+// 모든 target의 서명 기본값(0033). 팀 없이 ad-hoc("-")으로 서명해 어느 Mac·가상 머신에서도 빌드·테스트된다.
+// 개인 서명은 git에 넣지 않는 Config/Local.xcconfig에서 덮어쓴다(Local.xcconfig.example 참고). 파일이 없으면 이 기본값을 쓴다.
+CODE_SIGN_IDENTITY = -
+CODE_SIGN_STYLE = Automatic
+DEVELOPMENT_TEAM =
+
+#include? "Local.xcconfig"
