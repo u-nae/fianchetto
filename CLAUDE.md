@@ -19,7 +19,7 @@
 
 ## 빌드·테스트
 
-- 표준 `.xcodeproj` + `xcodebuild`. 외부 패키지 0개로 시작한다.
+- 표준 `.xcodeproj` + `xcodebuild`. 앱 target의 외부 패키지는 0개다. 테스트 target에만 swift-snapshot-testing을 허용한다(0028, `check-build-settings.sh`가 허용 목록을 검사).
 - Swift 6 language mode, strict concurrency complete. 경고를 방치하지 않는다.
 - deployment target macOS 15.0, arm64. 개발 기기(macOS 27)에서의 통과를 macOS 15 통과로 보고하지 않는다.
 - 프로젝트 `Fianchetto.xcodeproj`, 공유 scheme `Fianchetto`(target: `Fianchetto`, `FianchettoTests`, `FianchettoUITests`).
@@ -77,6 +77,8 @@ App/               진입점, 의존성 조립, Commands, Settings
   저장소를 mock으로 대체하지 않는다. 저장 실패는 주입 가능한 실패 지점으로 재현한다.
 - 파일 접근: 테스트마다 임시 디렉토리를 만들고 정리한다. 사용자 실제 파일을 건드리지 않는다.
 - UI 테스트(XCUITest)는 핵심 흐름만. 성능 검증(A17)은 Release 빌드 + Instruments로 별도 수행한다.
+- 화면 스냅샷(0028): 디자인 부품만 `FianchettoTests/Snapshots`에서 라이트·다크 기준 이미지와 비교한다. 새 기준 이미지는 테스트를 한 번 돌린 뒤
+  `scripts/record-snapshots.sh`로 옮기고, 기준 이미지가 바뀌는 PR은 디자인 세션이 이미지를 확인한다. macOS 15 확인을 대신하지 않는다.
 - 테스트 이름은 동작을 서술한다: `@Test("대상 교체 후 이전 revision은 기존 참조를 유지한다")`.
 - 수용 기준(A01~A18)과 테스트를 추적 가능하게 연결한다(테스트 태그 또는 이름에 ID 표기).
 

@@ -136,7 +136,7 @@ scripts/             검증 스크립트
 docs/                기준 문서, 결정 기록, 작업 항목, 디자인 규칙
 ```
 
-기술 선택: Swift 6(strict concurrency complete), SwiftUI, SwiftData, App Sandbox, 외부 패키지 0개.
+기술 선택: Swift 6(strict concurrency complete), SwiftUI, SwiftData, App Sandbox, 앱의 외부 패키지 0개(테스트 전용 스냅샷 도구만, 0028).
 현재 구성은 최신 구성 기록(revision)을 가리키는 방식으로 저장합니다([0007](docs/decisions/0007-current-configuration-is-revision-pointer.md)).
 
 ## 개발 절차
