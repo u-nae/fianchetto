@@ -32,10 +32,23 @@ func withTemporaryDirectoryAsync(
     try await body(directory)
 }
 
+/// 테스트가 막아 둔 권한을 되돌려 지울 수 있게 한다. 폴더는 먼저 열어야 안을 볼 수 있으므로 위에서 아래로 내려가며,
+/// 폴더에는 실행 권한을 준다(없으면 안의 항목을 지우지 못한다). 심볼릭 링크는 따라가지 않는다(바깥 대상의 권한을 바꾸지 않는다).
 private func restorePermissions(under directory: URL) {
-    let paths = FileManager.default.enumerator(atPath: directory.path)?.compactMap { $0 as? String } ?? []
-    for path in paths {
-        try? FileManager.default.setAttributes([.posixPermissions: 0o644], ofItemAtPath: directory.appending(path: path).path)
+    let fileManager = FileManager.default
+    let children = (try? fileManager.contentsOfDirectory(atPath: directory.path)) ?? []
+    for name in children {
+        let item = directory.appending(path: name)
+        guard let type = (try? fileManager.attributesOfItem(atPath: item.path))?[.type] as? FileAttributeType else { continue }
+        switch type {
+        case .typeDirectory:
+            try? fileManager.setAttributes([.posixPermissions: 0o700], ofItemAtPath: item.path)
+            restorePermissions(under: item)
+        case .typeSymbolicLink:
+            continue
+        default:
+            try? fileManager.setAttributes([.posixPermissions: 0o600], ofItemAtPath: item.path)
+        }
     }
 }
 
