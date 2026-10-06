@@ -11,6 +11,10 @@ protocol LastBoardRecord: AnyObject {
     func setViewMode(_ mode: String, for boardID: UUID)
     /// 설정의 Bishop 아이콘 방식(W28). 없으면 nil(기본).
     var bishopIconStyle: String? { get set }
+    /// 구성 비교 보기 방식(W19). 값은 화면 쪽이 정한 문자열이다. 없으면 nil(통합).
+    var comparisonStyle: String? { get set }
+    /// 구성 비교에서 '순서 변경 표시'를 껐는지(기본은 켬이라 끈 경우만 true).
+    var comparisonHidesReorder: Bool { get set }
 }
 
 @MainActor
@@ -45,6 +49,16 @@ final class UserDefaultsLastBoard: LastBoardRecord {
     var bishopIconStyle: String? {
         get { defaults.string(forKey: "bishopIconStyle") }
         set { defaults.set(newValue, forKey: "bishopIconStyle") }
+    }
+
+    var comparisonStyle: String? {
+        get { defaults.string(forKey: "comparisonStyle") }
+        set { defaults.set(newValue, forKey: "comparisonStyle") }
+    }
+
+    var comparisonHidesReorder: Bool {
+        get { defaults.bool(forKey: "comparisonHidesReorder") }
+        set { defaults.set(newValue, forKey: "comparisonHidesReorder") }
     }
 }
 
@@ -96,6 +110,16 @@ final class FileLastBoard: LastBoardRecord {
     var bishopIconStyle: String? {
         get { read("bishopIconStyle") }
         set { write(newValue, to: "bishopIconStyle") }
+    }
+
+    var comparisonStyle: String? {
+        get { read("comparisonStyle") }
+        set { write(newValue, to: "comparisonStyle") }
+    }
+
+    var comparisonHidesReorder: Bool {
+        get { read("comparisonHidesReorder") == "1" }
+        set { write(newValue ? "1" : nil, to: "comparisonHidesReorder") }
     }
 
     private var viewModes: [String: String] {

@@ -193,10 +193,15 @@ private struct ConfigurationTreeView: View {
                     .padding(8)
                     .background(.quaternary)
             }
-            if model.isViewingPast {
-                PastConfigurationBanner(model: model)
+            if model.isComparing {
+                // 비교 중에는 과거 구성 띠 대신 비교 띠만 보인다(0027). 비교는 목록 형태로만 보인다(19.1).
+                ComparisonView(model: model)
+            } else {
+                if model.isViewingPast {
+                    PastConfigurationBanner(model: model)
+                }
+                content
             }
-            content
         }
         .toolbar {
             ToolbarItem(placement: .navigation) {
@@ -216,7 +221,7 @@ private struct ConfigurationTreeView: View {
                 }
                 .pickerStyle(.segmented)
                 .help("보기")
-                .disabled(model.selectedBoardID == nil)
+                .disabled(!model.canChangeViewMode)
                 .accessibilityIdentifier("view-mode")
             }
             ToolbarItemGroup {
@@ -608,6 +613,9 @@ private struct PastConfigurationBanner: View {
             .accessibilityLabel(model.pastBannerAccessibilityLabel ?? model.pastBannerTitle)
             .accessibilityIdentifier("past-banner")
             Spacer()
+            Button("현재와 비교") { Task { await model.compareWithCurrent() } }
+                .disabled(!model.canCompareWithCurrent)
+                .accessibilityIdentifier("compare-with-current")
             Button("현재로 돌아가기") { Task { await model.returnToCurrent() } }
                 .accessibilityIdentifier("return-to-current")
         }
@@ -654,7 +662,9 @@ private struct NodeInspectorView: View {
     let model: BoardBrowserModel
 
     var body: some View {
-        if let inspection = model.inspector {
+        if model.isComparing {
+            ComparisonDetailView(model: model)
+        } else if let inspection = model.inspector {
             Form {
                 LabeledContent("표시 이름", value: inspection.displayName)
                 LabeledContent("종류", value: inspection.kind)

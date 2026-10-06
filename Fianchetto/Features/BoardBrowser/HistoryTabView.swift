@@ -38,11 +38,13 @@ struct HistoryTabView: View {
                     })) {
                         Label("현재 구성", systemImage: "square.stack.3d.up")
                             .tag(HistoryPanelModel.Selection.current)
+                            .contextMenu { compareMenu(.current) }
                         ForEach(history.sections) { section in
                             Section(section.title) {
                                 ForEach(section.rows) { row in
                                     HistoryRowView(history: history, row: row)
                                         .tag(HistoryPanelModel.Selection.revision(row.id))
+                                        .contextMenu { compareMenu(.revision(row.id)) }
                                         .id(row.id)
                                         .onAppear {
                                             if row.id == history.rows.last?.id { Task { await history.loadMore() } }
@@ -68,6 +70,15 @@ struct HistoryTabView: View {
         ) {
             Button("확인", role: .cancel) { history.dismissNotice() }
         }
+    }
+}
+
+extension HistoryTabView {
+    /// 이력 행 오른쪽 클릭 '이 기록과 비교'(W19): 그 행과 지금 보는 구성의 비교를 연다.
+    @ViewBuilder
+    func compareMenu(_ row: HistoryPanelModel.Selection) -> some View {
+        Button("이 기록과 비교") { Task { await model.compareRecord(row) } }
+            .disabled(!model.canCompareRecord(row))
     }
 }
 

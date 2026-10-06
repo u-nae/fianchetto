@@ -44,10 +44,10 @@ struct BoardCommands: Commands {
             // 구성 보기 방식과 아이콘 보기 탐색(W28, DESIGN 17장). Finder와 같은 단축키다.
             Button("아이콘으로 보기") { model?.showIcons() }
                 .keyboardShortcut("1")
-                .disabled(model?.selectedBoardID == nil)
+                .disabled(!isEnabled(\.canChangeViewMode))
             Button("목록으로 보기") { model?.showList() }
                 .keyboardShortcut("2")
-                .disabled(model?.selectedBoardID == nil)
+                .disabled(!isEnabled(\.canChangeViewMode))
             Divider()
             Button("들어가기") { Task { await model?.enterSelected() } }
                 .keyboardShortcut(.downArrow, modifiers: .command)
@@ -71,6 +71,11 @@ struct BoardCommands: Commands {
             // 과거 구성에서 현재 구성으로(W18, DESIGN.md 16.4).
             Button("현재 구성으로 돌아가기") { Task { await model?.returnToCurrent() } }
                 .disabled(!isEnabled(\.canReturnToCurrent))
+            // 구성 비교(W19, 0027). 이력 행의 '이 기록과 비교'는 오른쪽 클릭 지름길이라 여기에 두지 않는다.
+            Button("현재와 비교") { Task { await model?.compareWithCurrent() } }
+                .disabled(!isEnabled(\.canCompareWithCurrent))
+            Button("비교 닫기") { model?.closeComparison() }
+                .disabled(!isEnabled(\.canCloseComparison))
         }
         // 첫 버전에는 도움말 문서가 없으므로, 눌러도 "도움말을 사용할 수 없음"만 뜨는 기본 항목을 뺀다(메뉴 검색은 시스템이 유지한다).
         CommandGroup(replacing: .help) {}

@@ -10,6 +10,8 @@ final class InMemoryLastBoard: LastBoardRecord {
     var isInspectorHidden = false
     var viewModes: [UUID: String] = [:]
     var bishopIconStyle: String?
+    var comparisonStyle: String?
+    var comparisonHidesReorder = false
     func viewMode(for boardID: UUID) -> String? { viewModes[boardID] }
     func setViewMode(_ mode: String, for boardID: UUID) { viewModes[boardID] = mode }
     init(_ id: UUID? = nil) { lastBoardID = id }
@@ -112,6 +114,45 @@ final class PickerScript {
     }
 }
 
+/// 비교 대상 revision 읽기를 테스트가 멈췄다 풀 수 있게 한다(W19). sleep 없이 순서를 정한다.
+final class LoadGate: Sendable {
+    private let state = Mutex((held: Set<UUID>(), waiting: [UUID: CheckedContinuation<Void, Never>](), arrived: [UUID: [CheckedContinuation<Void, Never>]]()))
+
+    /// 이 revision의 읽기를 멈춘다.
+    func hold(_ id: UUID) { state.withLock { _ = $0.held.insert(id) } }
+
+    /// 읽기가 멈춘 지점에 닿을 때까지 기다린다.
+    func waitUntilWaiting(_ id: UUID) async {
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            let ready = state.withLock { state -> Bool in
+                if state.waiting[id] != nil { return true }
+                state.arrived[id, default: []].append(continuation)
+                return false
+            }
+            if ready { continuation.resume() }
+        }
+    }
+
+    func release(_ id: UUID) {
+        let continuation = state.withLock { state -> CheckedContinuation<Void, Never>? in
+            state.held.remove(id)
+            return state.waiting.removeValue(forKey: id)
+        }
+        continuation?.resume()
+    }
+
+    func pass(_ id: UUID) async {
+        guard state.withLock({ $0.held.contains(id) }) else { return }
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            let arrived = state.withLock { state -> [CheckedContinuation<Void, Never>] in
+                state.waiting[id] = continuation
+                return state.arrived.removeValue(forKey: id) ?? []
+            }
+            arrived.forEach { $0.resume() }
+        }
+    }
+}
+
 /// 이력 화면의 현재 시각과 시스템 시간대. 테스트가 바꾼 뒤 clockChanged()로 알린다.
 @MainActor
 final class HistoryClock {
@@ -145,7 +186,7 @@ struct BrowserHarness {
 
     init(
         directory: URL, lastBoard: InMemoryLastBoard = InMemoryLastBoard(), script: OpenScript = OpenScript(), storeKnown: Bool = true,
-        clock: HistoryClock = HistoryClock()
+        clock: HistoryClock = HistoryClock(), loadGate: LoadGate? = nil
     ) {
         self.clock = clock
         let historyClock = clock
@@ -175,6 +216,13 @@ struct BrowserHarness {
                 links: links
             )
         }
+        var loadRevision: (@Sendable (ProjectStore, UUID) async throws -> ConfigurationSnapshot)?
+        if let loadGate {
+            loadRevision = { store, id in
+                await loadGate.pass(id)
+                return try await store.snapshot(revisionID: id)
+            }
+        }
         model = BoardBrowserModel(dependencies: .init(
             storeURL: storeKnown ? url : nil,
             openStore: openStore,
@@ -185,7 +233,8 @@ struct BrowserHarness {
             pickReplacement: { picker.pickReplacement($0) },
             now: { historyClock.now },
             calendar: { historyClock.calendar },
-            locale: Locale(identifier: "ko_KR")
+            locale: Locale(identifier: "ko_KR"),
+            loadRevisionSnapshot: loadRevision
         ))
     }
 }

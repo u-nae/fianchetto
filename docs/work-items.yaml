@@ -460,7 +460,7 @@ items:
     test_strategy: >-
       서비스 테스트: 두 revision 로드 후 비교 결과, 파일 시스템 어댑터 실패 주입 상태에서도 비교 성공.
       화면 상태 테스트: 빈 상태 표시.
-    status: pending
+    status: in-progress
     priority: high
     dependencies: [W16, W17]
     source_refs:

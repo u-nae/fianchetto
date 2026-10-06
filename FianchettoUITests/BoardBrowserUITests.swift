@@ -248,6 +248,46 @@ final class BoardBrowserUITests: XCTestCase {
         XCTAssertTrue(app.windows.firstMatch.exists)
     }
 
+    /// W19 핵심 흐름: 과거 구성에서 '현재와 비교'를 열면 비교 띠와 추가된 Wing의 '추가됨' 표시가 보이고, '비교 닫기'로 과거 구성에 돌아온다.
+    @MainActor
+    func test_W19_compareWithCurrentAndClose() {
+        let test = UITestApp(name: "compare")
+        test.launch()
+        defer { test.terminate() }
+        let app = test.app
+        XCTAssertTrue(app.staticTexts["Board가 없습니다"].waitForExistence(timeout: 10))
+        test.activateForKeyboard()
+        app.typeKey("n", modifierFlags: .command)
+        test.type("Plan", into: app.textFields["board-name-field"])
+        app.typeKey(.return, modifierFlags: [])
+        XCTAssertTrue(app.descendants(matching: .any)["board-row-Plan"].waitForExistence(timeout: 5))
+        app.menuBars.menuBarItems["파일"].click()
+        app.menuBars.menuBarItems["파일"].menuItems["Wing 추가…"].click()
+        test.type("Dev", into: app.textFields["node-name-field"])
+        app.typeKey(.return, modifierFlags: [])
+        XCTAssertTrue(app.descendants(matching: .any)["node-row-Dev"].waitForExistence(timeout: 5))
+
+        let viewMenu = app.menuBars.menuBarItems["보기"]
+        viewMenu.click()
+        viewMenu.menuItems["이력 보기"].click()
+        let first = app.descendants(matching: .any)["revision-row-1"]
+        XCTAssertTrue(first.waitForExistence(timeout: 5))
+        first.click()
+        let banner = app.descendants(matching: .any)["past-banner"]
+        XCTAssertTrue(banner.waitForExistence(timeout: 5))
+
+        app.buttons["compare-with-current"].click()
+        XCTAssertTrue(app.descendants(matching: .any)["compare-bar"].waitForExistence(timeout: 5))
+        let row = app.descendants(matching: .any)["compare-row-Dev"]
+        XCTAssertTrue(row.waitForExistence(timeout: 5))
+        XCTAssertTrue((row.label as String).contains("추가됨"), row.label)
+        XCTAssertFalse(banner.exists, "비교 중에는 과거 구성 띠 대신 비교 띠만 보인다")
+
+        app.buttons["compare-close"].click()
+        XCTAssertTrue(banner.waitForExistence(timeout: 5))
+        XCTAssertFalse(app.descendants(matching: .any)["compare-bar"].exists)
+    }
+
     /// W07-ui-menu-command: 파일 메뉴에 ⌘N의 "Board 만들기…"가 있다.
     @MainActor
     func test_W07_fileMenuHasCreateBoardCommand() {
