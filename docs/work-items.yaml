@@ -465,6 +465,8 @@ items:
     dependencies: [W16, W17]
     source_refs:
       - docs/PRD.md#e-차이-비교
+      - docs/decisions/0024-compare-view.md
+      - docs/decisions/0019-history-panel.md
     acceptance_refs: [A07]
     subtasks: []
 

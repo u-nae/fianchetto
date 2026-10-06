@@ -1,0 +1,63 @@
+schema_version: "1.0"
+task_id: W19
+decision_id: removed_row_placement
+execution_format: review-only
+# 통합 트리(DESIGN.md 19.4)에서 제거된 Node 하나를 끼워 넣을 자리. 이전 구성(A)에서 제거되고 이후 구성(B)에 없는 Node마다 적용한다.
+# 위에서 아래로 처음 맞는 규칙. 입력은 Domain이 A·B 스냅샷에서 계산한다.
+hit_policy: FIRST
+ordered_rules: true
+inputs:
+  - name: before_parent_state
+    type: string
+    # A에서의 직접 부모 상태. top_level: A에서 최상위. kept: 부모가 B에도 있다(이동·이름 변경 여부와 무관). removed: 부모도 B에 없다.
+    allowed_values: [top_level, kept, removed]
+    blank_means: any
+  - name: preceding_sibling
+    type: string
+    # A의 형제 순서에서 이 Node보다 앞선 형제 중, 통합 트리에서 같은 부모 아래에 놓인 가장 가까운 것(남은 형제 또는 앞서 끼워 넣은 제거 형제)이 있는가.
+    # 다른 부모로 이동한 형제는 건너뛴다.
+    allowed_values: [present, absent]
+    blank_means: any
+outputs:
+  - name: placement_parent
+    type: string
+    # root: 통합 트리 최상위. kept_parent_row: 그 부모 Node의 통합 트리 행(B 위치) 아래. removed_parent_row: 제거된 부모의 '제거됨' 행 아래.
+    allowed_values: [root, kept_parent_row, removed_parent_row]
+  - name: placement_position
+    type: string
+    # after_preceding_sibling: 그 형제 행 바로 뒤. first: 부모의 자식 중 맨 앞.
+    allowed_values: [after_preceding_sibling, first]
+rules:
+  - rule_id: R1
+    when: {before_parent_state: top_level, preceding_sibling: present}
+    then: {placement_parent: root, placement_position: after_preceding_sibling}
+  - rule_id: R2
+    when: {before_parent_state: top_level, preceding_sibling: absent}
+    then: {placement_parent: root, placement_position: first}
+  - rule_id: R3
+    when: {before_parent_state: kept, preceding_sibling: present}
+    then: {placement_parent: kept_parent_row, placement_position: after_preceding_sibling}
+  - rule_id: R4
+    when: {before_parent_state: kept, preceding_sibling: absent}
+    then: {placement_parent: kept_parent_row, placement_position: first}
+  - rule_id: R5
+    when: {before_parent_state: removed, preceding_sibling: present}
+    then: {placement_parent: removed_parent_row, placement_position: after_preceding_sibling}
+  - rule_id: R6
+    when: {before_parent_state: removed, preceding_sibling: absent}
+    then: {placement_parent: removed_parent_row, placement_position: first}
+default_rule: null
+gap_analysis:
+  - >-
+    입력 3 × 2 = 6 조합이 R1–R6에 하나씩 대응한다. 빈 칸이 없다.
+  - >-
+    제거된 부모 아래의 제거 자식(R5·R6)은 부모 행을 먼저 놓은 뒤 A 순서대로 처리하므로 자식 사이 순서는 A 순서와 같다.
+overlap_analysis:
+  - >-
+    규칙끼리 겹치지 않는다. 같은 기준점 뒤에 제거 형제가 여럿이면 A 순서로 차례대로 처리해, 앞서 놓인 제거 형제가 다음 형제의 기준점이 된다.
+    그래서 이전 구성의 순서가 유지된다(A: 개발, 문서(제거), API 명세(제거) → 개발, 문서, API 명세).
+  - >-
+    부모가 B에서 이동했어도(kept) 통합 트리는 B 위치를 따르므로 제거 행은 이동한 부모의 새 위치 아래로 간다.
+source_locators:
+  - docs/PRD.md#e-차이-비교
+  - docs/decisions/0024-compare-view.md
