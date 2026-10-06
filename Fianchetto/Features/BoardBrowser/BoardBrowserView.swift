@@ -3,6 +3,11 @@ import SwiftUI
 /// 기본 창: 저장소 상태에 따라 복구 화면, 목록 오류, 또는 Board 목록·현재 구성·상세 영역을 보여 준다.
 struct BoardBrowserView: View {
     @Bindable var model: BoardBrowserModel
+    /// 분할 뷰에 넘기는 사이드바 표시. 이력 탭·비교가 모델 값을 바꾸면 애니메이션으로 따라간다.
+    /// 바로 바꾸면 macOS 26에서 NSSplitView 안전 영역 제약이 충돌한다(0029, 가상 머신 UI 테스트에서 발견).
+    /// 동작 줄이기에서도 애니메이션 경로를 타야 제약 충돌이 없으므로, 거의 즉시 끝나는 짧은 애니메이션을 쓴다.
+    @State private var shownSidebarVisible: Bool?
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         // Observation은 body에서 읽은 값만 추적하므로 Binding 클로저 밖에서 먼저 읽는다.
@@ -31,8 +36,12 @@ struct BoardBrowserView: View {
                 // 오른쪽 열은 접을 수 있는 인스펙터 하나다(DESIGN.md 16.1). 접으면 구성 영역이 넓어진다.
                 // 이력 탭을 열면 Board 사이드바를 접고 닫으면 열기 전 상태로 돌린다(16.1). 사용자가 바꾼 표시도 모델에 알린다.
                 NavigationSplitView(columnVisibility: Binding(
-                    get: { sidebarVisible ? .all : .detailOnly },
-                    set: { model.isSidebarVisible = $0 != .detailOnly }
+                    get: { (shownSidebarVisible ?? sidebarVisible) ? .all : .detailOnly },
+                    set: { visibility in
+                        let visible = visibility != .detailOnly
+                        shownSidebarVisible = visible
+                        model.isSidebarVisible = visible
+                    }
                 )) {
                     BoardListView(model: model)
                 } detail: {
@@ -63,6 +72,12 @@ struct BoardBrowserView: View {
                                 .accessibilityIdentifier("inspector-toggle")
                             }
                         }
+                }
+                .onAppear { shownSidebarVisible = sidebarVisible }
+                .onChange(of: sidebarVisible) { _, visible in
+                    // 툴바 버튼처럼 분할 뷰가 바꾼 값은 이미 반영되어 있다.
+                    guard shownSidebarVisible != visible else { return }
+                    withAnimation(reduceMotion ? .linear(duration: 0.01) : .default) { shownSidebarVisible = visible }
                 }
             }
         }
