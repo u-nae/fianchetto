@@ -976,13 +976,13 @@ final class BoardBrowserModel {
 
     /// 기본 앱으로 열 수 있는 선택: Bishop과 웹 링크.
     var canOpenSelected: Bool {
-        if isComparing { return comparison.selectedRow.map { $0.node.kind != .group } ?? false }
+        if isComparing { return comparison.selectedNode.map { $0.kind != .group } ?? false }
         return selectedNode.map { $0.kind != .group } ?? false
     }
 
     /// Finder에서 보여 줄 수 있는 선택: Bishop.
     var canRevealSelected: Bool {
-        let node = isComparing ? comparison.selectedRow?.node : selectedNode
+        let node = isComparing ? comparison.selectedNode : selectedNode
         return node.map { $0.kind == .file || $0.kind == .folder } ?? false
     }
 
@@ -1006,9 +1006,10 @@ final class BoardBrowserModel {
         await perform(.reveal, on: id)
     }
 
-    /// 비교에서 고른 행을 그 행이 속한 구성의 Node로 연다(제거 행은 이전 구성). 연결 상태는 기록하지 않는다(19.1).
+    /// 비교에서 고른 행을 그 행이 속한 구성의 Node로 연다(통합 트리의 제거 행은 이전 구성, 나란히 보기는 고른 열의 구성).
+    /// 연결 상태는 기록하지 않는다(19.1).
     private func performOnComparisonRow(_ command: OpenCommand) async {
-        guard let node = comparison.selectedRow?.node, let opening = openedStore?.opening else { return }
+        guard let node = comparison.selectedNode, let opening = openedStore?.opening else { return }
         if case let .failed(failure) = await opening.perform(command, node: node) {
             linkNotice = LinkNotice(kind: .openFailed(failure), request: nil, action: .open)
         }

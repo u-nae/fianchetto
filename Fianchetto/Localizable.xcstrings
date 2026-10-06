@@ -190,6 +190,10 @@
     "기호(기본)" : {
       "extractionState" : "manual"
     },
+    "나란히" : {
+      "comment" : "구성 비교 나란히 보기(W19 ②, DESIGN.md 19.2·19.5).",
+      "extractionState" : "manual"
+    },
     "날짜로 찾기" : {
       "comment" : "이력 탭의 날짜·시각 선택(W17, 0023).",
       "extractionState" : "manual"
@@ -310,6 +314,10 @@
     "보기" : {
       "extractionState" : "manual"
     },
+    "보기 방식" : {
+      "comment" : "구성 비교 나란히 보기(W19 ②, DESIGN.md 19.2·19.5).",
+      "extractionState" : "manual"
+    },
     "볼륨 연결 필요" : {
       "extractionState" : "manual"
     },
@@ -333,6 +341,10 @@
       "extractionState" : "manual"
     },
     "새 대상" : {
+      "extractionState" : "manual"
+    },
+    "순서" : {
+      "comment" : "구성 비교 나란히 보기(W19 ②, DESIGN.md 19.2·19.5).",
       "extractionState" : "manual"
     },
     "순서 변경" : {
@@ -530,6 +542,10 @@
     "최상위" : {
       "extractionState" : "manual"
     },
+    "추가" : {
+      "comment" : "구성 비교 나란히 보기(W19 ②, DESIGN.md 19.2·19.5).",
+      "extractionState" : "manual"
+    },
     "추가됨" : {
       "comment" : "구성 비교 화면(W19, DESIGN.md 19장, 0027).",
       "extractionState" : "manual"
@@ -539,6 +555,10 @@
     },
     "코드" : {
       "comment" : "Bishop 용도(W29).",
+      "extractionState" : "manual"
+    },
+    "통합" : {
+      "comment" : "구성 비교 나란히 보기(W19 ②, DESIGN.md 19.2·19.5).",
       "extractionState" : "manual"
     },
     "파일 종류 아이콘" : {

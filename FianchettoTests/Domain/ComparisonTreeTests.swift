@@ -178,4 +178,53 @@ struct ComparisonTreeTests {
         #expect(ComparisonTree.filter(rows, showsReorder: false, changedOnly: true).isEmpty)
         #expect(ComparisonTree.filter(rows, showsReorder: false, changedOnly: false).count == 3)
     }
+
+    // MARK: 나란히 두 트리(PR ②)
+
+    /// spec.md를 문서 → 개발로 옮기고, notes.md를 제거하고, 위키를 더한 구성.
+    static func movedAfter() -> ConfigurationSnapshot {
+        var after = Self.removing([Self.notes], from: Self.base()).updating(Self.spec) { $0.parentID = Self.dev; $0.sortIndex = 1 }
+        after.nodes.append(SnapshotFixtures.webLink(Self.wiki, "위키", order: 3, url: "https://wiki"))
+        return after
+    }
+
+    static func side(_ side: ComparisonTree.Side, _ before: ConfigurationSnapshot, _ after: ConfigurationSnapshot) -> [ComparisonRow] {
+        ComparisonTree.sideRows(side, before: before, after: after, diff: ConfigurationDiffer.diff(before, after))
+    }
+
+    @Test("[W19-side-by-side-layout] 나란히 보기의 각 열은 자기 구성의 트리 구조를 그대로 따른다")
+    func sideTreesFollowEachSnapshot() {
+        let before = Self.side(.before, Self.base(), Self.movedAfter())
+        let after = Self.side(.after, Self.base(), Self.movedAfter())
+        #expect(Self.outline(before) == ["개발", "개발/backend", "개발/notes.md(제거됨)", "문서", "문서/spec.md", "API 명세"])
+        #expect(Self.outline(after) == ["개발", "개발/backend", "개발/spec.md", "문서", "API 명세", "위키"])
+    }
+
+    @Test("[W19-side-by-side-one-side] 추가 항목은 이후 열에만, 제거 항목은 이전 열에만 있고 양쪽에 있는 항목은 같은 변화를 단다")
+    func sideTreesCarryChanges() throws {
+        let before = Self.side(.before, Self.base(), Self.movedAfter())
+        let after = Self.side(.after, Self.base(), Self.movedAfter())
+        func find(_ rows: [ComparisonRow], _ id: UUID) -> ComparisonRow? {
+            for row in rows { if row.id == id { return row }; if let hit = find(row.children, id) { return hit } }
+            return nil
+        }
+        #expect(find(before, Self.wiki) == nil)
+        #expect(find(after, Self.wiki)?.kinds == [.added])
+        #expect(find(before, Self.notes)?.kinds == [.removed])
+        #expect(find(after, Self.notes) == nil)
+        let movedBefore = try #require(find(before, Self.spec)), movedAfter = try #require(find(after, Self.spec))
+        #expect(movedBefore.kinds == [.moved])
+        #expect(movedAfter.kinds == movedBefore.kinds)
+        #expect(movedBefore.node.parentID == Self.docs)
+        #expect(movedAfter.node.parentID == Self.dev)
+        #expect(find(before, Self.backend)?.kinds == [])
+    }
+
+    @Test("[W19-side-by-side-layout] 나란히 보기의 두 열도 '순서 변경 표시'·'바뀐 항목만 보기' 거르기를 따른다")
+    func sideTreesFilter() {
+        let before = ComparisonTree.filter(Self.side(.before, Self.base(), Self.movedAfter()), showsReorder: true, changedOnly: true)
+        let after = ComparisonTree.filter(Self.side(.after, Self.base(), Self.movedAfter()), showsReorder: true, changedOnly: true)
+        #expect(Self.outline(before) == ["개발", "개발/notes.md(제거됨)", "문서", "문서/spec.md"])
+        #expect(Self.outline(after) == ["개발", "개발/spec.md", "위키"])
+    }
 }

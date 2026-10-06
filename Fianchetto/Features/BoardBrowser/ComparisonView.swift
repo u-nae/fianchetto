@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// 구성 비교 화면(W19, DESIGN.md 19장): 비교 띠와 통합 트리. 표시 전용이며 열기·Finder에서 보기만 한다.
+/// 구성 비교 화면(W19, DESIGN.md 19장): 비교 띠와 통합 트리 또는 나란히 두 트리. 표시 전용이며 열기·Finder에서 보기만 한다.
 struct ComparisonView: View {
     let model: BoardBrowserModel
 
@@ -37,45 +37,102 @@ struct ComparisonView: View {
                 description: Text("순서 변경 표시를 켜면 순서만 바뀐 항목이 보입니다.")
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+        } else if comparison.style == .sideBySide {
+            // 19.5: 왼쪽 이전, 오른쪽 이후. VoiceOver는 왼쪽 열을 다 읽은 뒤 오른쪽 열을 읽는다.
+            HStack(spacing: 0) {
+                ComparisonColumn(model: model, side: .before)
+                Divider()
+                ComparisonColumn(model: model, side: .after)
+            }
         } else {
-            let rows = comparison.shownRows
-            List(selection: Binding(get: { comparison.selection }, set: { comparison.selection = $0 })) {
-                if comparison.showsBoardNameRow {
-                    BoardNameRow()
-                        .tag(ComparisonModel.Selection.boardName)
+            let selection = comparison.selection
+            ComparisonList(model: model, side: nil, rows: comparison.shownRows, selection: selection)
+                .accessibilityIdentifier("compare-tree")
+        }
+    }
+}
+
+/// 비교 트리 목록 하나: 통합 트리(side 없음) 또는 나란히 보기의 한 열. 오른쪽 클릭·이중 클릭은 열기·Finder에서 보기만 둔다(19.6).
+private struct ComparisonList: View {
+    let model: BoardBrowserModel
+    let side: ComparisonTree.Side?
+    let rows: [ComparisonRow]
+    let selection: ComparisonModel.Selection?
+
+    private var comparison: ComparisonModel { model.comparison }
+
+    var body: some View {
+        List(selection: Binding(get: { selection }, set: { comparison.select($0, in: side) })) {
+            if comparison.showsBoardNameRow {
+                BoardNameRow()
+                    .tag(ComparisonModel.Selection.boardName)
+            }
+            ForEach(rows) { row in
+                ComparisonBranch(model: model, row: row, side: side)
+            }
+        }
+        .contextMenu(forSelectionType: ComparisonModel.Selection.self) { selection in
+            if selection.count == 1, case let .row(id)? = selection.first, let row = comparison.findRow(id) {
+                if row.node.kind != .group {
+                    Button("열기") { run(id) { await model.openSelected() } }
                 }
-                ForEach(rows) { row in
-                    ComparisonBranch(model: model, row: row)
+                if row.node.kind == .file || row.node.kind == .folder {
+                    Button("Finder에서 보기") { run(id) { await model.revealSelected() } }
                 }
             }
-            .contextMenu(forSelectionType: ComparisonModel.Selection.self) { selection in
-                if selection.count == 1, case let .row(id)? = selection.first, let row = comparison.findRow(id) {
-                    if row.node.kind != .group {
-                        Button("열기") { run(id) { await model.openSelected() } }
-                    }
-                    if row.node.kind == .file || row.node.kind == .folder {
-                        Button("Finder에서 보기") { run(id) { await model.revealSelected() } }
-                    }
-                }
-            } primaryAction: { selection in
-                if selection.count == 1, case let .row(id)? = selection.first {
-                    run(id) { await model.openSelected() }
-                }
+        } primaryAction: { selection in
+            if selection.count == 1, case let .row(id)? = selection.first {
+                run(id) { await model.openSelected() }
             }
-            .accessibilityIdentifier("compare-tree")
         }
     }
 
     private func run(_ id: UUID, _ action: @escaping @MainActor () async -> Void) {
-        comparison.selection = .row(id)
+        comparison.select(.row(id), in: side)
         Task { await action() }
     }
 }
 
-/// 통합 트리의 가지. 펼침은 모델이 가진다(변화가 있는 행의 조상을 처음에 펼친다).
+/// 나란히 보기의 한 열(19.5): 열 머리(대상 이름)와 트리. 고른 항목이 이 열에 있으면 그 행으로 스크롤한다.
+/// 스크롤을 늘 붙여 움직이는 동기화는 하지 않는다.
+private struct ComparisonColumn: View {
+    let model: BoardBrowserModel
+    let side: ComparisonTree.Side
+
+    var body: some View {
+        let comparison = model.comparison
+        let selection = comparison.selection
+        VStack(alignment: .leading, spacing: 0) {
+            Text(comparison.columnTitle(side))
+                .font(.caption.bold())
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .truncationMode(.middle)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
+                .accessibilityAddTraits(.isHeader)
+                .accessibilityIdentifier(side == .before ? "compare-before-title" : "compare-after-title")
+            ScrollViewReader { proxy in
+                ComparisonList(model: model, side: side, rows: comparison.shownRows(side), selection: selection)
+                    .onChange(of: selection) { _, next in
+                        guard case let .row(id)? = next, comparison.contains(id, in: side) else { return }
+                        // 조상을 펼친 결과가 목록에 반영된 다음에 스크롤한다.
+                        Task { proxy.scrollTo(id) }
+                    }
+            }
+        }
+        .frame(minWidth: 0, maxWidth: .infinity)
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(side == .before ? String(localized: "이전 구성") : String(localized: "이후 구성"))
+        .accessibilityIdentifier(side == .before ? "compare-before-tree" : "compare-after-tree")
+    }
+}
+
+/// 비교 트리의 가지. 펼침은 모델이 가진다(변화가 있는 행의 조상을 처음에 펼친다). 나란히 보기의 두 열도 같은 펼침을 쓴다.
 private struct ComparisonBranch: View {
     let model: BoardBrowserModel
     let row: ComparisonRow
+    let side: ComparisonTree.Side?
 
     var body: some View {
         if row.children.isEmpty {
@@ -87,7 +144,7 @@ private struct ComparisonBranch: View {
                 if open { model.comparison.expandedRowIDs.insert(row.id) } else { model.comparison.expandedRowIDs.remove(row.id) }
             })) {
                 ForEach(row.children) { child in
-                    ComparisonBranch(model: model, row: child)
+                    ComparisonBranch(model: model, row: child, side: side)
                 }
             } label: {
                 item
@@ -96,7 +153,7 @@ private struct ComparisonBranch: View {
     }
 
     private var item: some View {
-        ComparisonRowView(model: model, row: row)
+        ComparisonRowView(model: model, row: row, short: side != nil)
             .tag(ComparisonModel.Selection.row(row.id))
     }
 }
@@ -112,6 +169,14 @@ private struct ComparisonBar: View {
                 Label("구성 비교", systemImage: "arrow.left.arrow.right")
                     .font(.callout.bold())
                 Spacer()
+                Picker("보기 방식", selection: Binding(get: { comparison.style }, set: { comparison.style = $0 })) {
+                    Text("통합").tag(ComparisonModel.Style.unified)
+                    Text("나란히").tag(ComparisonModel.Style.sideBySide)
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .fixedSize()
+                .accessibilityIdentifier("compare-mode")
                 Toggle("순서 변경 표시", isOn: Binding(get: { comparison.showsReorder }, set: { comparison.showsReorder = $0 }))
                     .toggleStyle(.checkbox)
                 Toggle("바뀐 항목만 보기", isOn: Binding(get: { comparison.changedOnly }, set: { comparison.changedOnly = $0 }))
@@ -187,10 +252,12 @@ private struct BoardNameRow: View {
     }
 }
 
-/// 통합 트리 행: 이름(제거는 취소선)과 행 끝의 변화 기호 + 문구. 색만으로 구분하지 않는다.
+/// 비교 트리 행: 이름(제거는 취소선)과 행 끝의 변화 기호 + 문구. 색만으로 구분하지 않는다.
+/// 나란히 보기는 짧은 문구를 쓴다(19.5).
 private struct ComparisonRowView: View {
     let model: BoardBrowserModel
     let row: ComparisonRow
+    let short: Bool
 
     var body: some View {
         let comparison = model.comparison
@@ -202,7 +269,7 @@ private struct ComparisonRowView: View {
                     .lineLimit(1)
                 Spacer(minLength: 8)
                 if let first = comparison.visibleKinds(row).first {
-                    Label(comparison.changeText(row), systemImage: ComparisonModel.kindSymbol(first))
+                    Label(short ? comparison.shortChangeText(row) : comparison.changeText(row), systemImage: ComparisonModel.kindSymbol(first))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
