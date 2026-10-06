@@ -39,7 +39,7 @@ struct BoardCommands: Commands {
                 .keyboardShortcut(.delete, modifiers: .command)
                 .disabled(!isEnabled(\.canRemoveSelected))
         }
-        // 보기 메뉴: 시스템의 사이드바 항목 뒤에 오른쪽 열(인스펙터) 접기를 둔다.
+        // 보기 메뉴: 보기 방식·탐색, 사이드바·인스펙터 접기, 이력·비교 순서. 시스템 사이드바 그룹(.sidebar)은 비워 두고 앞뒤에 붙인다.
         CommandGroup(before: .sidebar) {
             // 구성 보기 방식과 아이콘 보기 탐색(W28, DESIGN 17장). Finder와 같은 단축키다.
             Button("아이콘으로 보기") { model?.showIcons() }
@@ -61,6 +61,12 @@ struct BoardCommands: Commands {
             Divider()
         }
         CommandGroup(after: .sidebar) {
+            // 시스템 '사이드바 가리기/보기'(SidebarCommands)와 같은 이름·단축키. 시스템 항목은 상태와 관계없이 제목이 '사이드바 보기'로
+            // 고정되어(macOS 26 확인) 모델 상태로 제목을 정한다. 툴바 버튼·이력 탭과 같은 표시 값을 바꾼다(0032).
+            // .sidebar 그룹을 replacing으로 바꾸면 그 앞에 붙인 그룹(보기 방식·탐색)이 메뉴에서 사라지므로 이 그룹 맨 앞에 둔다.
+            Button(model?.isSidebarVisible == false ? "사이드바 보기" : "사이드바 가리기") { model?.toggleSidebar() }
+                .keyboardShortcut("s", modifiers: [.control, .command])
+                .disabled(!isEnabled(\.canToggleSidebar))
             Button(model?.isInspectorPresented == false ? "인스펙터 보기" : "인스펙터 가리기") { model?.toggleInspector() }
                 .keyboardShortcut("i", modifiers: [.command, .option])
                 .disabled(model == nil)

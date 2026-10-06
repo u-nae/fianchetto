@@ -654,9 +654,9 @@ struct ComparisonModelTests {
         }
     }
 
-    enum Sidebar: String, CaseIterable, Sendable { case openOnly, openClose, historyClosedFirst, bothClosed, hiddenStart }
+    enum Sidebar: String, CaseIterable, Sendable { case openOnly, openClose, historyClosedFirst, bothClosed, hiddenStart, userShowsWhileOpen }
 
-    @Test("[W19-sidebar-collapse] 비교 중에는 사이드바를 접고 자동으로 접는 화면이 모두 닫힐 때 처음 상태로 돌린다", arguments: Sidebar.allCases)
+    @Test("[W19-sidebar-collapse] 비교 중에는 사이드바를 접고 자동으로 접는 화면이 모두 닫힐 때 처음 상태로 돌린다. 그동안 사용자가 바꿨으면 그 선택을 지킨다(0032)", arguments: Sidebar.allCases)
     func sidebar(sidebar: Sidebar) async throws {
         try await withTemporaryDirectoryAsync { directory async throws in
             let o = try await opened(directory)
@@ -681,6 +681,12 @@ struct ComparisonModelTests {
                 o.model.closeComparison()
                 #expect(!o.model.isSidebarVisible)
                 await o.model.selectInspectorTab(.item)
+                #expect(o.model.isSidebarVisible)
+            case .userShowsWhileOpen:
+                o.model.isSidebarVisible = false
+                await o.model.compareRecord(.revision(five))
+                o.model.toggleSidebar()
+                o.model.closeComparison()
                 #expect(o.model.isSidebarVisible)
             }
         }

@@ -200,11 +200,21 @@ final class BoardBrowserModel {
 
     private(set) var inspectorTab: InspectorTab = .item
     /// Board 사이드바가 보이는지. 화면이 NavigationSplitView 열 표시와 묶는다. 저장하지 않으므로 다시 실행하면 보인다.
-    var isSidebarVisible = true
+    /// 자동으로 접은 동안 사용자가 바꾸면(툴바·메뉴·⌃⌘S) 닫을 때 되돌리지 않고 그 선택을 지킨다(0032).
+    var isSidebarVisible = true {
+        didSet {
+            if !isApplyingSidebarCollapse, isSidebarVisible != oldValue, !sidebarCollapsers.isEmpty {
+                sidebarBeforeCollapse = nil
+            }
+        }
+    }
+    /// 자동 접기·되돌리기가 바꾸는 중인지. 사용자 조작과 구별한다.
+    private var isApplyingSidebarCollapse = false
     /// 사이드바를 자동으로 접는 화면(DESIGN 19.1): 이력 탭, 비교.
     private enum SidebarCollapser: Hashable { case history, comparison }
     private var sidebarCollapsers: Set<SidebarCollapser> = []
     /// 처음 자동으로 접을 때의 사이드바 상태. 마지막 화면이 닫히면 이 상태로 돌린다(16.1, 19.1).
+    /// 그동안 사용자가 사이드바를 바꾸면 비워서 되돌리지 않는다(0032).
     private var sidebarBeforeCollapse: Bool?
     /// 구성 비교(W19).
     let comparison: ComparisonModel
@@ -324,14 +334,30 @@ final class BoardBrowserModel {
         if sidebarBeforeCollapse == nil {
             sidebarBeforeCollapse = isSidebarVisible
         }
-        isSidebarVisible = false
+        setSidebarAutomatically(false)
     }
 
-    /// 마지막 화면이 닫힐 때 처음 열기 전 상태로 돌린다.
+    /// 마지막 화면이 닫힐 때 처음 열기 전 상태로 돌린다. 사용자가 그동안 바꿨으면 그대로 둔다.
     private func releaseSidebar(from collapser: SidebarCollapser) {
-        guard sidebarCollapsers.remove(collapser) != nil, sidebarCollapsers.isEmpty, let before = sidebarBeforeCollapse else { return }
-        isSidebarVisible = before
-        sidebarBeforeCollapse = nil
+        guard sidebarCollapsers.remove(collapser) != nil, sidebarCollapsers.isEmpty else { return }
+        defer { sidebarBeforeCollapse = nil }
+        guard let before = sidebarBeforeCollapse else { return }
+        setSidebarAutomatically(before)
+    }
+
+    private func setSidebarAutomatically(_ visible: Bool) {
+        isApplyingSidebarCollapse = true
+        defer { isApplyingSidebarCollapse = false }
+        isSidebarVisible = visible
+    }
+
+    /// Board 목록이 보이는 화면에서만 사이드바를 접고 편다(저장소를 여는 중·복구 화면·목록 오류에서는 끈다).
+    var canToggleSidebar: Bool { phase == .ready }
+
+    /// 보기 메뉴 "사이드바 가리기/보기"(⌃⌘S). 툴바의 사이드바 버튼과 같은 표시 값을 바꾼다.
+    /// 이력 탭·비교가 자동으로 접은 동안 바꾸면, 닫을 때 되돌리지 않고 이 선택을 지킨다(0032).
+    func toggleSidebar() {
+        isSidebarVisible.toggle()
     }
 
     /// 보기 메뉴 "인스펙터 보기/가리기"(⌥⌘I)와 툴바 버튼.

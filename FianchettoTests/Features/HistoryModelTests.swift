@@ -602,7 +602,7 @@ struct HistoryModelTests {
         case visibleUntouched, hiddenUntouched, hiddenUserShows, visibleUserShowsAndHides
     }
 
-    @Test("[W17-sidebar-collapse] 이력 탭을 열면 Board 사이드바를 접고, 닫으면 열기 전 상태로 돌린다(사용자 조작과 무관)", arguments: SidebarCase.allCases)
+    @Test("[W17-sidebar-collapse] 이력 탭을 열면 Board 사이드바를 접고, 닫으면 열기 전 상태로 돌린다. 그동안 사용자가 바꿨으면 마지막 선택을 지킨다(0032)", arguments: SidebarCase.allCases)
     func sidebarCollapse(sidebar: SidebarCase) async throws {
         try await withTemporaryDirectoryAsync { directory async throws in
             let o = try await opened(directory, daily(3))
@@ -618,11 +618,40 @@ struct HistoryModelTests {
                 o.model.isSidebarVisible = false
             }
             await o.model.selectInspectorTab(.item)
-            #expect(o.model.isSidebarVisible == before)
+            let expected = switch sidebar {
+            case .visibleUntouched, .hiddenUntouched: before
+            case .hiddenUserShows: true
+            case .visibleUserShowsAndHides: false
+            }
+            #expect(o.model.isSidebarVisible == expected)
         }
     }
 
-    @Test("[W17-sidebar-already-collapsed] 열기 전 사이드바가 접혀 있었으면, 이력 탭 동안 사용자가 펴도, 닫을 때 접힌 상태로 돌린다")
+    @Test("[AUDIT-sidebar-menu] 보기 메뉴의 사이드바 가리기/보기는 표시를 바꾸고, 이력 탭이 자동으로 접은 동안 바꾸면 닫을 때 그 선택을 지킨다(0032)")
+    func sidebarMenuToggle() async throws {
+        try await withTemporaryDirectoryAsync { directory async throws in
+            let o = try await opened(directory, daily(3))
+            #expect(o.model.isSidebarVisible)
+            o.model.toggleSidebar()
+            #expect(!o.model.isSidebarVisible)
+            o.model.toggleSidebar()
+            #expect(o.model.isSidebarVisible)
+
+            o.model.toggleSidebar()
+            await o.model.toggleHistory()
+            #expect(!o.model.isSidebarVisible, "이력 탭이 자동으로 접는다")
+            o.model.toggleSidebar()
+            #expect(o.model.isSidebarVisible)
+            await o.model.toggleHistory()
+            #expect(o.model.isSidebarVisible, "이력 탭 동안 메뉴로 편 사이드바는 닫아도 편 채다")
+
+            await o.model.toggleHistory()
+            await o.model.toggleHistory()
+            #expect(o.model.isSidebarVisible, "손대지 않으면 열기 전 상태로 돌아간다")
+        }
+    }
+
+    @Test("[W17-sidebar-already-collapsed] 열기 전 사이드바가 접혀 있었어도, 이력 탭 동안 사용자가 폈으면 닫을 때 편 채로 둔다(0032)")
     func sidebarAlreadyCollapsed() async throws {
         try await withTemporaryDirectoryAsync { directory async throws in
             let o = try await opened(directory, daily(3))
@@ -630,7 +659,7 @@ struct HistoryModelTests {
             await o.model.toggleHistory()
             o.model.isSidebarVisible = true
             await o.model.toggleHistory()
-            #expect(!o.model.isSidebarVisible)
+            #expect(o.model.isSidebarVisible)
         }
     }
 

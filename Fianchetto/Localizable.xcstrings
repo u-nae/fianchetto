@@ -317,6 +317,12 @@
       "comment" : "구성 비교 화면(W19, DESIGN.md 19장, 0027).",
       "extractionState" : "manual"
     },
+    "사이드바 가리기" : {
+      "extractionState" : "manual"
+    },
+    "사이드바 보기" : {
+      "extractionState" : "manual"
+    },
     "상위 Wing으로" : {
       "extractionState" : "manual"
     },
