@@ -34,7 +34,7 @@ struct BoardBrowserView: View {
                 }
             case .ready:
                 // 오른쪽 열은 접을 수 있는 인스펙터 하나다(DESIGN.md 16.1). 접으면 구성 영역이 넓어진다.
-                // 이력 탭을 열면 Board 사이드바를 접고 닫으면 열기 전 상태로 돌린다(16.1). 사용자가 바꾼 표시도 모델에 알린다.
+                // 이력 탭을 열면 Board 사이드바를 접고 닫으면 열기 전 상태로 돌린다(16.1). 사용자가 바꾼 표시도 모델에 알려, 그동안 바꾼 선택은 지킨다(0032).
                 NavigationSplitView(columnVisibility: Binding(
                     get: { (shownSidebarVisible ?? sidebarVisible) ? .all : .detailOnly },
                     set: { visibility in

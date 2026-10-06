@@ -359,6 +359,20 @@ struct BoardBrowserModelTests {
         }
     }
 
+    @Test("[AUDIT-sidebar-menu] 사이드바 가리기/보기는 Board 목록이 보이는 화면에서만 켜진다")
+    func sidebarToggleNeedsBoardList() async throws {
+        try await withTemporaryDirectoryAsync { directory async throws in
+            let ready = BrowserHarness(directory: directory.appending(path: "ready"))
+            #expect(!ready.model.canToggleSidebar, "저장소를 여는 중")
+            await ready.model.start()
+            #expect(ready.model.canToggleSidebar)
+
+            let failed = BrowserHarness(directory: directory.appending(path: "failed"), script: OpenScript([.damaged]))
+            await failed.model.start()
+            #expect(!failed.model.canToggleSidebar, "저장소 복구 화면")
+        }
+    }
+
     @Test("[W07-store-failure-recovery-screen] 원인마다 안내 문구가 다르다")
     func recoveryMessagesDiffer() async throws {
         try await withTemporaryDirectoryAsync { directory async throws in

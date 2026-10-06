@@ -55,6 +55,59 @@ final class NativeCommandUITests: XCTestCase {
 
     }
 
+    /// 0018: 사이드바 접기도 메뉴·키보드로 할 수 있다(보기 메뉴 '사이드바 가리기/보기', ⌃⌘S). 제목은 지금 상태를 따른다.
+    /// 이력 탭이 자동으로 접었다 닫으면 열기 전 상태로 돌아가고, 그동안 사용자가 바꿨으면 그 선택을 지킨다(0032).
+    @MainActor
+    func test_AUDIT_viewMenuTogglesSidebar() {
+        let test = UITestApp(name: "sidebar")
+        test.launch()
+        defer { test.terminate() }
+        let app = test.app
+        XCTAssertTrue(app.staticTexts["Board가 없습니다"].waitForExistence(timeout: 10))
+        test.activateForKeyboard()
+        app.typeKey("n", modifierFlags: .command)
+        test.type("Plan", into: app.textFields["board-name-field"])
+        app.typeKey(.return, modifierFlags: [])
+        let board = app.descendants(matching: .any)["board-row-Plan"]
+        XCTAssertTrue(board.waitForExistence(timeout: 5))
+
+        let view = app.menuBars.menuBarItems["보기"]
+        /// 보기 메뉴의 사이드바 항목 제목이 지금 상태와 맞고, Board 목록이 그 상태로 보이는지 확인한다.
+        func expectSidebar(visible: Bool, _ message: String) {
+            let settled = XCTNSPredicateExpectation(predicate: NSPredicate(format: "isHittable == %@", NSNumber(value: visible)), object: board)
+            XCTAssertEqual(XCTWaiter().wait(for: [settled], timeout: 5), .completed, message)
+            view.click()
+            let item = view.menuItems[visible ? "사이드바 가리기" : "사이드바 보기"]
+            XCTAssertTrue(item.waitForExistence(timeout: 5), message)
+            XCTAssertTrue(item.isEnabled, message)
+            XCTAssertFalse(view.menuItems[visible ? "사이드바 보기" : "사이드바 가리기"].exists, message)
+            app.typeKey(.escape, modifierFlags: [])
+        }
+
+        // 메뉴 항목으로 접고, 단축키로 다시 편다.
+        expectSidebar(visible: true, "처음에는 사이드바가 보인다")
+        view.click()
+        view.menuItems["사이드바 가리기"].click()
+        expectSidebar(visible: false, "메뉴로 접는다")
+        app.typeKey("s", modifierFlags: [.control, .command])
+        expectSidebar(visible: true, "⌃⌘S로 편다")
+
+        // 손대지 않으면: 이력 탭이 접고, 닫으면 다시 보인다.
+        app.typeKey("y", modifierFlags: .command)
+        XCTAssertTrue(app.staticTexts["현재 구성"].waitForExistence(timeout: 5))
+        expectSidebar(visible: false, "이력 탭을 열면 접힌다")
+        app.typeKey("y", modifierFlags: .command)
+        expectSidebar(visible: true, "이력 탭을 닫으면 열기 전처럼 보인다")
+
+        // 이력 탭이 접은 동안 ⌃⌘S로 펴면, 닫아도 편 채로 둔다.
+        app.typeKey("y", modifierFlags: .command)
+        expectSidebar(visible: false, "이력 탭을 다시 열면 접힌다")
+        app.typeKey("s", modifierFlags: [.control, .command])
+        expectSidebar(visible: true, "이력 탭 동안 ⌃⌘S로 편다")
+        app.typeKey("y", modifierFlags: .command)
+        expectSidebar(visible: true, "사용자가 편 사이드바는 이력 탭을 닫아도 편 채다")
+    }
+
     /// AUDIT-1: 메뉴 항목은 지금 할 수 없으면 꺼지고, 선택이 바뀌면 메뉴를 열지 않아도 단축키가 바로 동작한다(W07 꺼짐 고착 회귀).
     @MainActor
     func test_AUDIT_menuItemsFollowSelectionWithoutOpeningMenus() {
