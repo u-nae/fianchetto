@@ -39,7 +39,7 @@
 | 도메인 테스트 | Swift Testing | 구성 비교·복원·직렬화·저장 불변식 검증 |
 | UI 테스트 | XCTest / XCUITest | 필요한 핵심 흐름만 검증 |
 | 코드 관리 | Git | 앱 소스 관리. 사용자 구성 이력은 앱 자체가 저장한다. |
-| 의존성 관리 | Swift Package Manager | 외부 의존성이 필요해질 때 사용. 초기 외부 패키지는 0개로 시작한다. |
+| 의존성 관리 | Swift Package Manager | 외부 의존성이 필요해질 때 사용. 앱 target의 외부 패키지는 0개다. 테스트 target에만 화면 스냅샷 도구 swift-snapshot-testing을 둔다(0028). |
 
 ## 현재 로컬 도구 기준
 

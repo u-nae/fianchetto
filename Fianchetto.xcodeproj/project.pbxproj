@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		FA00000000000000000000A0 /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = FA00000000000000000000A1 /* SnapshotTesting */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		FA0000000000000000000020 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -71,6 +75,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FA00000000000000000000A0 /* SnapshotTesting in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -147,6 +152,7 @@
 			);
 			name = FianchettoTests;
 			packageProductDependencies = (
+				FA00000000000000000000A1 /* SnapshotTesting */,
 			);
 			productName = FianchettoTests;
 			productReference = FA0000000000000000000031;
@@ -207,6 +213,9 @@
 			);
 			mainGroup = FA0000000000000000000002;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				FA00000000000000000000A2 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = FA0000000000000000000003 /* Products */;
 			projectDirPath = "";
@@ -557,6 +566,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		FA00000000000000000000A2 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/pointfreeco/swift-snapshot-testing";
+			requirement = {
+				kind = upToNextMinorVersion;
+				minimumVersion = 1.19.6;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		FA00000000000000000000A1 /* SnapshotTesting */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = FA00000000000000000000A2 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
+			productName = SnapshotTesting;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = FA0000000000000000000001 /* Project object */;
 }
