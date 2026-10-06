@@ -164,6 +164,16 @@ final class ComparisonModel {
         (side == .before ? before : after).map(targetText) ?? ""
     }
 
+    /// 나란히 보기 'Board 이름' 행에 보일 그 열 구성의 Board 이름.
+    func boardName(_ side: ComparisonTree.Side) -> String {
+        (side == .before ? beforeSnapshot : afterSnapshot)?.projectName ?? ""
+    }
+
+    /// 나란히 보기 'Board 이름' 행의 VoiceOver 라벨: 'Board 이름, <이름>, 이름 변경'.
+    func boardNameAccessibilityLabel(_ side: ComparisonTree.Side) -> String {
+        [String(localized: "Board 이름"), boardName(side), String(localized: "이름 변경")].joined(separator: ", ")
+    }
+
     /// 그 열에 이 항목이 있는지(한쪽에만 있는 항목은 반대쪽에 행이 없다).
     func contains(_ id: UUID, in side: ComparisonTree.Side) -> Bool {
         Self.search(side == .before ? beforeRows : afterRows, id) != nil

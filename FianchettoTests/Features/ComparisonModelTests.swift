@@ -844,4 +844,20 @@ struct ComparisonModelTests {
             #expect(canonical(o.harness.launcher.opened.last) == canonical(o.v2URL))
         }
     }
+
+    @Test("[W19-board-rename-row] 나란히 보기의 'Board 이름' 행은 그 열 구성의 Board 이름을 보이고 VoiceOver는 항목 이름과 함께 읽는다")
+    func sideBySideBoardNameRow() async throws {
+        try await withTemporaryDirectoryAsync { directory async throws in
+            let o = try await opened(directory)
+            await o.model.compareRecord(.revision(try await o.revisionID(3)))
+            o.comparison.style = .sideBySide
+            #expect(o.comparison.showsBoardNameRow)
+            #expect(o.comparison.boardName(.before) == "서비스 A")
+            #expect(o.comparison.boardName(.after) == "서비스 Alpha")
+            #expect(o.comparison.boardNameAccessibilityLabel(.before) == "Board 이름, 서비스 A, 이름 변경")
+            #expect(o.comparison.boardNameAccessibilityLabel(.after) == "Board 이름, 서비스 Alpha, 이름 변경")
+            o.model.closeComparison()
+            #expect(o.comparison.boardName(.before) == "")
+        }
+    }
 }

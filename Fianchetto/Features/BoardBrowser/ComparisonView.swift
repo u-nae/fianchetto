@@ -64,7 +64,7 @@ private struct ComparisonList: View {
     var body: some View {
         List(selection: Binding(get: { selection }, set: { comparison.select($0, in: side) })) {
             if comparison.showsBoardNameRow {
-                BoardNameRow()
+                BoardNameRow(model: model, side: side)
                     .tag(ComparisonModel.Selection.boardName)
             }
             ForEach(rows) { row in
@@ -238,17 +238,33 @@ private struct TargetMenu: View {
     }
 }
 
-/// 트리 맨 위 'Board 이름' 행(19.3).
+/// 트리 맨 위 'Board 이름' 행(19.3). 나란히 보기에서는 그 열 구성의 Board 이름과 짧은 문구 '이름'을 보인다(19.5).
 private struct BoardNameRow: View {
+    let model: BoardBrowserModel
+    let side: ComparisonTree.Side?
+
     var body: some View {
-        HStack {
-            Label { Text("Board 이름") } icon: { Image(.fianchettoBoard) }
-            Spacer()
-            Label("이름 변경", systemImage: "pencil")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+        let comparison = model.comparison
+        if let side {
+            HStack {
+                Label { Text(comparison.boardName(side)).lineLimit(1) } icon: { Image(.fianchettoBoard) }
+                Spacer(minLength: 8)
+                Label(comparison.shortKindText(.renamed), systemImage: "pencil")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(comparison.boardNameAccessibilityLabel(side))
+        } else {
+            HStack {
+                Label { Text("Board 이름") } icon: { Image(.fianchettoBoard) }
+                Spacer()
+                Label("이름 변경", systemImage: "pencil")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .accessibilityElement(children: .combine)
         }
-        .accessibilityElement(children: .combine)
     }
 }
 
