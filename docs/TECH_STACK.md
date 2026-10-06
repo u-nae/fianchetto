@@ -163,7 +163,7 @@ Electron/Tauri/웹 UI, 서버/API, CloudKit/iCloud 동기화, 앱 내부 Git 실
 
 실제 macOS 검증: 앱 재실행 후 파일 접근, 파일 이동·삭제, 외장 볼륨 분리, 권한 재요청, Finder 열기, 대규모 구성에서 UI 응답. 개발 기기의 최신 OS에서 통과했다고 최소 지원 OS에서 통과한 것으로 간주하지 않는다.
 
-개인 사용은 Xcode에서 로컬 실행하고 Release 앱을 수동으로 사용한다. 외부 배포가 필요해질 때 Developer ID 서명·notarization·배포 형식·업데이트 경로를 결정한다. App Sandbox는 첫 버전부터 적용한다.
+개인 사용은 Xcode에서 로컬 실행하고 Release 앱을 수동으로 사용한다. Debug와 Release는 번들 ID와 저장소가 다르고, 개인 Apple Development 서명은 git에 넣지 않는 `Config/Local.xcconfig`로 한다(0033). 외부 배포가 필요해질 때 Developer ID 서명·notarization·배포 형식·업데이트 경로를 결정한다. App Sandbox는 첫 버전부터 적용한다.
 
 ## 공식 참고 자료
 

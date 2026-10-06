@@ -6,7 +6,8 @@
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
-WORK="$HOME/Library/Containers/io.github.u-nae.Fianchetto/Data/tmp/FianchettoSnapshots"
+# 단위 테스트 호스트는 Debug 앱이라 Debug 번들 ID의 컨테이너를 쓴다(0033).
+WORK="$HOME/Library/Containers/io.github.u-nae.Fianchetto.debug/Data/tmp/FianchettoSnapshots"
 DEST="FianchettoTests/Snapshots/References"
 
 if [[ ! -d "$WORK" ]]; then

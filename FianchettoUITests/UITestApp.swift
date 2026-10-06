@@ -28,7 +28,9 @@ struct UITestApp {
         guard !app.windows.firstMatch.waitForExistence(timeout: 3) else { return }
         // 테스트 러너와 같은 빌드 폴더의 앱이 테스트 대상이다.
         let url = Bundle.main.bundleURL.deletingLastPathComponent().appending(path: "Fianchetto.app")
-        let isRunning = NSRunningApplication.runningApplications(withBundleIdentifier: "io.github.u-nae.Fianchetto")
+        // 번들 ID는 구성마다 다르다(Debug는 .debug, 0033). 테스트 대상 앱 번들에서 읽는다.
+        let identifier = Bundle(url: url)?.bundleIdentifier ?? ""
+        let isRunning = NSRunningApplication.runningApplications(withBundleIdentifier: identifier)
             .contains { $0.bundleURL?.standardizedFileURL == url.standardizedFileURL }
         guard isRunning else {
             XCTFail("테스트 대상 앱이 실행 중이 아니다: \(url.path)")

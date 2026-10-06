@@ -140,10 +140,13 @@ xcodebuild -project Fianchetto.xcodeproj -scheme Fianchetto -destination 'platfo
 - **스냅샷 테스트:** Bishop 타일·배지 같은 작은 화면 부품을 기준 이미지와 비교합니다(라이트·다크, 0028). 기준 이미지를 새로 기록하면
   `scripts/record-snapshots.sh`로 저장소에 옮기고, 이미지를 확인한 뒤 커밋합니다. 시스템 파일 아이콘처럼 OS와 설치된 앱에 따라
   달라지는 그림은 기준 이미지에 넣지 않습니다.
-- **데이터 위치:** 앱은 sandbox 컨테이너의 `~/Library/Containers/io.github.u-nae.Fianchetto/Data/Library/Application Support/Fianchetto/`에
-  저장합니다. Xcode에서 Debug로 실행해도 같은 저장소를 쓰므로, 시험할 때는 연습용 Board를 만드는 것을 권합니다.
-  단위 테스트는 임시 디렉토리만 쓰고, UI 테스트는 별도 테스트 폴더를 씁니다.
-- 아직 서명·배포 설정은 없습니다. 로컬 실행만 대상입니다.
+- **데이터 위치:** 앱은 sandbox 컨테이너의 `~/Library/Containers/<번들 ID>/Data/Library/Application Support/Fianchetto/`에 저장합니다.
+  Release(설치해서 쓰는 앱)는 `io.github.u-nae.Fianchetto`, Debug(Xcode 실행·테스트)는 `io.github.u-nae.Fianchetto.debug`라
+  저장소가 서로 다릅니다(0033). 개발 중 만든 Board는 설치한 앱에 보이지 않습니다.
+  단위 테스트는 임시 디렉토리만 쓰고, UI 테스트는 Debug 컨테이너 안의 별도 테스트 폴더를 씁니다.
+- **서명:** 기본은 팀 없는 ad-hoc 서명이라 어느 Mac에서도 빌드됩니다. 설치해서 쓸 앱을 개인 Apple Development 인증서로 서명하려면
+  `Config/Local.xcconfig.example`을 `Config/Local.xcconfig`로 복사해 팀 ID를 채웁니다. 이 파일은 커밋하지 않습니다(0033).
+  배포(공증·App Store) 설정은 없습니다.
 
 ## 구조
 

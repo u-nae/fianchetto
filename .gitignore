@@ -16,3 +16,6 @@ build/
 .spec-gate/runs/*/normalized-tasks.yaml
 .spec-gate/runs/*/author-manifest-*.yaml
 .spec-gate/runs/*/critic-pass-*.yaml
+
+# 개인 서명 설정(0033). 팀 ID를 공개 저장소에 넣지 않는다.
+Config/Local.xcconfig
