@@ -185,6 +185,56 @@ struct ComparisonModelTests {
         }
     }
 
+    @Test("[W19-same-target-empty] 같은 대상이면 요약을 비운다(셀 것이 없음)")
+    func sameTargetSummaryEmpty() async throws {
+        try await withTemporaryDirectoryAsync { directory async throws in
+            let o = try await opened(directory)
+            try await o.view(5)
+            await o.model.compareWithCurrent()
+            #expect(!o.comparison.summaryText.isEmpty)
+            await o.comparison.setAfter(try await o.target(5))
+            #expect(o.comparison.summaryText.isEmpty)
+        }
+    }
+
+    @Test("[W19-merged-tree] 비교를 열면 변화가 있는 행의 조상 Wing을 펼치고, 사용자가 접은 것은 대상·거르기가 바뀔 때까지 둔다")
+    func expandsToChanges() async throws {
+        try await withTemporaryDirectoryAsync { directory async throws in
+            let o = try await opened(directory)
+            try await o.view(5)
+            await o.model.compareWithCurrent()
+            let dev = try o.row(named: "개발").id
+            // notes.md 제거와 backend 대상 교체가 "개발" 안에 있다.
+            #expect(o.comparison.expandedRowIDs == [dev])
+            o.comparison.expandedRowIDs.remove(dev)
+            #expect(o.comparison.expandedRowIDs.isEmpty)
+            o.comparison.changedOnly = true
+            #expect(o.comparison.expandedRowIDs == [dev])
+            o.comparison.expandedRowIDs.remove(dev)
+            await o.comparison.setBefore(try await o.target(3))
+            #expect(o.comparison.expandedRowIDs.contains(try o.row(named: "개발").id) == true)
+            // 변화가 최상위에만 있으면 펼칠 Wing이 없다.
+            await o.comparison.setBefore(try await o.target(9))
+            #expect(o.comparison.expandedRowIDs.isEmpty)
+        }
+    }
+
+    @Test("[W19-change-details] 인스펙터는 선택 없음·바뀐 내용 없음·바뀐 내용 있음을 구분한다")
+    func detailState() async throws {
+        try await withTemporaryDirectoryAsync { directory async throws in
+            let o = try await opened(directory)
+            try await o.view(5)
+            await o.model.compareWithCurrent()
+            #expect(o.comparison.detailState == .noSelection)
+            o.comparison.selection = .row(try o.row(named: "API 명세").id)
+            #expect(o.comparison.detailState == .unchanged)
+            o.comparison.selection = .row(try o.row(named: "backend").id)
+            #expect(o.comparison.detailState == .changed)
+            o.comparison.selection = .boardName
+            #expect(o.comparison.detailState == .changed)
+        }
+    }
+
     @Test("[W19-board-rename-summary] [W19-summary-suffixes] [W19-reorder-hidden-zero] 요약 문구와 접미 순서")
     func summaryTexts() async throws {
         try await withTemporaryDirectoryAsync { directory async throws in

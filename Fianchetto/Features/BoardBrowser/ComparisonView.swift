@@ -24,25 +24,28 @@ struct ComparisonView: View {
 
     @ViewBuilder
     private var content: some View {
+        // 빈 상태는 남은 높이를 채워 비교 띠가 위에 붙어 있게 한다.
         if comparison.isSameTarget {
             ContentUnavailableView("같은 구성입니다", systemImage: "equal.circle")
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else if comparison.hasNoChange {
             ContentUnavailableView("변화 없음", systemImage: "equal.circle", description: Text("두 구성이 같습니다."))
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else if comparison.isFilteredEmpty {
             ContentUnavailableView(
                 "표시할 변화 없음", systemImage: "line.3.horizontal.decrease.circle",
                 description: Text("순서 변경 표시를 켜면 순서만 바뀐 항목이 보입니다.")
             )
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
-            let rows = comparison.shownRows.map(ComparisonListItem.init)
+            let rows = comparison.shownRows
             List(selection: Binding(get: { comparison.selection }, set: { comparison.selection = $0 })) {
                 if comparison.showsBoardNameRow {
                     BoardNameRow()
                         .tag(ComparisonModel.Selection.boardName)
                 }
-                OutlineGroup(rows, children: \.children) { item in
-                    ComparisonRowView(model: model, row: item.row)
-                        .tag(ComparisonModel.Selection.row(item.row.id))
+                ForEach(rows) { row in
+                    ComparisonBranch(model: model, row: row)
                 }
             }
             .contextMenu(forSelectionType: ComparisonModel.Selection.self) { selection in
@@ -69,11 +72,33 @@ struct ComparisonView: View {
     }
 }
 
-/// OutlineGroup용 행 묶음: 하위가 없으면 nil이라 펼침 삼각형을 그리지 않는다.
-private struct ComparisonListItem: Identifiable {
+/// 통합 트리의 가지. 펼침은 모델이 가진다(변화가 있는 행의 조상을 처음에 펼친다).
+private struct ComparisonBranch: View {
+    let model: BoardBrowserModel
     let row: ComparisonRow
-    var id: UUID { row.id }
-    var children: [ComparisonListItem]? { row.children.isEmpty ? nil : row.children.map(ComparisonListItem.init) }
+
+    var body: some View {
+        if row.children.isEmpty {
+            item
+        } else {
+            // Observation은 body에서 읽은 값만 추적하므로 Binding 클로저 밖에서 먼저 읽는다.
+            let expanded = model.comparison.expandedRowIDs.contains(row.id)
+            DisclosureGroup(isExpanded: Binding(get: { expanded }, set: { open in
+                if open { model.comparison.expandedRowIDs.insert(row.id) } else { model.comparison.expandedRowIDs.remove(row.id) }
+            })) {
+                ForEach(row.children) { child in
+                    ComparisonBranch(model: model, row: child)
+                }
+            } label: {
+                item
+            }
+        }
+    }
+
+    private var item: some View {
+        ComparisonRowView(model: model, row: row)
+            .tag(ComparisonModel.Selection.row(row.id))
+    }
 }
 
 /// 비교 띠(19.2): 첫 줄 기호 + '구성 비교'와 거르기·닫기, 둘째 줄 이전 → 이후 대상 메뉴와 요약.
@@ -91,7 +116,9 @@ private struct ComparisonBar: View {
                     .toggleStyle(.checkbox)
                 Toggle("바뀐 항목만 보기", isOn: Binding(get: { comparison.changedOnly }, set: { comparison.changedOnly = $0 }))
                     .toggleStyle(.checkbox)
+                // Esc: 초점이 대상 메뉴·트리 어디에 있어도 비교를 닫는다. 시트는 별도 창이라 시트의 Esc가 먼저다.
                 Button("비교 닫기") { model.closeComparison() }
+                    .keyboardShortcut(.cancelAction)
                     .accessibilityIdentifier("compare-close")
             }
             HStack(spacing: 8) {
@@ -150,7 +177,7 @@ private struct TargetMenu: View {
 private struct BoardNameRow: View {
     var body: some View {
         HStack {
-            Label("Board 이름", systemImage: "square.grid.2x2")
+            Label { Text("Board 이름") } icon: { Image(.fianchettoBoard) }
             Spacer()
             Label("이름 변경", systemImage: "pencil")
                 .font(.caption)
@@ -167,18 +194,22 @@ private struct ComparisonRowView: View {
 
     var body: some View {
         let comparison = model.comparison
-        HStack(spacing: 8) {
-            TileIconView(icon: TileIcon.of(row.node, style: model.bishopIconStyle))
-            Text(row.node.displayName)
-                .strikethrough(row.isRemoved)
-                .lineLimit(1)
-            Spacer(minLength: 8)
-            if let first = comparison.visibleKinds(row).first {
-                Label(comparison.changeText(row), systemImage: ComparisonModel.kindSymbol(first))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+        // 트리 행(NodeRow)과 같이 Label 아이콘 자리에 그려 목록의 강조색을 같이 받는다.
+        Label {
+            HStack(spacing: 8) {
+                Text(row.node.displayName)
+                    .strikethrough(row.isRemoved)
                     .lineLimit(1)
+                Spacer(minLength: 8)
+                if let first = comparison.visibleKinds(row).first {
+                    Label(comparison.changeText(row), systemImage: ComparisonModel.kindSymbol(first))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
             }
+        } icon: {
+            TileIconView(icon: TileIcon.of(row.node, style: model.bishopIconStyle))
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(model.comparisonAccessibilityLabel(row))
@@ -191,12 +222,18 @@ struct ComparisonDetailView: View {
     let model: BoardBrowserModel
 
     var body: some View {
-        let lines = model.comparison.detailLines
-        if lines.isEmpty {
+        let comparison = model.comparison
+        let lines = comparison.detailLines
+        switch comparison.detailState {
+        case .noSelection:
             ContentUnavailableView("항목을 고르세요", systemImage: "sidebar.right")
-        } else {
+        case .unchanged:
+            ContentUnavailableView("바뀐 내용 없음", systemImage: "equal.circle")
+        case .changed:
             // 긴 경로가 인스펙터 열의 최소 폭을 밀어 올리지 않게 라벨 아래 최대 두 줄·가운데 줄임으로 보인다(W18 충돌과 같은 위험).
             VStack(alignment: .leading, spacing: 8) {
+                // 어떤 항목의 상세인지: 기호와 이름(이름이 바뀌었으면 이후 이름, 제거면 당시 이름).
+                DetailHeader(model: model)
                 Text("변경 내용")
                     .font(.headline)
                 ForEach(Array(lines.enumerated()), id: \.offset) { _, line in
@@ -219,6 +256,32 @@ struct ComparisonDetailView: View {
             .padding()
             .accessibilityElement(children: .contain)
             .accessibilityIdentifier("compare-details")
+        }
+    }
+}
+
+/// '변경 내용' 머리글: 고른 항목의 기호와 이름. 'Board 이름' 행이면 Board 기호.
+private struct DetailHeader: View {
+    let model: BoardBrowserModel
+
+    var body: some View {
+        switch model.comparison.selection {
+        case .boardName:
+            Label { Text("Board 이름") } icon: { Image(.fianchettoBoard) }
+                .font(.title3)
+        case .row:
+            if let row = model.comparison.selectedRow {
+                Label {
+                    Text(row.node.displayName)
+                        .lineLimit(2)
+                        .truncationMode(.middle)
+                } icon: {
+                    TileIconView(icon: TileIcon.of(row.node, style: model.bishopIconStyle))
+                }
+                .font(.title3)
+            }
+        case nil:
+            EmptyView()
         }
     }
 }

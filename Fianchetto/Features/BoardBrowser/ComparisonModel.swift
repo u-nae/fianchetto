@@ -46,12 +46,20 @@ final class ComparisonModel {
     private(set) var targetChoices: [RevisionSummary] = []
     private(set) var unreadableNotice = false
     var selection: Selection?
-    /// '바뀐 항목만 보기'. 비교를 열 때마다 끈다.
-    var changedOnly = false
+    /// '바뀐 항목만 보기'. 비교를 열 때마다 끈다. 바꾸면 변화가 있는 행의 조상 Wing을 다시 펼친다.
+    var changedOnly = false {
+        didSet { expandToChanges() }
+    }
     /// '순서 변경 표시'. 기본은 켬이고 다시 실행해도 기억한다.
     var showsReorder: Bool {
-        didSet { environment.lastBoard.comparisonHidesReorder = !showsReorder }
+        didSet {
+            environment.lastBoard.comparisonHidesReorder = !showsReorder
+            expandToChanges()
+        }
     }
+    /// 펼친 Wing 행. 비교를 열거나 대상·거르기를 바꿀 때 변화가 있는 행의 조상을 펼친다.
+    /// 그 뒤 사용자가 접은 것은 그대로 둔다(DESIGN 19.4·19.5).
+    var expandedRowIDs: Set<UUID> = []
 
     private var generation = 0
     private let environment: Environment
@@ -106,6 +114,7 @@ final class ComparisonModel {
         rows = []
         selection = nil
         changedOnly = false
+        expandedRowIDs = []
     }
 
     func dismissNotice() {
@@ -132,9 +141,9 @@ final class ComparisonModel {
         diff.map { ComparisonTree.summary($0, showsReorder: showsReorder) }
     }
 
-    /// '변화 N개 · Board 이름 변경 · 순서 변경 N개 숨김'(0027).
+    /// '변화 N개 · Board 이름 변경 · 순서 변경 N개 숨김'(0027). 같은 대상이면 셀 것이 없어 비운다.
     var summaryText: String {
-        guard let summary else { return "" }
+        guard let summary, !isSameTarget else { return "" }
         var parts: [String] = []
         if summary.changedCount > 0 || !summary.boardRenamed {
             parts.append(String(localized: "변화 \(summary.changedCount)개"))
@@ -204,6 +213,18 @@ final class ComparisonModel {
         return search(rows)
     }
 
+    /// 인스펙터 '변경 내용' 자리의 상태: 고른 것 없음, 고른 행에 바뀐 내용 없음, 바뀐 내용 있음.
+    enum DetailState: Equatable {
+        case noSelection
+        case unchanged
+        case changed
+    }
+
+    var detailState: DetailState {
+        guard selection != nil else { return .noSelection }
+        return detailLines.isEmpty ? .unchanged : .changed
+    }
+
     var selectedRow: ComparisonRow? {
         guard case let .row(id) = selection else { return nil }
         return findRow(id)
@@ -254,6 +275,20 @@ final class ComparisonModel {
         let diff = ConfigurationDiffer.diff(loaded.0, loaded.1)
         self.diff = diff
         rows = ComparisonTree.build(before: loaded.0, after: loaded.1, diff: diff)
+        expandToChanges()
+    }
+
+    /// 보이는 변화가 있는 행의 조상 Wing을 모두 펼친다.
+    private func expandToChanges() {
+        var result: Set<UUID> = []
+        func walk(_ rows: [ComparisonRow], ancestors: [UUID]) -> Void {
+            for row in rows {
+                if !visibleKinds(row).isEmpty { result.formUnion(ancestors) }
+                walk(row.children, ancestors: ancestors + [row.id])
+            }
+        }
+        walk(rows, ancestors: [])
+        expandedRowIDs = result
     }
 
     private func load(_ before: ComparisonTarget, _ after: ComparisonTarget) async -> (ConfigurationSnapshot, ConfigurationSnapshot)? {

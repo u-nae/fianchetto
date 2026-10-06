@@ -265,6 +265,10 @@
       "comment" : "Bishop 용도(W29).",
       "extractionState" : "manual"
     },
+    "바뀐 내용 없음" : {
+      "comment" : "비교 인스펙터: 고른 행에 바뀐 값이 없음(W19, 디자인 세션 확인).",
+      "extractionState" : "manual"
+    },
     "바뀐 항목만 보기" : {
       "comment" : "구성 비교 화면(W19, DESIGN.md 19장, 0027).",
       "extractionState" : "manual"
