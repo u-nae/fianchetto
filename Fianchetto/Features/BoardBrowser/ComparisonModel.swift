@@ -30,6 +30,12 @@ final class ComparisonModel {
         case boardName
     }
 
+    /// 보기 방식(19.2): 통합 트리(기본) 또는 나란히 두 트리.
+    enum Style: String, Hashable, Sendable {
+        case unified
+        case sideBySide
+    }
+
     /// '변경 내용'의 한 줄.
     struct DetailLine: Equatable {
         var label: String
@@ -43,9 +49,21 @@ final class ComparisonModel {
     private(set) var afterSnapshot: ConfigurationSnapshot?
     private(set) var diff: ConfigurationDiff?
     private(set) var rows: [ComparisonRow] = []
+    /// 나란히 보기의 두 열(19.5). 각 열은 그 구성의 트리 구조를 따른다.
+    private(set) var beforeRows: [ComparisonRow] = []
+    private(set) var afterRows: [ComparisonRow] = []
     private(set) var targetChoices: [RevisionSummary] = []
     private(set) var unreadableNotice = false
-    var selection: Selection?
+    /// 고른 행. 나란히 보기에서는 두 열이 같은 선택을 함께 강조한다. 직접 바꾸면(통합 트리) 고른 열은 지운다.
+    var selection: Selection? {
+        didSet { selectedSide = nil }
+    }
+    /// 나란히 보기에서 행을 고른 열. 열기·Finder에서 보기는 그 열 구성의 항목으로 한다(19.6).
+    private(set) var selectedSide: ComparisonTree.Side?
+    /// 보기 방식. 마지막 선택을 기억하고 기본은 통합이다.
+    var style: Style {
+        didSet { environment.lastBoard.comparisonStyle = style.rawValue }
+    }
     /// '바뀐 항목만 보기'. 비교를 열 때마다 끈다. 바꾸면 변화가 있는 행의 조상 Wing을 다시 펼친다.
     var changedOnly = false {
         didSet { expandToChanges() }
@@ -67,6 +85,7 @@ final class ComparisonModel {
     init(environment: Environment) {
         self.environment = environment
         showsReorder = !environment.lastBoard.comparisonHidesReorder
+        style = environment.lastBoard.comparisonStyle.flatMap(Style.init(rawValue:)) ?? .unified
     }
 
     // MARK: 열기·대상 바꾸기·닫기
@@ -88,7 +107,7 @@ final class ComparisonModel {
         apply(before: before, after: after, loaded: loaded)
         // '바뀐 항목만 보기'는 닫을 때 끄므로 열 때마다 꺼진 상태로 시작한다.
         isOpen = true
-        selection = nil
+        select(nil)
         return true
     }
 
@@ -112,7 +131,10 @@ final class ComparisonModel {
         afterSnapshot = nil
         diff = nil
         rows = []
+        beforeRows = []
+        afterRows = []
         selection = nil
+        selectedSide = nil
         changedOnly = false
         expandedRowIDs = []
     }
@@ -130,6 +152,31 @@ final class ComparisonModel {
 
     var shownRows: [ComparisonRow] {
         ComparisonTree.filter(rows, showsReorder: showsReorder, changedOnly: changedOnly)
+    }
+
+    /// 나란히 보기의 한 열(거르기 적용).
+    func shownRows(_ side: ComparisonTree.Side) -> [ComparisonRow] {
+        ComparisonTree.filter(side == .before ? beforeRows : afterRows, showsReorder: showsReorder, changedOnly: changedOnly)
+    }
+
+    /// 나란히 보기의 열 머리: 그 열의 대상 이름.
+    func columnTitle(_ side: ComparisonTree.Side) -> String {
+        (side == .before ? before : after).map(targetText) ?? ""
+    }
+
+    /// 그 열에 이 항목이 있는지(한쪽에만 있는 항목은 반대쪽에 행이 없다).
+    func contains(_ id: UUID, in side: ComparisonTree.Side) -> Bool {
+        Self.search(side == .before ? beforeRows : afterRows, id) != nil
+    }
+
+    /// 행을 고른다. 나란히 보기에서는 고른 열을 기억하고, 두 열 모두에서 그 항목의 조상 Wing을 펼친다(19.5).
+    func select(_ selection: Selection?, in side: ComparisonTree.Side? = nil) {
+        self.selection = selection
+        selectedSide = side
+        guard case let .row(id) = selection, side != nil else { return }
+        for rows in [beforeRows, afterRows] {
+            expandedRowIDs.formUnion(Self.ancestors(of: id, in: rows) ?? [])
+        }
     }
 
     /// 순서 숨김과 '바뀐 항목만 보기'로 보일 행이 하나도 없다('표시할 변화 없음').
@@ -172,6 +219,24 @@ final class ComparisonModel {
         visibleKinds(row).map { kindText($0, row: row) }.joined(separator: " · ")
     }
 
+    /// 나란히 보기의 짧은 변화 문구(19.5).
+    func shortChangeText(_ row: ComparisonRow) -> String {
+        visibleKinds(row).map(shortKindText).joined(separator: " · ")
+    }
+
+    func shortKindText(_ kind: NodeChangeKind) -> String {
+        switch kind {
+        case .added: String(localized: "추가")
+        case .removed: String(localized: "제거")
+        case .renamed: String(localized: "이름")
+        case .moved: String(localized: "이동")
+        case .reordered: String(localized: "순서")
+        case .targetReplaced: String(localized: "대상")
+        case .urlChanged: String(localized: "URL")
+        case .purposeChanged: String(localized: "아이콘")
+        }
+    }
+
     func visibleKinds(_ row: ComparisonRow) -> [NodeChangeKind] {
         showsReorder ? row.kinds : row.kinds.filter { $0 != .reordered }
     }
@@ -203,14 +268,24 @@ final class ComparisonModel {
     }
 
     func findRow(_ id: UUID) -> ComparisonRow? {
-        func search(_ rows: [ComparisonRow]) -> ComparisonRow? {
-            for row in rows {
-                if row.id == id { return row }
-                if let found = search(row.children) { return found }
-            }
-            return nil
+        Self.search(rows, id)
+    }
+
+    private static func search(_ rows: [ComparisonRow], _ id: UUID) -> ComparisonRow? {
+        for row in rows {
+            if row.id == id { return row }
+            if let found = search(row.children, id) { return found }
         }
-        return search(rows)
+        return nil
+    }
+
+    /// 그 항목의 조상 행 ID(위에서 아래로). 없으면 nil.
+    private static func ancestors(of id: UUID, in rows: [ComparisonRow]) -> [UUID]? {
+        for row in rows {
+            if row.id == id { return [] }
+            if let found = ancestors(of: id, in: row.children) { return [row.id] + found }
+        }
+        return nil
     }
 
     /// 인스펙터 '변경 내용' 자리의 상태: 고른 것 없음, 고른 행에 바뀐 내용 없음, 바뀐 내용 있음.
@@ -228,6 +303,15 @@ final class ComparisonModel {
     var selectedRow: ComparisonRow? {
         guard case let .row(id) = selection else { return nil }
         return findRow(id)
+    }
+
+    /// 열기·Finder에서 보기에 쓸 항목: 나란히 보기에서는 고른 열 구성의 항목, 통합 트리에서는 그 행의 항목(제거 행은 이전 구성).
+    var selectedNode: ConfigurationNode? {
+        guard case let .row(id) = selection else { return nil }
+        if style == .sideBySide, let side = selectedSide {
+            return Self.search(side == .before ? beforeRows : afterRows, id)?.node
+        }
+        return selectedRow?.node
     }
 
     /// 고른 행의 '변경 내용'(19.4): 바뀐 값만 '이전 → 이후'. 추가·제거는 한쪽 값만.
@@ -264,7 +348,7 @@ final class ComparisonModel {
             return
         }
         apply(before: before, after: after, loaded: loaded)
-        selection = nil
+        select(nil)
     }
 
     private func apply(before: ComparisonTarget, after: ComparisonTarget, loaded: (ConfigurationSnapshot, ConfigurationSnapshot)) {
@@ -275,10 +359,12 @@ final class ComparisonModel {
         let diff = ConfigurationDiffer.diff(loaded.0, loaded.1)
         self.diff = diff
         rows = ComparisonTree.build(before: loaded.0, after: loaded.1, diff: diff)
+        beforeRows = ComparisonTree.sideRows(.before, before: loaded.0, after: loaded.1, diff: diff)
+        afterRows = ComparisonTree.sideRows(.after, before: loaded.0, after: loaded.1, diff: diff)
         expandToChanges()
     }
 
-    /// 보이는 변화가 있는 행의 조상 Wing을 모두 펼친다.
+    /// 보이는 변화가 있는 행의 조상 Wing을 모두 펼친다(통합 트리와 나란히 보기의 두 열).
     private func expandToChanges() {
         var result: Set<UUID> = []
         func walk(_ rows: [ComparisonRow], ancestors: [UUID]) -> Void {
@@ -287,7 +373,7 @@ final class ComparisonModel {
                 walk(row.children, ancestors: ancestors + [row.id])
             }
         }
-        walk(rows, ancestors: [])
+        for tree in [rows, beforeRows, afterRows] { walk(tree, ancestors: []) }
         expandedRowIDs = result
     }
 

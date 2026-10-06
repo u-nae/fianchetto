@@ -95,6 +95,29 @@ enum ComparisonTree {
         return rows(under: nil)
     }
 
+    /// 나란히 보기(DESIGN.md 19.5)의 열.
+    enum Side: Hashable, Sendable { case before, after }
+
+    /// 나란히 보기의 한 열: 그 구성의 트리 구조를 그대로 따르고 같은 차이 결과의 변화를 단다.
+    /// 추가 항목은 이후 열에만, 제거 항목은 이전 열에만 있다.
+    static func sideRows(_ side: Side, before: ConfigurationSnapshot, after: ConfigurationSnapshot, diff: ConfigurationDiff) -> [ComparisonRow] {
+        let snapshot = side == .before ? before : after
+        let changes = Dictionary(diff.changes.map { ($0.nodeID, $0) }, uniquingKeysWith: { first, _ in first })
+        let children = grouped(snapshot.nodes)
+        var visited: Set<UUID> = []
+        func rows(under parentID: UUID?) -> [ComparisonRow] {
+            (children[parentID] ?? []).compactMap { node in
+                guard visited.insert(node.id).inserted else { return nil }
+                let change = changes[node.id]
+                return ComparisonRow(
+                    node: node, kinds: ordered(change?.kinds ?? []), change: change,
+                    children: node.kind == .group ? rows(under: node.id) : []
+                )
+            }
+        }
+        return rows(under: nil)
+    }
+
     /// '순서 변경 표시'를 끄면 순서 변경을 빼고, '바뀐 항목만 보기'를 켜면 변화가 있는 행과 그 조상만 남긴다.
     static func filter(_ rows: [ComparisonRow], showsReorder: Bool, changedOnly: Bool) -> [ComparisonRow] {
         rows.compactMap { row in

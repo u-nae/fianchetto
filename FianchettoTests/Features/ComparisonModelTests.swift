@@ -3,7 +3,7 @@ import SwiftData
 import Testing
 @testable import Fianchetto
 
-/// 구성 비교 화면(W19, PR ①: 공통 부분 + 통합 트리).
+/// 구성 비교 화면(W19, PR ①: 공통 부분 + 통합 트리, PR ②: 나란히 두 트리).
 @MainActor
 @Suite("구성 비교(W19)")
 struct ComparisonModelTests {
@@ -497,14 +497,19 @@ struct ComparisonModelTests {
         }
     }
 
-    @Test("[W19-remembered-preferences] '순서 변경 표시'는 기본 켬이고 바꾸면 다시 실행해도 기억한다")
+    @Test("[W19-remembered-preferences] 보기 방식은 기본 통합, '순서 변경 표시'는 기본 켬이고 바꾸면 다시 실행해도 기억한다")
     func rememberedPreferences() async throws {
         try await withTemporaryDirectoryAsync { directory async throws in
             let o = try await opened(directory)
             #expect(o.comparison.showsReorder)
+            #expect(o.comparison.style == .unified)
             o.comparison.showsReorder = false
+            o.comparison.style = .sideBySide
             let relaunched = BrowserHarness(directory: o.harness.directory, lastBoard: o.harness.lastBoard)
             #expect(!relaunched.model.comparison.showsReorder)
+            #expect(relaunched.model.comparison.style == .sideBySide)
+            o.comparison.style = .unified
+            #expect(BrowserHarness(directory: o.harness.directory, lastBoard: o.harness.lastBoard).model.comparison.style == .unified)
         }
     }
 
@@ -715,6 +720,128 @@ struct ComparisonModelTests {
             o.model.closeComparison()
             #expect(try await o.revisionCount() == 10)
             #expect(try await o.store.project(o.project)?.currentRevisionID == current)
+        }
+    }
+
+    // MARK: 나란히 두 트리(PR ②)
+
+    private static func names(_ rows: [ComparisonRow], prefix: String = "") -> [String] {
+        rows.flatMap { ["\(prefix)\($0.node.displayName)"] + names($0.children, prefix: prefix + $0.node.displayName + "/") }
+    }
+
+    @Test("[W19-side-by-side-layout] 나란히 보기는 왼쪽에 이전, 오른쪽에 이후 구성 트리를 두고 열 머리는 대상 이름이다", .tags(.A07))
+    func sideBySideLayout() async throws {
+        try await withTemporaryDirectoryAsync { directory async throws in
+            let o = try await opened(directory)
+            await o.model.compareRecord(.revision(try await o.revisionID(3)))
+            o.comparison.style = .sideBySide
+            #expect(o.comparison.before == (try await o.target(3)))
+            #expect(Self.names(o.comparison.shownRows(.before)) == ["개발", "개발/backend"])
+            #expect(Self.names(o.comparison.shownRows(.after)) == ["개발", "개발/backend", "API 명세"])
+            #expect(o.comparison.shownRows(.after).last?.kinds == [.added])
+            #expect(o.comparison.columnTitle(.before).hasPrefix("#3 · "))
+            #expect(o.comparison.columnTitle(.after) == "현재 구성")
+            #expect(!o.model.canAddToBoard)
+        }
+    }
+
+    @Test("[W19-side-by-side-short-labels] 나란히 보기의 변화 문구는 짧은 형태다")
+    func sideBySideShortLabels() async throws {
+        try await withTemporaryDirectoryAsync { directory async throws in
+            let o = try await opened(directory)
+            let expected: [(NodeChangeKind, String)] = [
+                (.added, "추가"), (.removed, "제거"), (.renamed, "이름"), (.moved, "이동"),
+                (.reordered, "순서"), (.targetReplaced, "대상"), (.urlChanged, "URL"), (.purposeChanged, "아이콘"),
+            ]
+            for (kind, text) in expected { #expect(o.comparison.shortKindText(kind) == text) }
+            let node = SnapshotFixtures.folder(fixedID(1), "api", order: 0, reference: fixedID(2), path: "/api")
+            let row = ComparisonRow(node: node, kinds: [.renamed, .targetReplaced], change: nil, children: [])
+            #expect(o.comparison.shortChangeText(row) == "이름 · 대상")
+            o.comparison.showsReorder = false
+            #expect(o.comparison.shortChangeText(ComparisonRow(node: node, kinds: [.reordered], change: nil, children: [])) == "")
+        }
+    }
+
+    /// "이동" Board: 1 만들기, 2 Wing 문서, 3 Wing 개발, 4 문서 안 Bishop spec.md, 5 spec.md를 개발로 이동, 6 웹 링크 design.md 추가.
+    private func openedMoved(_ directory: URL) async throws -> (harness: BrowserHarness, project: UUID, docs: UUID, dev: UUID, spec: UUID, design: UUID) {
+        let harness = BrowserHarness(directory: directory.appending(path: "browser"))
+        let spec = try TargetFiles.file(directory, "targets/spec.md")
+        var ids: (UUID, UUID, UUID, UUID, UUID) = (UUID(), UUID(), UUID(), UUID(), UUID())
+        try await seedStore(in: directory, at: harness.url) { seed in
+            let board = try await makeBoard(seed, "이동")
+            let docs = try #require(try await seed.service.apply(.addGroup(name: "문서", parentID: nil, position: nil), to: board).committed)
+                .snapshot.node(named: "문서")!.id
+            let dev = try #require(try await seed.service.apply(.addGroup(name: "개발", parentID: nil, position: nil), to: board).committed)
+                .snapshot.node(named: "개발")!.id
+            _ = try await seed.linking.link(LinkRequest(projectID: board, parentID: docs, position: nil, urls: [spec]))
+            let specID = try #require(try await seed.store.currentSnapshot(projectID: board).node(named: "spec.md")).id
+            _ = try await seed.service.apply(.move(specID, toParent: dev, position: nil), to: board)
+            let design = try #require(try await seed.service.apply(
+                .addWebLink(name: "design.md", url: "https://design.example.com", parentID: dev, position: nil), to: board
+            ).committed).snapshot.node(named: "design.md")!.id
+            ids = (board, docs, dev, specID, design)
+        }
+        await harness.model.start()
+        await harness.model.select(ids.0)
+        return (harness, ids.0, ids.1, ids.2, ids.3, ids.4)
+    }
+
+    @Test("[W19-side-by-side-selection] 나란히 보기에서 항목을 고르면 양쪽에서 함께 고른 상태가 되고 두 열의 조상을 펼친다")
+    func sideBySideSelection() async throws {
+        try await withTemporaryDirectoryAsync { directory async throws in
+            let o = try await openedMoved(directory)
+            let model = o.harness.model, comparison = model.comparison
+            let four = try #require(try await model.openedStore!.store.revisionSummaries(projectID: o.project).first { $0.sequence == 4 }).id
+            await model.compareRecord(.revision(four))
+            comparison.style = .sideBySide
+            comparison.expandedRowIDs = []
+
+            comparison.select(.row(o.spec), in: .after)
+
+            #expect(comparison.selection == .row(o.spec))
+            #expect(comparison.contains(o.spec, in: .before) && comparison.contains(o.spec, in: .after))
+            #expect(comparison.expandedRowIDs.isSuperset(of: [o.docs, o.dev]), "왼쪽 문서, 오른쪽 개발을 펼친다")
+            #expect(comparison.selectedNode?.parentID == o.dev, "오른쪽에서 골랐으면 이후 구성의 항목이다")
+            comparison.select(.row(o.spec), in: .before)
+            #expect(comparison.selectedNode?.parentID == o.docs, "왼쪽에서 골랐으면 이전 구성의 항목이다")
+            #expect(comparison.detailLines.contains { $0.text.contains("문서") && $0.text.contains("개발") })
+        }
+    }
+
+    @Test("[W19-side-by-side-one-side] 나란히 보기에서 한쪽에만 있는 항목을 고르면 반대쪽 열에는 그 행이 없다")
+    func sideBySideOneSide() async throws {
+        try await withTemporaryDirectoryAsync { directory async throws in
+            let o = try await openedMoved(directory)
+            let model = o.harness.model, comparison = model.comparison
+            let four = try #require(try await model.openedStore!.store.revisionSummaries(projectID: o.project).first { $0.sequence == 4 }).id
+            await model.compareRecord(.revision(four))
+            comparison.style = .sideBySide
+
+            comparison.select(.row(o.design), in: .after)
+
+            #expect(comparison.selection == .row(o.design))
+            #expect(!comparison.contains(o.design, in: .before))
+            #expect(comparison.contains(o.design, in: .after))
+            #expect(model.canOpenSelected && !model.canRevealSelected)
+        }
+    }
+
+    @Test("[W19-open-by-row-reference] 나란히 보기에서 연 항목은 그 열 구성의 참조로 연다")
+    func sideBySideOpensByColumn() async throws {
+        try await withTemporaryDirectoryAsync { directory async throws in
+            let o = try await opened(directory)
+            try await o.view(5)
+            await o.model.compareWithCurrent()
+            o.comparison.style = .sideBySide
+            let backend = try o.row(named: "backend").id
+
+            o.comparison.select(.row(backend), in: .before)
+            await o.model.openSelected()
+            #expect(canonical(o.harness.launcher.opened.last) == canonical(o.legacyURL))
+
+            o.comparison.select(.row(backend), in: .after)
+            await o.model.openSelected()
+            #expect(canonical(o.harness.launcher.opened.last) == canonical(o.v2URL))
         }
     }
 }

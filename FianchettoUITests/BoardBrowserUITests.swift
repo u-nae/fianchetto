@@ -288,6 +288,66 @@ final class BoardBrowserUITests: XCTestCase {
         XCTAssertFalse(app.descendants(matching: .any)["compare-bar"].exists)
     }
 
+    /// W19 ② 나란히 보기: 세그먼트로 바꾸면 왼쪽 '이전 구성'·오른쪽 '이후 구성' 열이 열 머리와 함께 보이고,
+    /// 한쪽에서 고른 항목은 반대쪽에서도 고른 상태가 되며, 한쪽에만 있는 항목은 반대쪽에 행이 없다.
+    @MainActor
+    func test_W19_sideBySideColumns() {
+        let test = UITestApp(name: "compare-side")
+        test.launch()
+        defer { test.terminate() }
+        let app = test.app
+        XCTAssertTrue(app.staticTexts["Board가 없습니다"].waitForExistence(timeout: 10))
+        test.activateForKeyboard()
+        app.typeKey("n", modifierFlags: .command)
+        test.type("Plan", into: app.textFields["board-name-field"])
+        app.typeKey(.return, modifierFlags: [])
+        XCTAssertTrue(app.descendants(matching: .any)["board-row-Plan"].waitForExistence(timeout: 5))
+        for name in ["Docs", "Dev"] {
+            app.menuBars.menuBarItems["파일"].click()
+            app.menuBars.menuBarItems["파일"].menuItems["Wing 추가…"].click()
+            test.type(name, into: app.textFields["node-name-field"])
+            app.typeKey(.return, modifierFlags: [])
+            XCTAssertTrue(app.descendants(matching: .any)["node-row-\(name)"].waitForExistence(timeout: 5))
+        }
+
+        let viewMenu = app.menuBars.menuBarItems["보기"]
+        viewMenu.click()
+        viewMenu.menuItems["이력 보기"].click()
+        let second = app.descendants(matching: .any)["revision-row-2"]
+        XCTAssertTrue(second.waitForExistence(timeout: 5))
+        second.click()
+        XCTAssertTrue(app.buttons["compare-with-current"].waitForExistence(timeout: 5))
+        app.buttons["compare-with-current"].click()
+        let mode = app.descendants(matching: .any)["compare-mode"]
+        XCTAssertTrue(mode.waitForExistence(timeout: 5))
+        mode.radioButtons["나란히"].click()
+
+        let before = app.descendants(matching: .any)["compare-before-tree"]
+        let after = app.descendants(matching: .any)["compare-after-tree"]
+        XCTAssertTrue(before.waitForExistence(timeout: 5))
+        XCTAssertTrue(after.exists)
+        XCTAssertEqual(before.label, "이전 구성")
+        XCTAssertEqual(after.label, "이후 구성")
+        let beforeTitle = app.staticTexts["compare-before-title"]
+        XCTAssertTrue(beforeTitle.label.hasPrefix("#2 · "), beforeTitle.label)
+        let afterTitle = app.staticTexts["compare-after-title"]
+        XCTAssertEqual(afterTitle.label, "현재 구성")
+
+        // Dev는 이후 구성에만 있다.
+        XCTAssertTrue(after.descendants(matching: .any)["compare-row-Dev"].exists)
+        XCTAssertFalse(before.descendants(matching: .any)["compare-row-Dev"].exists)
+
+        // 오른쪽에서 Docs를 고르면 왼쪽 Docs도 고른 상태다.
+        after.descendants(matching: .any)["compare-row-Docs"].click()
+        // 고른 상태는 행 내용이 아니라 목록의 행(OutlineRow)에 붙는다.
+        let selectedLeft = before.outlineRows.containing(.any, identifier: "compare-row-Docs").firstMatch
+        let selected = XCTNSPredicateExpectation(predicate: NSPredicate(format: "isSelected == true"), object: selectedLeft)
+        XCTAssertEqual(XCTWaiter().wait(for: [selected], timeout: 5), .completed, "반대쪽 열도 같은 항목을 고른다")
+
+        app.buttons["compare-close"].click()
+        XCTAssertFalse(app.descendants(matching: .any)["compare-bar"].waitForExistence(timeout: 2))
+    }
+
     /// W07-ui-menu-command: 파일 메뉴에 ⌘N의 "Board 만들기…"가 있다.
     @MainActor
     func test_W07_fileMenuHasCreateBoardCommand() {
