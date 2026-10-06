@@ -37,7 +37,8 @@ struct TileIconSnapshotTests {
                 TileIconView(icon: TileIcon.of(node(.folder), style: .fileType), size: size)
             }
         }
-        .foregroundStyle(Color.accentColor)
+        // 목록 Label 아이콘이 받는 강조색과 같게 앱 AccentColor로 칠한다(SnapshotSupport가 tint도 고정한다).
+        .foregroundStyle(Color(.accent))
     }
 
     @Test("[0028] 아이콘 보기 크기(40pt)의 타일·배지가 기준 이미지와 같다")

@@ -13,7 +13,10 @@ enum SnapshotSupport {
 
     /// 창 배경 위에 view를 그린 2배율 이미지.
     static func render<Content: View>(_ content: Content, scheme: ColorScheme) -> NSImage {
+        // 강조색은 앱 팔레트(AccentColor, 0011)로 고정한다. Color.accentColor는 테스트 호스트에서 기기의 시스템 강조색을 따라
+        // 기록 기기마다 결과가 달라지므로 쓰지 않는다(시스템 강조색이 '다중 색상'일 때의 앱 모습이 기준).
         let framed = content
+            .tint(Color(.accent))
             .padding(8)
             .background(Color(nsColor: .windowBackgroundColor))
             .environment(\.colorScheme, scheme)
