@@ -98,6 +98,8 @@ private final class PreviewLastBoard: LastBoardRecord {
     var lastBoardID: UUID?
     var isInspectorHidden = false
     var bishopIconStyle: String?
+    var comparisonStyle: String?
+    var comparisonHidesReorder = false
     func viewMode(for boardID: UUID) -> String? { nil }
     func setViewMode(_ mode: String, for boardID: UUID) {}
 }

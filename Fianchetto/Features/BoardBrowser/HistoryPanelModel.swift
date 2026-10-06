@@ -58,6 +58,8 @@ final class HistoryPanelModel {
     private(set) var selectedSummary: RevisionSummary?
     /// 고른 revision이 바뀐 뒤 부른다(과거·현재 모드 전환, W18).
     var selectionChanged: (@MainActor () async -> Void)?
+    /// 행을 고르려 할 때(바뀌지 않아도) 먼저 부른다(W19: 비교 닫기).
+    var selectionRequested: (@MainActor () -> Void)?
     /// 날짜로 찾은 시각이 Board가 생기기 전이다.
     private(set) var lookupFoundNothing = false
     /// 날짜로 찾은 행. 화면이 그 행으로 스크롤한다.
@@ -149,6 +151,8 @@ final class HistoryPanelModel {
     // MARK: 고르기와 날짜로 찾기
 
     func select(_ selection: Selection) async {
+        // 행을 고르는 것은 '이 구성을 본다'는 뜻이라, 비교 중이면 먼저 비교를 닫는다(W19, 0027).
+        selectionRequested?()
         switch selection {
         case .current:
             guard selectedRevisionID != nil else { return }

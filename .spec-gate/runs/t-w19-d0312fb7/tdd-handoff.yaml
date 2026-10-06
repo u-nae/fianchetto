@@ -1,0 +1,342 @@
+schema_version: "1.0"
+run_id: t-w19-d0312fb7
+verdict: READY
+source:
+  baseline:
+    - path: docs/PRD.md
+      fingerprint: 9194c2af1e2024e9a8b9603694c81b01ca618e5303438a7350f15461d1b836ad
+    - path: docs/TECH_STACK.md
+      fingerprint: 695c5a16d41f2b9cd96cf2bfce412e5f845fa9d2d06392eeaa44684b78e7d6f7
+  decision_records:
+    path: docs/decisions
+    fingerprint: 12d8158a727bc02ee8b632cfdc3f92a1191260daf9fd06f5a6e2f9765f77b0d0
+  work_items_artifact: docs/work-items.yaml
+  work_items_fingerprint: bb75d6671ba95ffa6d28cbfab7b61a70fe6057b60782a26b50aa27ca9f2c4726
+  normalized_artifact: .spec-gate/runs/t-w19-d0312fb7/normalized-tasks.yaml
+source_tasks:
+  - task_id: W19
+    title: 구성 비교 화면
+    route: BOTH
+    acceptance_refs:
+      - A07
+accepted_specifications:
+  - task_id: W19
+    route: BOTH
+    path: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature
+  - task_id: W19
+    route: BOTH
+    path: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/W19.decision.yaml
+test_obligations:
+  - obligation_id: W19-open-from-banner
+    task_id: W19
+    kind: scenario
+    description: 과거 구성 띠의 '현재와 비교'는 그 revision을 이전, 현재 구성을 이후로 비교를 연다
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#과거 구성 띠의 '현재와 비교'는 그 revision을 이전, 현재 구성을 이후로 비교를 연다
+    acceptance_refs:
+      - A07
+  - obligation_id: W19-compare-this-record
+    task_id: W19
+    kind: scenario
+    description: 이력 행 오른쪽 클릭 '이 기록과 비교'는 그 행과 지금 보는 구성을 순번 순서로 비교한다
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#이력 행 오른쪽 클릭 '이 기록과 비교'는 그 행과 지금 보는 구성을 순번 순서로 비교한다
+  - obligation_id: W19-current-row-compare
+    task_id: W19
+    kind: scenario
+    description: 과거 구성을 볼 때 '현재 구성' 행의 '이 기록과 비교'는 '현재와 비교'와 같은 비교를 연다
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#과거 구성을 볼 때 '현재 구성' 행의 '이 기록과 비교'는 '현재와 비교'와 같은 비교를 연다
+  - obligation_id: W19-entry-enablement
+    task_id: W19
+    kind: scenario
+    description: 비교 진입 명령의 켜짐 조건
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#비교 진입 명령의 켜짐 조건
+  - obligation_id: W19-keyboard-two-revisions
+    task_id: W19
+    kind: scenario
+    description: "메뉴·대상 메뉴 명령만으로 임의의 두 revision을 비교할 수 있다(메뉴 막대에 '이 기록과 비교'를 두지 않는 0018 예외의 대체 경로) — 검증: 명령 순서 결과는 화면 상태 테스트, 실제 키보드 도달은 수동 확인 후 PR에 기록"
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#메뉴·대상 메뉴 명령만으로 임의의 두 revision을 비교할 수 있다(메뉴 막대에 '이 기록과 비교'를 두지 않는 0018 예외의 대체 경로)
+  - obligation_id: W19-target-menus
+    task_id: W19
+    kind: scenario
+    description: 비교 띠의 대상 메뉴로 양쪽을 바꿀 수 있고 고른 그대로 둔다
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#비교 띠의 대상 메뉴로 양쪽을 바꿀 수 있고 고른 그대로 둔다
+  - obligation_id: W19-target-menu-all-revisions
+    task_id: W19
+    kind: scenario
+    description: 대상 메뉴는 이력 탭이 불러온 범위와 상관없이 모든 revision을 목록 정보만으로 보인다
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#대상 메뉴는 이력 탭이 불러온 범위와 상관없이 모든 revision을 목록 정보만으로 보인다
+  - obligation_id: W19-same-target-empty
+    task_id: W19
+    kind: scenario
+    description: 두 대상이 같으면 '같은 구성입니다' 빈 상태를 보인다
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#두 대상이 같으면 '같은 구성입니다' 빈 상태를 보인다
+  - obligation_id: W19-no-change-empty
+    task_id: W19
+    kind: scenario
+    description: 다른 두 revision의 내용이 같으면 '변화 없음' 빈 상태를 보인다
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#다른 두 revision의 내용이 같으면 '변화 없음' 빈 상태를 보인다
+    acceptance_refs:
+      - A07
+  - obligation_id: W19-board-rename-summary
+    task_id: W19
+    kind: scenario
+    description: Board 이름 변경은 요약 수에 넣지 않고 따로 붙이며, 이름만 바뀌었으면 빈 상태 대신 'Board 이름' 행을 보인다
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#Board 이름 변경은 요약 수에 넣지 않고 따로 붙이며, 이름만 바뀌었으면 빈 상태 대신 'Board 이름' 행을 보인다
+  - obligation_id: W19-summary-suffixes
+    task_id: W19
+    kind: scenario
+    description: 요약 접미가 둘이면 'Board 이름 변경', '순서 변경 N개 숨김' 순서로 잇는다
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#요약 접미가 둘이면 'Board 이름 변경', '순서 변경 N개 숨김' 순서로 잇는다
+  - obligation_id: W19-reorder-hidden-zero
+    task_id: W19
+    kind: scenario
+    description: "'순서 변경 표시'를 꺼서 표시할 변화가 0개가 되어도 '변화 없음'을 쓰지 않는다"
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#'순서 변경 표시'를 꺼서 표시할 변화가 0개가 되어도 '변화 없음'을 쓰지 않는다
+  - obligation_id: W19-decode-two-only
+    task_id: W19
+    kind: scenario
+    description: 비교는 고른 두 구성만 디코딩하고 다른 revision의 손상과 상관없이 동작한다
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#비교는 고른 두 구성만 디코딩하고 다른 revision의 손상과 상관없이 동작한다
+  - obligation_id: W19-entry-read-failure
+    task_id: W19
+    kind: scenario
+    description: 비교를 여는 순간 대상을 읽지 못하면 안내하고 비교를 열지 않는다
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#비교를 여는 순간 대상을 읽지 못하면 안내하고 비교를 열지 않는다
+  - obligation_id: W19-stale-load-latest-wins
+    task_id: W19
+    kind: scenario
+    description: 늦게 끝난 대상 읽기 결과는 버리고 마지막 선택만 반영한다
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#늦게 끝난 대상 읽기 결과는 버리고 마지막 선택만 반영한다
+  - obligation_id: W19-load-cancelled
+    task_id: W19
+    kind: scenario
+    description: 대상을 읽는 동안 비교를 닫거나 Board를 바꾸면 읽기가 끝나도 비교가 다시 열리지 않는다
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#대상을 읽는 동안 비교를 닫거나 Board를 바꾸면 읽기가 끝나도 비교가 다시 열리지 않는다
+  - obligation_id: W19-load-cancelled-open
+    task_id: W19
+    kind: scenario
+    description: 열린 비교에서 대상을 바꾸는 읽기 도중 비교를 닫으면 읽기가 끝나도 다시 열리지 않는다
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#열린 비교에서 대상을 바꾸는 읽기 도중 비교를 닫으면 읽기가 끝나도 다시 열리지 않는다
+  - obligation_id: W19-no-file-access
+    task_id: W19
+    kind: scenario
+    description: 비교는 파일 시스템에 접근하지 않고 연결 상태 확인 없이 동작한다
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#비교는 파일 시스템에 접근하지 않고 연결 상태 확인 없이 동작한다
+  - obligation_id: W19-archived-compare
+    task_id: W19
+    kind: scenario
+    description: 보관된 Board에서도 비교할 수 있다
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#보관된 Board에서도 비교할 수 있다
+  - obligation_id: W19-change-labels
+    task_id: W19
+    kind: scenario
+    description: 변화 종류는 기호와 문구로 행 끝에 붙는다
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#변화 종류는 기호와 문구로 행 끝에 붙는다
+    acceptance_refs:
+      - A07
+  - obligation_id: W19-kinds-order
+    task_id: W19
+    kind: scenario
+    description: 한 행의 여러 변화 문구는 19.3 표 순서로 잇는다
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#한 행의 여러 변화 문구는 19.3 표 순서로 잇는다
+  - obligation_id: W19-moved-label-parent
+    task_id: W19
+    kind: scenario
+    description: 이동 문구의 자리값은 이전 직접 부모 Wing의 이름이고 경로가 아니다
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#이동 문구의 자리값은 이전 직접 부모 Wing의 이름이고 경로가 아니다
+  - obligation_id: W19-minimal-reorder-on-screen
+    task_id: W19
+    kind: scenario
+    description: 인덱스만 밀린 형제와 Wing 안의 자손은 화면에서도 따로 표시하지 않는다
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#인덱스만 밀린 형제와 Wing 안의 자손은 화면에서도 따로 표시하지 않는다
+    acceptance_refs:
+      - A07
+  - obligation_id: W19-multiple-kinds
+    task_id: W19
+    kind: scenario
+    description: 한 항목에 여러 변화가 있으면 ' · '로 이어 함께 보인다
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#한 항목에 여러 변화가 있으면 ' · '로 이어 함께 보인다
+    acceptance_refs:
+      - A07
+  - obligation_id: W19-board-rename-row
+    task_id: W19
+    kind: scenario
+    description: Board 이름이 바뀌었으면 트리 맨 위에 'Board 이름' 행이 있다
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#Board 이름이 바뀌었으면 트리 맨 위에 'Board 이름' 행이 있다
+  - obligation_id: W19-removed-row-style
+    task_id: W19
+    kind: scenario
+    description: 제거된 항목은 이름에 취소선을 긋고 '제거됨'을 함께 붙인다
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#제거된 항목은 이름에 취소선을 긋고 '제거됨'을 함께 붙인다
+  - obligation_id: W19-reorder-toggle
+    task_id: W19
+    kind: scenario
+    description: "'순서 변경 표시'를 끄면 순서만 바뀐 항목의 표시와 요약 수에서 뺀다"
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#'순서 변경 표시'를 끄면 순서만 바뀐 항목의 표시와 요약 수에서 뺀다
+  - obligation_id: W19-summary-count
+    task_id: W19
+    kind: scenario
+    description: 요약 수는 변화 표시가 붙는 항목 수이고 제거된 Wing의 자손도 각각 센다
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#요약 수는 변화 표시가 붙는 항목 수이고 제거된 Wing의 자손도 각각 센다
+  - obligation_id: W19-merged-tree
+    task_id: W19
+    kind: scenario
+    description: 통합 트리는 이후 구성 트리에 변화 표시를 붙이고 제거 항목을 이전 위치에 끼워 넣는다
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#통합 트리는 이후 구성 트리에 변화 표시를 붙이고 제거 항목을 이전 위치에 끼워 넣는다
+    acceptance_refs:
+      - A07
+  - obligation_id: W19-removed-placement-examples
+    task_id: W19
+    kind: scenario
+    description: 제거 항목을 끼워 넣는 위치는 결정 removed_row_placement를 따른다
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#제거 항목을 끼워 넣는 위치는 결정 removed_row_placement를 따른다
+  - obligation_id: W19-removed-placement-rule
+    task_id: W19
+    kind: decision-rule
+    description: 결정 removed_row_placement 표의 어휘(결정표 W19.decision.yaml이 단일 출처이며 이 표는 같은 내용의 사본이다)
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/W19.decision.yaml#R1-R6
+  - obligation_id: W19-changed-only-filter
+    task_id: W19
+    kind: scenario
+    description: "'바뀐 항목만 보기'를 켜면 변화가 있는 항목과 그 조상 경로만 남긴다"
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#'바뀐 항목만 보기'를 켜면 변화가 있는 항목과 그 조상 경로만 남긴다
+  - obligation_id: W19-changed-only-reset
+    task_id: W19
+    kind: scenario
+    description: "'바뀐 항목만 보기'는 비교를 열 때마다 꺼진 상태로 시작한다"
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#'바뀐 항목만 보기'는 비교를 열 때마다 꺼진 상태로 시작한다
+  - obligation_id: W19-change-details
+    task_id: W19
+    kind: scenario
+    description: 고른 항목의 '변경 내용'은 인스펙터 항목 탭에 바뀐 값만 '이전 → 이후'로 보인다
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#고른 항목의 '변경 내용'은 인스펙터 항목 탭에 바뀐 값만 '이전 → 이후'로 보인다
+  - obligation_id: W19-inspector-tab-kept
+    task_id: W19
+    kind: scenario
+    description: 비교 행을 골라도 인스펙터 탭은 그대로이고 '변경 내용'은 항목 탭에 있다
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#비교 행을 골라도 인스펙터 탭은 그대로이고 '변경 내용'은 항목 탭에 있다
+  - obligation_id: W19-side-by-side-layout
+    task_id: W19
+    kind: scenario
+    description: 나란히 보기는 왼쪽에 이전, 오른쪽에 이후 구성 트리를 두고 각 열 위에 대상 이름을 쓴다 (PR ②)
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#나란히 보기는 왼쪽에 이전, 오른쪽에 이후 구성 트리를 두고 각 열 위에 대상 이름을 쓴다
+  - obligation_id: W19-side-by-side-selection
+    task_id: W19
+    kind: scenario
+    description: 나란히 보기에서 항목을 고르면 양쪽에서 함께 강조하고 반대쪽도 그 행으로 스크롤하며 조상을 펼친다 (PR ②)
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#나란히 보기에서 항목을 고르면 양쪽에서 함께 강조하고 반대쪽도 그 행으로 스크롤하며 조상을 펼친다
+  - obligation_id: W19-side-by-side-one-side
+    task_id: W19
+    kind: scenario
+    description: 나란히 보기에서 한쪽에만 있는 항목을 고르면 반대쪽은 강조하지 않는다 (PR ②)
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#나란히 보기에서 한쪽에만 있는 항목을 고르면 반대쪽은 강조하지 않는다
+  - obligation_id: W19-side-by-side-short-labels
+    task_id: W19
+    kind: scenario
+    description: 나란히 보기의 변화 문구는 짧은 형태를 쓴다 (PR ②)
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#나란히 보기의 변화 문구는 짧은 형태를 쓴다
+  - obligation_id: W19-side-by-side-accessibility
+    task_id: W19
+    kind: scenario
+    description: 나란히 보기의 두 열은 '이전 구성'·'이후 구성' 접근성 그룹이다 (PR ②)
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#나란히 보기의 두 열은 '이전 구성'·'이후 구성' 접근성 그룹이다
+  - obligation_id: W19-remembered-preferences
+    task_id: W19
+    kind: scenario
+    description: 보기 방식과 '순서 변경 표시'는 다시 실행해도 기억하고 기본값은 통합·켬이다
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#보기 방식과 '순서 변경 표시'는 다시 실행해도 기억하고 기본값은 통합·켬이다
+  - obligation_id: W19-read-only
+    task_id: W19
+    kind: scenario
+    description: 비교 화면에서는 구성을 바꾸는 동작이 모두 꺼진다
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#비교 화면에서는 구성을 바꾸는 동작이 모두 꺼진다
+  - obligation_id: W19-open-by-row-reference
+    task_id: W19
+    kind: scenario
+    description: 비교 화면의 열기와 Finder에서 보기는 그 항목이 속한 구성의 참조로 한다
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#비교 화면의 열기와 Finder에서 보기는 그 항목이 속한 구성의 참조로 한다
+  - obligation_id: W19-menu-commands-in-compare
+    task_id: W19
+    kind: scenario
+    description: 비교 중 메뉴 막대 명령의 대상과 켜짐 조건
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#비교 중 메뉴 막대 명령의 대상과 켜짐 조건
+  - obligation_id: W19-return-to-current-closes
+    task_id: W19
+    kind: scenario
+    description: 과거 구성에서 연 비교에서 '현재 구성으로 돌아가기'는 비교를 닫고 현재 구성을 보인다
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#과거 구성에서 연 비교에서 '현재 구성으로 돌아가기'는 비교를 닫고 현재 구성을 보인다
+  - obligation_id: W19-context-menu
+    task_id: W19
+    kind: scenario
+    description: 비교 화면의 오른쪽 클릭 메뉴는 열기와 Finder에서 보기만 둔다
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#비교 화면의 오른쪽 클릭 메뉴는 열기와 Finder에서 보기만 둔다
+  - obligation_id: W19-close-returns
+    task_id: W19
+    kind: scenario
+    description: 비교를 닫으면 비교를 열기 전 화면으로 돌아간다
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#비교를 닫으면 비교를 열기 전 화면으로 돌아간다
+  - obligation_id: W19-icon-view-list
+    task_id: W19
+    kind: scenario
+    description: 아이콘 보기에서 비교를 열면 비교 동안 목록 형태로 보인다
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#아이콘 보기에서 비교를 열면 비교 동안 목록 형태로 보인다
+  - obligation_id: W19-separate-selection
+    task_id: W19
+    kind: scenario
+    description: 비교 중 고른 항목은 원래 선택과 따로 두고 닫으면 원래 선택과 그 상세로 돌아간다
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#비교 중 고른 항목은 원래 선택과 따로 두고 닫으면 원래 선택과 그 상세로 돌아간다
+  - obligation_id: W19-history-row-closes
+    task_id: W19
+    kind: scenario
+    description: 비교 중 이력 탭에서 행을 고르면 비교를 닫고 그 구성을 본다
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#비교 중 이력 탭에서 행을 고르면 비교를 닫고 그 구성을 본다
+  - obligation_id: W19-escape-scoped
+    task_id: W19
+    kind: scenario
+    description: Esc는 비교 화면에서만 비교를 닫고 열린 창·입력을 가로채지 않는다
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#Esc는 비교 화면에서만 비교를 닫고 열린 창·입력을 가로채지 않는다
+  - obligation_id: W19-sidebar-collapse
+    task_id: W19
+    kind: scenario
+    description: 비교 중에는 Board 사이드바를 접고, 자동으로 접는 화면이 모두 닫힐 때 처음 상태로 돌린다
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#비교 중에는 Board 사이드바를 접고, 자동으로 접는 화면이 모두 닫힐 때 처음 상태로 돌린다
+  - obligation_id: W19-board-switch-closes
+    task_id: W19
+    kind: scenario
+    description: 다른 Board를 고르면 비교가 닫힌다
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#다른 Board를 고르면 비교가 닫힌다
+  - obligation_id: W19-browse-no-revision
+    task_id: W19
+    kind: scenario
+    description: 비교를 열고 대상·보기 방식·'순서 변경 표시'를 바꾸고 닫아도 revision과 현재 구성은 그대로다
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#비교를 열고 대상·보기 방식·'순서 변경 표시'를 바꾸고 닫아도 revision과 현재 구성은 그대로다
+  - obligation_id: W19-catalog
+    task_id: W19
+    kind: scenario
+    description: 비교 관련 문구는 String Catalog에 있다
+    source: .spec-gate/runs/t-w19-d0312fb7/specs/revision-2/task-W19.feature#비교 관련 문구는 String Catalog에 있다
+acceptance_coverage:
+  A07:
+    - W19-open-from-banner
+    - W19-no-change-empty
+    - W19-change-labels
+    - W19-minimal-reorder-on-screen
+    - W19-multiple-kinds
+    - W19-merged-tree
+decision_log: null
+critic_report: .spec-gate/runs/t-w19-d0312fb7/critic-pass-3.yaml
+non_blocking_notes:
+  - finding_id: F-W19-22
+    task_id: W19
+    note: 비교 중 메뉴 막대 명령 Outline의 Given은 순번 3 이후 무엇이 바뀌었는지 서술하지 않는다. 그런데 예 두 개는 그 변화가 있어야만 존재하는 행을 쓴다. '제거된 "notes.md"' 행은 notes.md가 제거되어야 있고, 'Board 이름' 행은 Board 이름이 바뀌어야 있다. Background 구성만으로는 두 행이 생기지 않는다. 테스트 작성자는 예 열에서 전제를 짐작해 만들어야 한다. 기대 결과는 분명해서 수용 경계는 흔들리지 않는다.
+  - finding_id: F-W19-23
+    task_id: W19
+    note: 과거 구성에서 비교를 열었을 때 과거 구성 띠가 비교 띠와 함께 보이는지, 비교 띠로 가려지는지 정하지 않았다. 띠가 보인다면 그 안의 '현재와 비교' 버튼의 켜짐(보기 메뉴의 같은 명령은 비교 중 꺼짐)과 '현재로 돌아가기' 버튼의 결과도 정해야 한다. '현재 구성으로 돌아가기' 시나리오의 결과는 '비교를 닫는다'로 정해져 있고, 띠 버튼도 16.4에 따라 같은 동작이어야 한다. 그래서 잘못 구현돼도 피해는 작다. 다만 W20이 띠에 '복원…'을 더하면 비교 중 복원 경로가 생길 수 있다.
+  - finding_id: F-W19-24
+    task_id: W19
+    note: 2차 비평의 major 한 건(F-W19-15)과 minor 다섯 건(F-W19-16~20)은 revision 2에서 모두 반영됐다. 비교 중 메뉴 막대 명령 Outline은 '열기'(⌘O)가 원래 선택이 아니라 비교 행에 작동한다는 단언, 행 종류별 켜짐, 숨은 보기 상태를 바꾸는 명령의 꺼짐, 고르지 않은 경우의 꺼짐을 모두 담는다. '현재 구성으로 돌아가기'는 16.4와 같은 결과로 정했다. 현재 구성에서 연 비교에서는 기존 canReturnToCurrent(isViewingPast)가 거짓이므로 따로 정할 필요가 없다. 새 기대값은 W16 규칙으로 다시 따라가 확인했고 모두 일치했다. 최상위에서 "API 명세"를 "문서" 앞으로 옮기면 순서 변경은 "API 명세" 하나다(LIS 동률 시 A에서 앞선 Node 유지). "backend"가 "문서"로 이동하면 "개발" 안의 공통 형제가 하나뿐이라 순서 변경이 생기지 않는다. 그래서 문구는 "이름 변경 · ‘개발’에서 이동 · 대상 교체 · 아이콘 변경"이다. 'Board 보관'·'보관 해제'·'이력 보기'(⌘Y)는 비교 중 켜짐을 정하지 않았다. 다만 셋 다 구성을 바꾸지 않고 보관된 Board에서도 비교할 수 있으므로(0009) 위험은 없다고 본다.
+  - finding_id: F-W19-25
+    task_id: W19
+    note: "'이 기록과 비교'를 메뉴 막대에 두지 않는 예외는 가정에 근거와 기록 계획이 있다. 이력 목록이 단일 선택이라 메뉴 막대에서 고를 수 있는 대상은 지금 보는 구성뿐이고, 그러면 같은 명령은 늘 꺼진다. 대체 경로('현재와 비교'와 대상 메뉴)도 시나리오와 수동 검증 계획으로 확인한다. 정책 질문으로 올릴 만큼 해석이 갈리지는 않는다고 판단했다. 다만 병합 시점까지 DESIGN.md 19.1의 문장은 명세와 반대로 남는다. 이 예외를 handoff의 non_blocking_notes로 넘겨 디자인 세션의 19.1·11.1 갱신을 추적해야 한다."
+  - finding_id: F-W19-26
+    task_id: W19
+    note: 1차 비평의 관찰 두 개가 그대로 남아 있다. 첫째, 최신 revision 대 '현재 구성' 비교가 '같은 구성입니다'가 아니라 '변화 없음'이 된다는 해석은 가정에만 있고 시나리오로 고정되지 않았다. 둘째, 결정표 어휘 Outline(:262)은 결정표 W19.decision.yaml의 사본이다. 그래서 규칙을 바꿀 때 두 곳을 함께 고쳐야 한다.

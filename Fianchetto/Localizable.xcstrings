@@ -13,6 +13,10 @@
       "comment" : "원인 문구: 출처 revision 순번에서 복원(W17, DESIGN.md 16.2).",
       "extractionState" : "manual"
     },
+    "%@ → %@" : {
+      "comment" : "구성 비교 화면(W19, DESIGN.md 19장, 0027).",
+      "extractionState" : "manual"
+    },
     "Bishop" : {
       "comment" : "로컬 파일·폴더 연결 항목의 화면 용어(0006). 영문 고유 용어 그대로 쓴다.",
       "extractionState" : "manual"
@@ -83,6 +87,10 @@
     "Finder에서 보기" : {
       "extractionState" : "manual"
     },
+    "URL" : {
+      "comment" : "구성 비교 화면(W19, DESIGN.md 19장, 0027).",
+      "extractionState" : "manual"
+    },
     "URL 변경" : {
       "extractionState" : "manual"
     },
@@ -120,8 +128,16 @@
     "https://" : {
 
     },
+    "‘%@’에서 이동" : {
+      "comment" : "구성 비교 화면(W19, DESIGN.md 19장, 0027).",
+      "extractionState" : "manual"
+    },
     "가져오기" : {
       "comment" : "원인 문구: 가져온 Board(DESIGN.md 16.2).",
+      "extractionState" : "manual"
+    },
+    "같은 구성입니다" : {
+      "comment" : "구성 비교 화면(W19, DESIGN.md 19장, 0027).",
       "extractionState" : "manual"
     },
     "같은 대상인지 확인할 수 없어 연결 대상 변경으로 기록됩니다." : {
@@ -145,6 +161,10 @@
     },
     "과거 구성에서는 같은 대상의 접근만 복구할 수 있습니다." : {
       "comment" : "과거 화면 다시 선택에서 다른 대상을 고름(W18, PRD §6-H).",
+      "extractionState" : "manual"
+    },
+    "구성 비교" : {
+      "comment" : "구성 비교 화면(W19, DESIGN.md 19장, 0027).",
       "extractionState" : "manual"
     },
     "구성이 비어 있습니다" : {
@@ -198,6 +218,10 @@
     "대상" : {
       "extractionState" : "manual"
     },
+    "대상 교체" : {
+      "comment" : "구성 비교 화면(W19, DESIGN.md 19장, 0027).",
+      "extractionState" : "manual"
+    },
     "대상 없음" : {
       "extractionState" : "manual"
     },
@@ -215,6 +239,10 @@
       "extractionState" : "manual"
     },
     "데이터에 접근할 권한이 없습니다." : {
+      "extractionState" : "manual"
+    },
+    "두 구성이 같습니다." : {
+      "comment" : "구성 비교 화면(W19, DESIGN.md 19장, 0027).",
       "extractionState" : "manual"
     },
     "뒤로" : {
@@ -237,11 +265,31 @@
       "comment" : "Bishop 용도(W29).",
       "extractionState" : "manual"
     },
+    "바뀐 내용 없음" : {
+      "comment" : "비교 인스펙터: 고른 행에 바뀐 값이 없음(W19, 디자인 세션 확인).",
+      "extractionState" : "manual"
+    },
+    "바뀐 항목만 보기" : {
+      "comment" : "구성 비교 화면(W19, DESIGN.md 19장, 0027).",
+      "extractionState" : "manual"
+    },
     "발표" : {
       "comment" : "Bishop 용도(W29).",
       "extractionState" : "manual"
     },
     "변경" : {
+      "extractionState" : "manual"
+    },
+    "변경 내용" : {
+      "comment" : "구성 비교 화면(W19, DESIGN.md 19장, 0027).",
+      "extractionState" : "manual"
+    },
+    "변화 %lld개" : {
+      "comment" : "구성 비교 화면(W19, DESIGN.md 19장, 0027).",
+      "extractionState" : "manual"
+    },
+    "변화 없음" : {
+      "comment" : "구성 비교 화면(W19, DESIGN.md 19장, 0027).",
       "extractionState" : "manual"
     },
     "보관 해제" : {
@@ -265,6 +313,10 @@
     "볼륨 연결 필요" : {
       "extractionState" : "manual"
     },
+    "비교 닫기" : {
+      "comment" : "구성 비교 화면(W19, DESIGN.md 19장, 0027).",
+      "extractionState" : "manual"
+    },
     "상위 Wing으로" : {
       "extractionState" : "manual"
     },
@@ -275,6 +327,22 @@
       "extractionState" : "manual"
     },
     "새 대상" : {
+      "extractionState" : "manual"
+    },
+    "순서 변경" : {
+      "comment" : "구성 비교 화면(W19, DESIGN.md 19장, 0027).",
+      "extractionState" : "manual"
+    },
+    "순서 변경 %lld개 숨김" : {
+      "comment" : "구성 비교 화면(W19, DESIGN.md 19장, 0027).",
+      "extractionState" : "manual"
+    },
+    "순서 변경 표시" : {
+      "comment" : "구성 비교 화면(W19, DESIGN.md 19장, 0027).",
+      "extractionState" : "manual"
+    },
+    "순서 변경 표시를 켜면 순서만 바뀐 항목이 보입니다." : {
+      "comment" : "구성 비교 화면(W19, DESIGN.md 19장, 0027).",
       "extractionState" : "manual"
     },
     "아래로 이동" : {
@@ -351,6 +419,14 @@
     "위로 이동" : {
       "extractionState" : "manual"
     },
+    "위치" : {
+      "comment" : "구성 비교 화면(W19, DESIGN.md 19장, 0027).",
+      "extractionState" : "manual"
+    },
+    "이 기록과 비교" : {
+      "comment" : "구성 비교 화면(W19, DESIGN.md 19장, 0027).",
+      "extractionState" : "manual"
+    },
     "이 기록을 읽을 수 없습니다" : {
       "comment" : "고른 revision의 구성을 읽지 못함(W17).",
       "extractionState" : "manual"
@@ -401,6 +477,14 @@
       "comment" : "Bishop 용도(W29).",
       "extractionState" : "manual"
     },
+    "이전 구성" : {
+      "comment" : "구성 비교 화면(W19, DESIGN.md 19장, 0027).",
+      "extractionState" : "manual"
+    },
+    "이후 구성" : {
+      "comment" : "구성 비교 화면(W19, DESIGN.md 19장, 0027).",
+      "extractionState" : "manual"
+    },
     "인스펙터" : {
       "comment" : "인스펙터 탭 고르기의 접근성 이름(W17).",
       "extractionState" : "manual"
@@ -423,6 +507,10 @@
     "제거…" : {
       "extractionState" : "manual"
     },
+    "제거됨" : {
+      "comment" : "구성 비교 화면(W19, DESIGN.md 19장, 0027).",
+      "extractionState" : "manual"
+    },
     "종료" : {
       "extractionState" : "manual"
     },
@@ -434,6 +522,10 @@
       "extractionState" : "manual"
     },
     "최상위" : {
+      "extractionState" : "manual"
+    },
+    "추가됨" : {
+      "comment" : "구성 비교 화면(W19, DESIGN.md 19장, 0027).",
       "extractionState" : "manual"
     },
     "취소" : {
@@ -450,6 +542,10 @@
       "extractionState" : "manual"
     },
     "표시 이름" : {
+      "extractionState" : "manual"
+    },
+    "표시할 변화 없음" : {
+      "comment" : "구성 비교 화면(W19, DESIGN.md 19장, 0027).",
       "extractionState" : "manual"
     },
     "할 일" : {
@@ -486,6 +582,10 @@
     },
     "현재로 돌아가기" : {
       "comment" : "과거 구성 띠 버튼(W18).",
+      "extractionState" : "manual"
+    },
+    "현재와 비교" : {
+      "comment" : "구성 비교 화면(W19, DESIGN.md 19장, 0027).",
       "extractionState" : "manual"
     },
     "확인" : {

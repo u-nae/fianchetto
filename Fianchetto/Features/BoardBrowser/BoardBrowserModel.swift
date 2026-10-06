@@ -40,6 +40,8 @@ final class BoardBrowserModel {
         /// 시스템 시간대가 들어 있는 달력. 바뀐 시간대를 따르도록 부를 때마다 읽는다.
         var calendar: () -> Calendar = { Calendar.autoupdatingCurrent }
         var locale: Locale = .autoupdatingCurrent
+        /// 비교 대상 revision 하나를 읽는다. 테스트는 읽기 순서를 정하려고 바꾼다. nil이면 저장소에서 바로 읽는다.
+        var loadRevisionSnapshot: (@Sendable (ProjectStore, UUID) async throws -> ConfigurationSnapshot)?
     }
 
     /// Bishop 연결 결과 안내. 다시 시도는 처음 요청 그대로 실행한다.
@@ -199,8 +201,13 @@ final class BoardBrowserModel {
     private(set) var inspectorTab: InspectorTab = .item
     /// Board 사이드바가 보이는지. 화면이 NavigationSplitView 열 표시와 묶는다. 저장하지 않으므로 다시 실행하면 보인다.
     var isSidebarVisible = true
-    /// 이력 탭을 열 때의 사이드바 상태. 이력 탭을 닫으면 이 상태로 돌린다(16.1).
-    private var sidebarBeforeHistory: Bool?
+    /// 사이드바를 자동으로 접는 화면(DESIGN 19.1): 이력 탭, 비교.
+    private enum SidebarCollapser: Hashable { case history, comparison }
+    private var sidebarCollapsers: Set<SidebarCollapser> = []
+    /// 처음 자동으로 접을 때의 사이드바 상태. 마지막 화면이 닫히면 이 상태로 돌린다(16.1, 19.1).
+    private var sidebarBeforeCollapse: Bool?
+    /// 구성 비교(W19).
+    let comparison: ComparisonModel
     /// 이력 탭의 목록·날짜로 찾기·고른 revision.
     let history: HistoryPanelModel
 
@@ -242,10 +249,37 @@ final class BoardBrowserModel {
             environment: .init(now: dependencies.now, calendar: dependencies.calendar, locale: dependencies.locale),
             store: { openedStore() }
         )
+        var currentSnapshot: () -> ConfigurationSnapshot? = { nil }
+        var currentBoard: () -> UUID? = { nil }
+        var purposeName: (BishopPurpose?) -> String = { _ in "" }
+        var historyDate: (Date) -> String = { $0.formatted() }
+        let loadRevision = dependencies.loadRevisionSnapshot
+        comparison = ComparisonModel(environment: .init(
+            loadSnapshot: { id in
+                guard let store = openedStore() else { throw StoreReadError.storeUnavailable }
+                if let loadRevision { return try await loadRevision(store, id) }
+                return try await store.snapshot(revisionID: id)
+            },
+            currentSnapshot: { currentSnapshot() },
+            allSummaries: {
+                guard let store = openedStore(), let boardID = currentBoard() else { return [] }
+                return try await store.revisionSummaries(projectID: boardID).reversed()
+            },
+            lastBoard: dependencies.lastBoard,
+            purposeText: { purpose in purposeName(purpose) },
+            dateTimeText: { historyDate($0) }
+        ))
         isInspectorPresented = !dependencies.lastBoard.isInspectorHidden
         bishopIconStyle = dependencies.lastBoard.bishopIconStyle.flatMap(BishopIconStyle.init(rawValue:)) ?? .symbol
         openedStore = { [weak self] in self?.openedStore?.store }
         history.selectionChanged = { [weak self] in await self?.viewedConfigurationChanged() }
+        history.selectionRequested = { [weak self] in self?.closeComparison() }
+        currentSnapshot = { [weak self] in
+            if case let .loaded(snapshot) = self?.current { snapshot } else { nil }
+        }
+        historyDate = { [weak self] date in self?.history.dateTimeText(date) ?? date.formatted() }
+        currentBoard = { [weak self] in self?.selectedBoardID }
+        purposeName = { [weak self] purpose in self?.purposeText(purpose) ?? "" }
     }
 
     // MARK: 이력 탭(W17)
@@ -275,19 +309,29 @@ final class BoardBrowserModel {
 
     private func openHistoryTab() async {
         inspectorTab = .history
-        if sidebarBeforeHistory == nil {
-            sidebarBeforeHistory = isSidebarVisible
-            isSidebarVisible = false
-        }
+        collapseSidebar(for: .history)
         await history.open()
     }
 
     private func closeHistoryTab() {
         inspectorTab = .item
-        if let before = sidebarBeforeHistory {
-            isSidebarVisible = before
-            sidebarBeforeHistory = nil
+        releaseSidebar(from: .history)
+    }
+
+    /// 자동으로 접는 화면이 하나라도 열려 있으면 접힌 채로 두고, 처음 열기 전 상태를 기억한다(19.1).
+    private func collapseSidebar(for collapser: SidebarCollapser) {
+        guard sidebarCollapsers.insert(collapser).inserted else { return }
+        if sidebarBeforeCollapse == nil {
+            sidebarBeforeCollapse = isSidebarVisible
         }
+        isSidebarVisible = false
+    }
+
+    /// 마지막 화면이 닫힐 때 처음 열기 전 상태로 돌린다.
+    private func releaseSidebar(from collapser: SidebarCollapser) {
+        guard sidebarCollapsers.remove(collapser) != nil, sidebarCollapsers.isEmpty, let before = sidebarBeforeCollapse else { return }
+        isSidebarVisible = before
+        sidebarBeforeCollapse = nil
     }
 
     /// 보기 메뉴 "인스펙터 보기/가리기"(⌥⌘I)와 툴바 버튼.
@@ -507,7 +551,9 @@ final class BoardBrowserModel {
     // 각 값은 해당 동작이 실제로 창을 열거나 기록하는 조건과 같다(MenuCapabilityModelTests). 보관된 Board는 편집 동작이 모두 거짓이다(0009).
 
     /// 과거 구성을 보는 동안에도 편집 동작은 모두 거짓이다(W18, DESIGN 16.4).
-    private var canEditSelectedBoard: Bool { selectedBoardID != nil && openedStore != nil && !selectedBoardIsArchived && !isViewingPast }
+    private var canEditSelectedBoard: Bool {
+        selectedBoardID != nil && openedStore != nil && !selectedBoardIsArchived && !isViewingPast && !isComparing
+    }
 
     /// Bishop 추가·Wing 추가·웹 링크 추가.
     var canAddToBoard: Bool { canEditSelectedBoard }
@@ -518,7 +564,7 @@ final class BoardBrowserModel {
     var canMoveSelectedUp: Bool { canEditSelectedBoard && siblingPosition.map { $0.index > 0 } == true }
     var canMoveSelectedDown: Bool { canEditSelectedBoard && siblingPosition.map { $0.index < $0.count - 1 } == true }
     /// 상태 확인은 조회라 보관된 Board에서도 한다.
-    var canRefreshStatuses: Bool { selectedBoardID != nil && openedStore != nil }
+    var canRefreshStatuses: Bool { selectedBoardID != nil && openedStore != nil && !isComparing }
     var canRenameSelectedBoard: Bool { canEditSelectedBoard }
 
     /// 선택한 항목의 형제 안 위치.
@@ -530,7 +576,7 @@ final class BoardBrowserModel {
     }
 
     private func editableBoard() -> UUID? {
-        guard let boardID = selectedBoardID, openedStore != nil, !isViewingPast else { return nil }
+        guard let boardID = selectedBoardID, openedStore != nil, !isViewingPast, !isComparing else { return nil }
         guard !selectedBoardIsArchived else {
             linkNotice = LinkNotice(kind: .archived, request: nil)
             return nil
@@ -733,7 +779,7 @@ final class BoardBrowserModel {
 
     /// 놓은 곳이 최상위(nil)나 그룹이고, 보관되지 않은 Board가 선택돼 있을 때만 받는다.
     func canAcceptDrop(on nodeID: UUID?) -> Bool {
-        guard selectedBoardID != nil, !selectedBoardIsArchived, !isViewingPast, case let .loaded(snapshot) = shown else { return false }
+        guard selectedBoardID != nil, !selectedBoardIsArchived, !isViewingPast, !isComparing, case let .loaded(snapshot) = shown else { return false }
         guard let nodeID else { return true }
         return snapshot.nodes.first { $0.id == nodeID }?.kind == .group
     }
@@ -843,7 +889,7 @@ final class BoardBrowserModel {
     /// 앱 안에서 끌어온 항목을 받을 수 있는지: 보관되지 않은 Board의 현재 구성에 있는 항목이고,
     /// 놓은 곳이 빈 곳(nil)이거나 연결 폴더가 아닌 이 Board의 항목이어야 한다(PRD §6-C).
     func canAcceptNodeDrop(_ nodeID: UUID, on targetID: UUID?) -> Bool {
-        guard selectedBoardID != nil, !selectedBoardIsArchived, !isViewingPast, case let .loaded(snapshot) = shown,
+        guard selectedBoardID != nil, !selectedBoardIsArchived, !isViewingPast, !isComparing, case let .loaded(snapshot) = shown,
               snapshot.nodes.contains(where: { $0.id == nodeID })
         else { return false }
         guard let targetID else { return true }
@@ -903,19 +949,43 @@ final class BoardBrowserModel {
     // MARK: 열기와 Finder에서 보기
 
     /// 기본 앱으로 열 수 있는 선택: Bishop과 웹 링크.
-    var canOpenSelected: Bool { selectedNode.map { $0.kind != .group } ?? false }
+    var canOpenSelected: Bool {
+        if isComparing { return comparison.selectedRow.map { $0.node.kind != .group } ?? false }
+        return selectedNode.map { $0.kind != .group } ?? false
+    }
 
     /// Finder에서 보여 줄 수 있는 선택: Bishop.
-    var canRevealSelected: Bool { selectedNode.map { $0.kind == .file || $0.kind == .folder } ?? false }
+    var canRevealSelected: Bool {
+        let node = isComparing ? comparison.selectedRow?.node : selectedNode
+        return node.map { $0.kind == .file || $0.kind == .folder } ?? false
+    }
 
     func openSelected() async {
-        guard canOpenSelected, let id = selectedNodeID else { return }
+        guard canOpenSelected else { return }
+        if isComparing {
+            await performOnComparisonRow(.open)
+            return
+        }
+        guard let id = selectedNodeID else { return }
         await perform(.open, on: id)
     }
 
     func revealSelected() async {
-        guard canRevealSelected, let id = selectedNodeID else { return }
+        guard canRevealSelected else { return }
+        if isComparing {
+            await performOnComparisonRow(.reveal)
+            return
+        }
+        guard let id = selectedNodeID else { return }
         await perform(.reveal, on: id)
+    }
+
+    /// 비교에서 고른 행을 그 행이 속한 구성의 Node로 연다(제거 행은 이전 구성). 연결 상태는 기록하지 않는다(19.1).
+    private func performOnComparisonRow(_ command: OpenCommand) async {
+        guard let node = comparison.selectedRow?.node, let opening = openedStore?.opening else { return }
+        if case let .failed(failure) = await opening.perform(command, node: node) {
+            linkNotice = LinkNotice(kind: .openFailed(failure), request: nil, action: .open)
+        }
     }
 
     /// 트리 행 이중 클릭.
@@ -1087,9 +1157,11 @@ final class BoardBrowserModel {
     var iconTitle: String { pathBarNames.last ?? "" }
     var iconSubtitle: String? { resolvedIconPath.isEmpty ? nil : pathBarNames.first }
 
-    var canGoUp: Bool { viewMode == .icons && !resolvedIconPath.isEmpty }
-    var canGoBack: Bool { viewMode == .icons && !backStack.isEmpty }
-    var canEnterSelected: Bool { viewMode == .icons && selectedNode != nil }
+    var canGoUp: Bool { viewMode == .icons && !isComparing && !resolvedIconPath.isEmpty }
+    var canGoBack: Bool { viewMode == .icons && !isComparing && !backStack.isEmpty }
+    var canEnterSelected: Bool { viewMode == .icons && !isComparing && selectedNode != nil }
+    /// 보기 메뉴 '아이콘으로 보기'·'목록으로 보기'. 비교 중에는 숨은 보기 상태를 지키려고 끈다(0027).
+    var canChangeViewMode: Bool { selectedBoardID != nil && !isComparing }
 
     /// Wing 안으로 들어간다. 선택은 비운다.
     func enter(_ wingID: UUID) {
@@ -1247,7 +1319,7 @@ final class BoardBrowserModel {
         linkStatuses.merge(statuses) { _, new in new }
     }
 
-    var canReselectSelected: Bool { selectedNode.map { $0.kind == .file || $0.kind == .folder } ?? false }
+    var canReselectSelected: Bool { !isComparing && (selectedNode.map { $0.kind == .file || $0.kind == .folder } ?? false) }
 
     /// 다시 선택: 같은 대상이면 접근을 복구하고, 아니면 연결 대상 변경 확인 창을 연다.
     func reselectSelectedTarget() async {
@@ -1311,6 +1383,72 @@ final class BoardBrowserModel {
     /// 띠의 '현재로 돌아가기', 보기 메뉴 '현재 구성으로 돌아가기'. 이력 탭 '현재 구성' 행과 같은 동작이다.
     func returnToCurrent() async {
         await history.select(.current)
+    }
+
+    // MARK: 구성 비교(W19)
+
+    var isComparing: Bool { comparison.isOpen }
+
+    /// 보기 메뉴·과거 구성 띠 '현재와 비교': 과거 구성을 볼 때만, 비교 중에는 꺼진다.
+    var canCompareWithCurrent: Bool { isViewingPast && !isComparing }
+
+    func compareWithCurrent() async {
+        guard canCompareWithCurrent, let id = history.selectedRevisionID else { return }
+        await openComparison(before: .revision(id), after: .current)
+    }
+
+    /// 이력 행 오른쪽 클릭 '이 기록과 비교': 그 행이 지금 보는 구성이거나 비교 중이면 꺼진다.
+    func canCompareRecord(_ row: HistoryPanelModel.Selection) -> Bool {
+        guard selectedBoardID != nil, !isComparing else { return false }
+        return row != history.selection
+    }
+
+    /// 그 행과 지금 보는 구성을 순번이 작은 쪽을 이전으로 두어 비교한다(0027).
+    func compareRecord(_ row: HistoryPanelModel.Selection) async {
+        guard canCompareRecord(row) else { return }
+        let shown: ComparisonTarget = history.selectedRevisionID.map(ComparisonTarget.revision) ?? .current
+        let other: ComparisonTarget = switch row {
+        case .current: .current
+        case let .revision(id): .revision(id)
+        }
+        await openComparison(before: earlier(shown, other), after: earlier(shown, other) == shown ? other : shown)
+    }
+
+    var canCloseComparison: Bool { isComparing }
+
+    /// 비교 행의 VoiceOver 라벨: 이름, 종류, 변화 문구.
+    func comparisonAccessibilityLabel(_ row: ComparisonRow) -> String {
+        [row.node.displayName, kindText(for: row.node), comparison.changeText(row)].filter { !$0.isEmpty }.joined(separator: ", ")
+    }
+
+    /// 비교 띠 '비교 닫기', Esc, 보기 메뉴 '비교 닫기'. 열기 전 화면(현재·과거, 선택, 보기 방식)은 그대로다.
+    /// 여는 중인 비교도 취소한다(늦게 끝난 읽기가 비교를 다시 열지 않게).
+    func closeComparison() {
+        let wasOpen = isComparing
+        comparison.close()
+        if wasOpen { releaseSidebar(from: .comparison) }
+    }
+
+    private func openComparison(before: ComparisonTarget, after: ComparisonTarget) async {
+        let boardID = selectedBoardID
+        comparison.remember(history.rows.map(\.summary))
+        guard await comparison.open(before: before, after: after) else { return }
+        guard selectedBoardID == boardID else {
+            comparison.close()
+            return
+        }
+        collapseSidebar(for: .comparison)
+    }
+
+    /// 두 대상 중 이전(순번이 작은 쪽, 현재 구성은 가장 나중).
+    private func earlier(_ lhs: ComparisonTarget, _ rhs: ComparisonTarget) -> ComparisonTarget {
+        func sequence(_ target: ComparisonTarget) -> Int {
+            switch target {
+            case .current: return .max
+            case let .revision(id): return history.rows.first { $0.id == id }?.summary.sequence ?? .max - 1
+            }
+        }
+        return sequence(lhs) <= sequence(rhs) ? lhs : rhs
     }
 
     var pastBannerTitle: String { String(localized: "과거 구성 · 읽기 전용") }
@@ -1445,7 +1583,7 @@ final class BoardBrowserModel {
     }
 
     var canReplaceSelectedTarget: Bool {
-        guard !isViewingPast, case let .loaded(snapshot) = shown, let id = selectedNodeID,
+        guard !isViewingPast, !isComparing, case let .loaded(snapshot) = shown, let id = selectedNodeID,
               let node = snapshot.nodes.first(where: { $0.id == id })
         else { return false }
         return node.kind == .file || node.kind == .folder
@@ -1574,6 +1712,7 @@ final class BoardBrowserModel {
         selectedBoardID = boardID
         selectedNodeID = nil
         viewMode = dependencies.lastBoard.viewMode(for: boardID).flatMap(ViewMode.init(rawValue:)) ?? .list
+        closeComparison()
         history.reset(boardID: boardID)
         iconPath = []
         hasIconLocation = false

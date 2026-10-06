@@ -68,12 +68,29 @@ struct UITestApp {
         XCTAssertEqual(XCTWaiter().wait(for: [hittable], timeout: timeout), .completed)
         element.click()
         // 입력 칸은 키 입력마다 다시 그려질 수 있어, 초점을 준 뒤에는 요소 참조 대신 앱에 입력한다.
-        if !text.isEmpty { app.typeText(text) }
+        guard !text.isEmpty else { return }
+        app.typeText(text)
+        ensureValue(text, in: element)
     }
 
     /// 입력 칸의 기존 값을 지우고 새 값을 넣는다. 커서를 끝으로 옮긴 뒤 기존 글자 수만큼 지운다.
     func replaceText(in element: XCUIElement, with text: String) {
         type("", into: element)
+        clearAndType(text, in: element)
+        ensureValue(text, in: element)
+    }
+
+    /// 키 합성이 글자를 빠뜨리는 일이 있어(예: draft → drat), 입력 칸의 값이 기대와 다르면 지우고 다시 입력한다(최대 두 번).
+    /// 테스트가 확인하는 것은 앱 동작이지 키 합성 도구가 아니므로, 입력 단계의 흔들림만 걷어 낸다.
+    private func ensureValue(_ text: String, in element: XCUIElement) {
+        for _ in 0..<2 {
+            let typed = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == %@", text), object: element)
+            guard XCTWaiter().wait(for: [typed], timeout: 2) != .completed, element.exists else { return }
+            clearAndType(text, in: element)
+        }
+    }
+
+    private func clearAndType(_ text: String, in element: XCUIElement) {
         let current = element.value as? String ?? ""
         app.typeKey(.rightArrow, modifierFlags: .command)
         for _ in current { app.typeKey(.delete, modifierFlags: []) }
