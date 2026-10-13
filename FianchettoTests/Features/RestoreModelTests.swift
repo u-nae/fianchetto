@@ -329,16 +329,21 @@ struct RestoreModelTests {
         }
     }
 
+    // 가드가 있으면 첫 호출만 서비스에 닿아 실패한다. 가드가 없으면 두 번째 호출이 성공해 revision 6이 생긴다.
     @Test("확정을 연달아 두 번 요청해도 revision은 하나만 생긴다")
     func doubleConfirm() async throws {
         try await withTemporaryDirectoryAsync { directory async throws in
             let o = try await opened(directory)
             try await o.viewPast(2)
             o.model.beginRestore()
+            o.harness.fault.failNext(1)
             async let a: Void = o.model.confirmRestore()
             async let b: Void = o.model.confirmRestore()
             _ = await (a, b)
-            #expect(try await o.revisionCount() == 6)
+            #expect(try await o.revisionCount() == 5)
+            #expect(try await o.currentRevision().sequence == 5)
+            #expect(o.model.restorePreview == nil)
+            #expect(o.model.linkNotice == BoardBrowserModel.LinkNotice(kind: .saveFailed, request: nil, action: .restore))
         }
     }
 
