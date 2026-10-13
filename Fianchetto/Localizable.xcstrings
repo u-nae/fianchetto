@@ -614,6 +614,38 @@
       "comment" : "구성 비교 화면(W19, DESIGN.md 19장, 0027).",
       "extractionState" : "manual"
     },
+    "이 구성으로…" : {
+      "comment" : "과거 구성 띠·파일 메뉴(W20, 0035).",
+      "extractionState" : "manual"
+    },
+    "복원…" : {
+      "comment" : "과거 구성 띠·파일 메뉴(W20, 0035).",
+      "extractionState" : "manual"
+    },
+    "이 구성으로 복원…" : {
+      "comment" : "과거 구성 띠·파일 메뉴(W20, 0035).",
+      "extractionState" : "manual"
+    },
+    "#%lld 구성으로 복원" : {
+      "comment" : "복원 확인 시트(W20, 0034).",
+      "extractionState" : "manual"
+    },
+    "복원" : {
+      "comment" : "복원 확인 시트(W20, 0034).",
+      "extractionState" : "manual"
+    },
+    "현재와 같은 구성입니다" : {
+      "comment" : "복원 확인 시트(W20, 0034).",
+      "extractionState" : "manual"
+    },
+    "구성 복원" : {
+      "comment" : "복원 확인 시트(W20, 0034).",
+      "extractionState" : "manual"
+    },
+    "%@, %@" : {
+      "comment" : "복원 확인 시트(W20, 0034).",
+      "extractionState" : "manual"
+    },
     "확인" : {
       "extractionState" : "manual"
     },

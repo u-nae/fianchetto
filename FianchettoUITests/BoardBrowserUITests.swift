@@ -288,6 +288,73 @@ final class BoardBrowserUITests: XCTestCase {
         XCTAssertFalse(app.descendants(matching: .any)["compare-bar"].exists)
     }
 
+    // [W20-restore-menu-opens-sheet] [W20-file-menu-same-sheet] [W20-sheet-keyboard-accessibility]
+    // 띠의 '이 구성으로…' › '복원…'과 파일 메뉴 '이 구성으로 복원…'이 같은 시트를 열고, Esc는 취소, Return은 복원이다.
+    @MainActor
+    func test_W20_restoreFromPastConfiguration() {
+        let test = UITestApp(name: "restore")
+        test.launch()
+        defer { test.terminate() }
+        let app = test.app
+        XCTAssertTrue(app.staticTexts["Board가 없습니다"].waitForExistence(timeout: 10))
+        test.activateForKeyboard()
+        app.typeKey("n", modifierFlags: .command)
+        test.type("Plan", into: app.textFields["board-name-field"])
+        app.typeKey(.return, modifierFlags: [])
+        XCTAssertTrue(app.descendants(matching: .any)["board-row-Plan"].waitForExistence(timeout: 5))
+        app.menuBars.menuBarItems["파일"].click()
+        app.menuBars.menuBarItems["파일"].menuItems["Wing 추가…"].click()
+        test.type("Dev", into: app.textFields["node-name-field"])
+        app.typeKey(.return, modifierFlags: [])
+        XCTAssertTrue(app.descendants(matching: .any)["node-row-Dev"].waitForExistence(timeout: 5))
+
+        let viewMenu = app.menuBars.menuBarItems["보기"]
+        viewMenu.click()
+        viewMenu.menuItems["이력 보기"].click()
+        let first = app.descendants(matching: .any)["revision-row-1"]
+        XCTAssertTrue(first.waitForExistence(timeout: 5))
+        first.click()
+        let banner = app.descendants(matching: .any)["past-banner"]
+        XCTAssertTrue(banner.waitForExistence(timeout: 5))
+
+        // 띠의 메뉴로 시트를 연다.
+        var menu = app.menuButtons["restore-menu"]
+        if !menu.waitForExistence(timeout: 5) {
+            menu = app.descendants(matching: .any)["restore-menu"]
+        }
+        XCTAssertTrue(menu.waitForExistence(timeout: 5))
+        menu.click()
+        let restoreItem = app.menuItems["복원…"]
+        XCTAssertTrue(restoreItem.waitForExistence(timeout: 5))
+        restoreItem.click()
+        let title = app.descendants(matching: .any)["restore-sheet-title"]
+        XCTAssertTrue(title.waitForExistence(timeout: 5))
+        XCTAssertEqual(title.label, "#1 구성으로 복원")
+        XCTAssertEqual(app.descendants(matching: .any)["restore-summary"].label, "변화 1개")
+        let row = app.descendants(matching: .any)["restore-row-Dev"]
+        XCTAssertTrue(row.waitForExistence(timeout: 5))
+        XCTAssertEqual(row.label, "Dev, 제거됨")
+
+        // Esc는 취소: 시트만 닫히고 과거 구성은 그대로다.
+        app.typeKey(.escape, modifierFlags: [])
+        XCTAssertTrue(title.waitForNonExistence(timeout: 5))
+        XCTAssertTrue(banner.exists)
+
+        // 파일 메뉴도 같은 시트를 연다.
+        app.menuBars.menuBarItems["파일"].click()
+        app.menuBars.menuBarItems["파일"].menuItems["이 구성으로 복원…"].click()
+        XCTAssertTrue(title.waitForExistence(timeout: 5))
+        XCTAssertEqual(title.label, "#1 구성으로 복원")
+
+        // Return은 복원: 현재 구성으로 돌아와 Dev가 없어지고 이력에 복원 기록이 쌓인다.
+        app.typeKey(.return, modifierFlags: [])
+        XCTAssertTrue(banner.waitForNonExistence(timeout: 5))
+        XCTAssertTrue(app.descendants(matching: .any)["node-row-Dev"].waitForNonExistence(timeout: 5))
+        let restored = app.descendants(matching: .any)["revision-row-3"]
+        XCTAssertTrue(restored.waitForExistence(timeout: 5))
+        XCTAssertTrue(restored.label.hasPrefix("#1에서 복원, #3, "), restored.label)
+    }
+
     /// W19 ② 나란히 보기: 세그먼트로 바꾸면 왼쪽 '이전 구성'·오른쪽 '이후 구성' 열이 열 머리와 함께 보이고,
     /// 한쪽에서 고른 항목은 반대쪽에서도 고른 상태가 되며, 한쪽에만 있는 항목은 반대쪽에 행이 없다.
     @MainActor

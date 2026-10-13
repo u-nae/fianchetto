@@ -112,6 +112,9 @@ struct BoardCommands: Commands {
             Button("상태 새로고침") { Task { await model?.refreshStatuses() } }
                 .disabled(!isEnabled(\.canRefreshStatuses))
             Divider()
+            Button("이 구성으로 복원…") { model?.beginRestore() }
+                .disabled(!isEnabled(\.canRestoreShown))
+            Divider()
             Button("Board 이름 변경…") { model?.beginRename() }
                 .disabled(!isEnabled(\.canRenameSelectedBoard))
             Button("Board 보관") { Task { await model?.archiveSelected() } }

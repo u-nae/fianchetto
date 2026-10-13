@@ -201,7 +201,8 @@ W15에서 연결 상태를 트리에 표시한다. 상태 이름은 W14 안내 �
   `inspector-toggle`, `bishop-icon-style`(W28), `history-tab`·`history-toggle`·`revision-row-<순번>`·`date-lookup`(W17),
   `past-banner`·`return-to-current`·`past-item-card`(W18), `compare-bar`·`compare-before`·`compare-after`·`compare-close`·`compare-summary`·
   `compare-tree`·`compare-row-<이름>`·`compare-details`·`compare-with-current`(W19 ①), `compare-mode`·`compare-before-tree`·`compare-after-tree`·
-  `compare-before-title`·`compare-after-title`(W19 ②).
+  `compare-before-title`·`compare-after-title`(W19 ②), `restore-menu`(과거 구성 띠의 '이 구성으로…')·`restore-sheet-title`·`restore-summary`·
+  `restore-board-name`·`restore-row-<항목 이름>`·`restore-identical`·`restore-cancel`·`restore-confirm`(W20).
   행의 `accessibilityElement(children: .ignore)`와 `accessibilityLabel`, 선택 행의 `.isSelected` trait도 유지한다.
   새 화면의 제안 식별자는 구현되면 이 목록으로 옮긴다.
 - 메뉴 항목 제목과 단축키를 바꾸지 않는다. 바꾸려면 `BoardBrowserUITests`·`NativeCommandUITests`의 메뉴 검사도 같은 변경에서 고친다.
@@ -334,6 +335,11 @@ W15에서 연결 상태를 트리에 표시한다. 상태 이름은 W14 안내 �
   W21이 동작과 함께 더한다. 눌러도 아무 일이 없는 꺼진 버튼은 두지 않는다(0018 도움말 메뉴와 같은 기준).
 - 보관된 Board에서는 '복원…'만 끈다. 조회·비교·새 Board 만들기는 켠다(0009).
 - VoiceOver는 띠를 하나의 요소로 읽는다: '과거 구성, 읽기 전용, #12, 2026년 10월 3일 오후 2:20 기록'.
+- 복원 확인 시트(W20, 0034): '이 구성으로…' 메뉴의 '복원…'은 복원 전용 시트를 연다. 제목은 '#n 구성으로 복원', 그 아래 한 줄에
+  '현재 구성 → #n · 시각'(이전 = 현재 구성, 이후 = 복원 결과)을 적고, 요약은 0027 규칙('변화 N개 · Board 이름 변경')을 따른다.
+  변경 목록은 항목마다 기호 + 이름과 19.3의 변화 문구에 '이전 → 이후' 값을 붙이며 한 요소로 읽힌다(Board 이름 변경은 Board 기호 행).
+  순서 변경은 비교 화면의 설정과 관계없이 늘 센다. 현재와 같은 구성이면 '현재와 같은 구성입니다'와 '닫기'만 둔다. 아니면 기본 버튼
+  '복원'(Return)과 '취소'(Esc)를 둔다. 같은 시트를 파일 메뉴 '이 구성으로 복원…'(0035, 단축키 없음)으로도 열 수 있다.
 
 ### 16.4 과거 모드의 동작
 - 읽기 전용: 편집 메뉴 명령, 툴바의 추가 버튼, 드래그와 드롭, Delete 키는 꺼진다(모델의 `can…` 값이 거짓).
