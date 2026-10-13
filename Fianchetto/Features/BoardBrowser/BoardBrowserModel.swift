@@ -70,6 +70,7 @@ final class BoardBrowserModel {
             case move
             case remove
             case open
+            case restore
         }
 
         var kind: Kind
@@ -835,6 +836,7 @@ final class BoardBrowserModel {
         case .move: String(localized: "이동")
         case .remove: String(localized: "제거")
         case .open: String(localized: "열기")
+        case .restore: String(localized: "구성 복원")
         }
     }
 
@@ -1533,6 +1535,75 @@ final class BoardBrowserModel {
         await selectNode(id)
     }
 
+    // MARK: 과거 구성으로 복원(W20)
+
+    /// 복원 확인 시트에 보일 차이. nil이면 시트가 닫혀 있다. 두 스냅샷만으로 만들어 저장소·파일을 읽지 않는다.
+    private(set) var restorePreview: RestorePreview?
+
+    /// 띠 '복원…'과 파일 메뉴 '이 구성으로 복원…'이 켜지는 조건: 과거 구성을 보고 있고, 비교 중이 아니고, 보관되지 않았고,
+    /// 현재 구성과 고른 revision의 목록 정보가 있다. 참이면 beginRestore()가 반드시 시트를 연다.
+    var canRestoreShown: Bool {
+        guard isViewingPast, !isComparing, !selectedBoardIsArchived, openedStore != nil,
+              history.selectedSummary != nil, history.selectedSnapshot != nil,
+              case .loaded = current else { return false }
+        return true
+    }
+
+    /// 시트가 있고, 같은 구성이 아니고, 저장 중이 아니다.
+    var canConfirmRestore: Bool {
+        guard let preview = restorePreview else { return false }
+        return !preview.isIdentical && !preview.isSaving
+    }
+
+    func beginRestore() {
+        guard canRestoreShown, let summary = history.selectedSummary, let target = history.selectedSnapshot,
+              case let .loaded(snapshot) = current else { return }
+        restorePreview = RestorePreview.make(
+            target: summary, targetSnapshot: target, current: snapshot,
+            wording: ChangeWording(purposeText: purposeText), dateTimeText: history.dateTimeText
+        )
+    }
+
+    func cancelRestore() {
+        guard restorePreview?.isSaving != true else { return }
+        restorePreview = nil
+    }
+
+    func confirmRestore() async {
+        guard canConfirmRestore, let preview = restorePreview, let boardID = selectedBoardID,
+              let service = openedStore?.service else { return }
+        restorePreview?.isSaving = true
+        let outcome: ConfigurationCommitOutcome
+        do {
+            outcome = try await service.restore(preview.revisionID, in: boardID)
+        } catch {
+            finishRestore(boardID: boardID, notice: .saveFailed)
+            return
+        }
+        switch outcome {
+        case let .committed(_, snapshot):
+            restorePreview = nil
+            await reloadBoards()
+            if selectedBoardID == boardID {
+                await adopt(snapshot)
+                await history.select(.current)
+            }
+        case .unchanged:
+            restorePreview = nil
+        case .rejected(.archived):
+            finishRestore(boardID: boardID, notice: .archived)
+        case .rejected:
+            finishRestore(boardID: boardID, notice: .saveFailed)
+        }
+    }
+
+    /// 시트를 닫고, 아직 같은 Board를 보고 있으면 안내를 띄운다. 과거 구성 보기는 그대로 둔다.
+    private func finishRestore(boardID: UUID, notice kind: LinkNotice.Kind) {
+        restorePreview = nil
+        guard selectedBoardID == boardID else { return }
+        linkNotice = LinkNotice(kind: kind, request: nil, action: .restore)
+    }
+
     // MARK: 제거
 
     /// 첫 버전에는 Undo가 없으므로 종류와 상관없이 확인 창을 연다.
@@ -1740,6 +1811,7 @@ final class BoardBrowserModel {
         selectedNodeID = nil
         viewMode = dependencies.lastBoard.viewMode(for: boardID).flatMap(ViewMode.init(rawValue:)) ?? .list
         closeComparison()
+        restorePreview = nil
         history.reset(boardID: boardID)
         iconPath = []
         hasIconLocation = false
