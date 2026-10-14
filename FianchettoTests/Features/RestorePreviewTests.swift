@@ -33,9 +33,14 @@ struct RestorePreviewTests {
         #expect(preview.summaryText == "변화 2개 · Board 이름 변경")
         #expect(preview.boardNameText == "서비스 A → 서비스 알파")
         #expect(preview.rows.map(\.name) == ["backend", "문서"])
-        #expect(preview.rows.map(\.changeText) == ["대상 교체 /dev/api-v2 → /dev/legacy-api", "제거됨"])
+        // 행 끝 문구는 변화 종류만, 값은 둘째 줄부터(DESIGN 16.3). VoiceOver 라벨은 종류와 값을 함께 읽는다.
+        #expect(preview.rows.map(\.changeText) == ["대상 교체", "제거됨"])
+        #expect(preview.rows.map(\.valueTexts) == [["/dev/api-v2 → /dev/legacy-api"], []])
         #expect(preview.rows.map(\.symbol) == ["arrow.triangle.swap", "minus.circle"])
         #expect(preview.rows.map(\.accessibilityLabel) == ["backend, 대상 교체 /dev/api-v2 → /dev/legacy-api", "문서, 제거됨"])
+        // 항목 기호는 트리 행과 같은 아이콘을 쓰도록 행이 Node를 품는다. 제거 행은 현재 구성의 Node다.
+        #expect(preview.rows.map(\.node.kind) == [.folder, .group])
+        #expect(preview.rows.map(\.node.id) == [fixedID(2), fixedID(5)])
     }
 
     @Test("현재와 같은 구성이면 같다고 표시하고 변경 목록이 비어 있다")
@@ -47,7 +52,7 @@ struct RestorePreviewTests {
         #expect(preview.boardNameText == nil)
     }
 
-    @Test("한 항목의 여러 변화는 19.3 순서로 ' · '로 잇고 값을 붙인다")
+    @Test("한 항목의 여러 변화는 19.3 순서로 ' · '로 잇고 값은 따로 둔다")
     func multipleKindsAreJoinedWithValues() {
         let note = fixedID(7)
         let current = ConfigurationSnapshot(projectName: "서비스 A", nodes: [
@@ -60,7 +65,9 @@ struct RestorePreviewTests {
         ])
         let preview = makePreview(target: restored, current: current)
         #expect(preview.rows.count == 1)
-        #expect(preview.rows.first?.changeText == "이름 변경 notes.md → memo.md · ‘개발’에서 이동")
+        #expect(preview.rows.first?.changeText == "이름 변경 · ‘개발’에서 이동")
+        #expect(preview.rows.first?.valueTexts == ["notes.md → memo.md"])
+        #expect(preview.rows.first?.accessibilityLabel == "memo.md, 이름 변경 notes.md → memo.md · ‘개발’에서 이동")
         #expect(preview.rows.first?.symbol == "pencil")
     }
 
@@ -94,10 +101,12 @@ struct RestorePreviewTests {
                               recordedPath: "/a.md", purpose: "code"),
         ])
         let preview = makePreview(target: restored, current: current)
-        #expect(preview.rows.map(\.changeText) == [
-            "URL 변경 https://new.example.com → https://old.example.com",
-            "아이콘 변경 data → code",
+        #expect(preview.rows.map(\.changeText) == ["URL 변경", "아이콘 변경"])
+        #expect(preview.rows.map(\.valueTexts) == [
+            ["https://new.example.com → https://old.example.com"],
+            ["data → code"],
         ])
+        #expect(preview.rows.map(\.node.kind) == [.webLink, .file])
     }
 
     @Test("추가되는 항목은 '추가됨'이다")
@@ -108,6 +117,8 @@ struct RestorePreviewTests {
         ])
         let preview = makePreview(target: restored, current: current)
         #expect(preview.rows.map(\.changeText) == ["추가됨"])
+        #expect(preview.rows.map(\.valueTexts) == [[]])
         #expect(preview.rows.map(\.symbol) == ["plus.circle"])
+        #expect(preview.rows.map(\.node.id) == [fixedID(1)])
     }
 }
