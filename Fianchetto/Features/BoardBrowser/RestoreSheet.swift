@@ -25,20 +25,21 @@ struct RestoreSheet: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 8) {
                         if let boardName = preview.boardNameText {
-                            HStack(alignment: .firstTextBaseline) {
-                                Label { Text("Board 이름") } icon: { Image(.fianchettoBoard) }
-                                Spacer(minLength: 8)
-                                Text(boardName).font(.caption).foregroundStyle(.secondary)
+                            // 'Board 이름' 행: Board 기호 + 'Board 이름', 행 끝 pencil '이름 변경', 둘째 줄 '이전 → 이후'(16.3).
+                            RestoreRowLayout(
+                                name: Text("Board 이름"), symbol: ChangeWording.kindSymbol(.renamed),
+                                changeText: String(localized: "이름 변경"), valueTexts: [boardName]
+                            ) {
+                                Image(.fianchettoBoard)
                             }
                             .accessibilityElement(children: .ignore)
                             .accessibilityLabel(String(localized: "\(String(localized: "Board 이름")), \(boardName)"))
                             .accessibilityIdentifier("restore-board-name")
                         }
                         ForEach(preview.rows) { row in
-                            HStack(alignment: .firstTextBaseline) {
-                                Label(row.name, systemImage: row.symbol)
-                                Spacer(minLength: 8)
-                                Text(row.changeText).font(.caption).foregroundStyle(.secondary)
+                            RestoreRowLayout(name: Text(row.name), symbol: row.symbol, changeText: row.changeText, valueTexts: row.valueTexts) {
+                                // 트리 행(NodeRow)·비교 행과 같은 아이콘. 행 앞에 변화 기호를 두지 않는다(16.3).
+                                TileIconView(icon: TileIcon.of(row.node, style: model.bishopIconStyle))
                             }
                             .accessibilityElement(children: .ignore)
                             .accessibilityLabel(row.accessibilityLabel)
@@ -68,5 +69,39 @@ struct RestoreSheet: View {
         }
         .padding()
         .frame(width: 480)
+    }
+}
+
+/// 복원 시트의 한 행(DESIGN.md 16.3, 비교 행 19.3·19.4와 같은 문법): 아이콘 자리 + 이름, 행 끝 변화 기호 + 문구,
+/// 그 아래 값 줄은 이름과 같은 들여쓰기로 왼쪽 정렬하고 긴 경로·URL은 줄바꿈한다.
+private struct RestoreRowLayout<Icon: View>: View {
+    let name: Text
+    let symbol: String
+    let changeText: String
+    let valueTexts: [String]
+    @ViewBuilder let icon: () -> Icon
+
+    var body: some View {
+        Label {
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    name.lineLimit(1)
+                    Spacer(minLength: 8)
+                    Label(changeText, systemImage: symbol)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+                ForEach(Array(valueTexts.enumerated()), id: \.offset) { _, value in
+                    Text(value)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            }
+        } icon: {
+            icon()
+        }
     }
 }
