@@ -14,8 +14,10 @@
   (명세 게이트의 `NEEDS_HUMAN`). 사용자 답변은 게이트 종료 후 `docs/decisions/`로 옮긴다.
 - 사용자 합의가 필요한 것: 위 정책 모호성, 납품 범위(F01~F12) 축소·확대, 아래 불변식의 의미 변경,
   첫 버전 제외 항목(PRD §4) 도입.
-- 명세 게이트: 구현할 작업 단위는 `/fianchetto-spec-gate:run`으로 명세·독립 비평을 통과시킨 뒤
-  `READY` 인계(`tdd-handoff.yaml`)의 test obligation을 기준으로 TDD를 진행한다.
+- 명세 게이트(spec-cycle, 설정 `.spec-cycle/config.yaml`): 구현할 작업 단위는 `/spec-cycle:run`으로 명세·독립 비평을
+  통과시키고, `READY` 인계(`tdd-handoff.yaml`)의 test obligation을 기준으로 `/spec-cycle:implement`가 계획·TDD로 넘긴다.
+  끝나면 `/spec-cycle:verify`로 obligation 커버리지를 확인한 뒤에만 작업 항목을 `done`으로 둔다.
+  테스트 확인은 `scripts/vm-verify.sh`(UI 테스트 포함) 결과로 한다.
 
 ## 빌드·테스트
 
