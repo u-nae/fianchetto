@@ -61,7 +61,7 @@ struct RestoreModelTests {
         let v2 = try TargetFiles.folder(directory, "targets/v2/backend")
         _ = try TargetFiles.file(directory, "targets/legacy/backend/marker.txt", contents: "legacy marker")
         _ = try TargetFiles.file(directory, "targets/v2/backend/marker.txt", contents: "v2 marker")
-        var ids = (UUID(), UUID())
+        var ids = (fixedID(1), fixedID(2))
         try await seedStore(in: directory, at: harness.url) { seed in
             let board = try await makeBoard(seed, "서비스 알파")
             _ = try await seed.linking.link(LinkRequest(projectID: board, parentID: nil, position: nil, urls: [legacy]))
@@ -104,6 +104,38 @@ struct RestoreModelTests {
             #expect(!preview.isIdentical)
             #expect(o.model.canConfirmRestore)
             #expect(try await o.revisionCount() == 5)
+        }
+    }
+
+    @Test("시트가 열려 있는 동안에는 복원을 다시 시작할 수 없고 시트는 그대로다")
+    func beginWhileSheetOpen() async throws {
+        try await withTemporaryDirectoryAsync { directory async throws in
+            let o = try await opened(directory)
+            try await o.viewPast(2)
+            o.model.beginRestore()
+            let first = try #require(o.model.restorePreview)
+            #expect(!o.model.canRestoreShown)
+            o.model.beginRestore()
+            #expect(o.model.restorePreview == first)
+            #expect(o.model.restorePreview?.isSaving == first.isSaving)
+        }
+    }
+
+    @Test("시트를 연 채 현재 구성으로 돌아가 확정하면 이전 구성 기준의 상태 확인 결과가 남지 않고 접근 정보를 해석하지 않는다")
+    func confirmFromCurrentClearsStatuses() async throws {
+        try await withTemporaryDirectoryAsync { directory async throws in
+            let o = try await opened(directory)
+            try await o.viewPast(2)
+            let backendID = try #require(o.model.shownSnapshot?.node(named: "backend")).id
+            o.model.beginRestore()
+            await o.model.selectNode(backendID)
+            #expect(o.model.linkStatuses[backendID] != nil)
+            await o.model.returnToCurrent()
+            let resolutions = o.harness.bookmarks.scopedResolutions.count
+            await o.model.confirmRestore()
+            #expect(try await o.revisionCount() == 6)
+            #expect(o.model.linkStatuses.isEmpty)
+            #expect(o.harness.bookmarks.scopedResolutions.count == resolutions)
         }
     }
 

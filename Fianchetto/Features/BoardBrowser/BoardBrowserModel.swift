@@ -1541,9 +1541,9 @@ final class BoardBrowserModel {
     private(set) var restorePreview: RestorePreview?
 
     /// 띠 '복원…'과 파일 메뉴 '이 구성으로 복원…'이 켜지는 조건: 과거 구성을 보고 있고, 비교 중이 아니고, 보관되지 않았고,
-    /// 현재 구성과 고른 revision의 목록 정보가 있다. 참이면 beginRestore()가 반드시 시트를 연다.
+    /// 현재 구성과 고른 revision의 목록 정보가 있고, 시트가 아직 열려 있지 않다. 참이면 beginRestore()가 반드시 시트를 연다.
     var canRestoreShown: Bool {
-        guard isViewingPast, !isComparing, !selectedBoardIsArchived, openedStore != nil,
+        guard restorePreview == nil, isViewingPast, !isComparing, !selectedBoardIsArchived, openedStore != nil,
               history.selectedSummary != nil, history.selectedSnapshot != nil,
               case .loaded = current else { return false }
         return true
@@ -1577,29 +1577,40 @@ final class BoardBrowserModel {
         do {
             outcome = try await service.restore(preview.revisionID, in: boardID)
         } catch {
-            finishRestore(boardID: boardID, notice: .saveFailed)
+            finishRestore(boardID: boardID, saving: preview, notice: .saveFailed)
             return
         }
         switch outcome {
         case let .committed(_, snapshot):
-            restorePreview = nil
+            closeSheet(saving: preview)
             await reloadBoards()
             if selectedBoardID == boardID {
                 await adopt(snapshot)
+                // 시트를 연 채 현재 구성으로 돌아왔다면 아래 select는 변화가 없어 viewedConfigurationChanged()가
+                // 돌지 않는다. 이전 구성 기준의 상태가 남지 않게 여기서 무효화한다(해석은 하지 않는다. W15).
+                statusEpoch += 1
+                linkStatuses = [:]
+                pastLocations = [:]
                 await history.select(.current)
             }
         case .unchanged:
-            restorePreview = nil
+            closeSheet(saving: preview)
         case .rejected(.archived):
-            finishRestore(boardID: boardID, notice: .archived)
+            finishRestore(boardID: boardID, saving: preview, notice: .archived)
         case .rejected:
-            finishRestore(boardID: boardID, notice: .saveFailed)
+            finishRestore(boardID: boardID, saving: preview, notice: .saveFailed)
         }
     }
 
-    /// 시트를 닫고, 아직 같은 Board를 보고 있으면 안내를 띄운다. 과거 구성 보기는 그대로 둔다.
-    private func finishRestore(boardID: UUID, notice kind: LinkNotice.Kind) {
+    /// 저장하던 바로 그 시트일 때만 닫는다. 늦게 도착한 결과가 다른 시트를 닫지 않는다.
+    private func closeSheet(saving preview: RestorePreview) {
+        guard let open = restorePreview, open.revisionID == preview.revisionID, open.isSaving else { return }
         restorePreview = nil
+    }
+
+    /// 시트를 닫고, 아직 같은 Board를 보고 있으면 안내를 띄운다. 과거 구성 보기는 그대로 둔다.
+    private func finishRestore(boardID: UUID, saving preview: RestorePreview, notice kind: LinkNotice.Kind) {
+        closeSheet(saving: preview)
         guard selectedBoardID == boardID else { return }
         linkNotice = LinkNotice(kind: kind, request: nil, action: .restore)
     }

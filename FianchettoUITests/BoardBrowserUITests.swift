@@ -343,6 +343,8 @@ final class BoardBrowserUITests: XCTestCase {
         let row = app.descendants(matching: .any)["restore-row-Dev"]
         XCTAssertTrue(row.waitForExistence(timeout: 5))
         XCTAssertEqual(row.label, "Dev, 제거됨")
+        XCTAssertTrue(app.descendants(matching: .any)["restore-cancel"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.descendants(matching: .any)["restore-confirm"].waitForExistence(timeout: 5))
 
         // Esc는 취소: 시트만 닫히고 과거 구성은 그대로다.
         app.typeKey(.escape, modifierFlags: [])
