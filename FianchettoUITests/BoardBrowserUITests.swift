@@ -288,6 +288,13 @@ final class BoardBrowserUITests: XCTestCase {
         XCTAssertFalse(app.descendants(matching: .any)["compare-bar"].exists)
     }
 
+    /// 라벨 없이 식별자만 붙인 Text는 macOS에서 문구를 value로 노출한다. value가 비어 있으면 label을 쓴다.
+    @MainActor
+    private func text(of element: XCUIElement) -> String {
+        if let value = element.value as? String, !value.isEmpty { return value }
+        return element.label
+    }
+
     // [W20-restore-menu-opens-sheet] [W20-file-menu-same-sheet] [W20-sheet-keyboard-accessibility]
     // 띠의 '이 구성으로…' › '복원…'과 파일 메뉴 '이 구성으로 복원…'이 같은 시트를 열고, Esc는 취소, Return은 복원이다.
     @MainActor
@@ -329,8 +336,10 @@ final class BoardBrowserUITests: XCTestCase {
         restoreItem.click()
         let title = app.descendants(matching: .any)["restore-sheet-title"]
         XCTAssertTrue(title.waitForExistence(timeout: 5))
-        XCTAssertEqual(title.label, "#1 구성으로 복원")
-        XCTAssertEqual(app.descendants(matching: .any)["restore-summary"].label, "변화 1개")
+        XCTAssertEqual(text(of: title), "#1 구성으로 복원")
+        let summary = app.descendants(matching: .any)["restore-summary"]
+        XCTAssertTrue(summary.waitForExistence(timeout: 5))
+        XCTAssertEqual(text(of: summary), "변화 1개")
         let row = app.descendants(matching: .any)["restore-row-Dev"]
         XCTAssertTrue(row.waitForExistence(timeout: 5))
         XCTAssertEqual(row.label, "Dev, 제거됨")
@@ -344,7 +353,7 @@ final class BoardBrowserUITests: XCTestCase {
         app.menuBars.menuBarItems["파일"].click()
         app.menuBars.menuBarItems["파일"].menuItems["이 구성으로 복원…"].click()
         XCTAssertTrue(title.waitForExistence(timeout: 5))
-        XCTAssertEqual(title.label, "#1 구성으로 복원")
+        XCTAssertEqual(text(of: title), "#1 구성으로 복원")
 
         // Return은 복원: 현재 구성으로 돌아와 Dev가 없어지고 이력에 복원 기록이 쌓인다.
         app.typeKey(.return, modifierFlags: [])
