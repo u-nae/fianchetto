@@ -1,12 +1,24 @@
 import Foundation
 import SwiftData
 
+/// 복원 대상 revision을 저장소에서 읽은 결과.
+enum RestoreTarget: Equatable, Sendable {
+    case found(RevisionSummary, ConfigurationSnapshot)
+    case notFound
+    /// 다른 Project의 revision이다.
+    case otherProject
+    /// revision은 있지만 구성을 읽거나 디코딩하지 못한다.
+    case unreadable
+}
+
 /// 커밋 판단에 쓰는 프로젝트의 현재 상태.
 struct ProjectState: Sendable {
     var project: ProjectRecord
     var latestSequence: Int
     /// 현재 revision의 스냅샷. 읽거나 디코딩하지 못하면 실패다(빈 구성으로 대신하지 않는다).
     var current: Result<ConfigurationSnapshot, StoreReadError>
+    /// `appendRevision(to:restoring:)`에 대상을 주었을 때만 채워진다.
+    var restoreTarget: RestoreTarget? = nil
 }
 
 /// 한 저장 단위로 추가할 revision과, 그 revision이 새로 쓰는 참조 레코드.
@@ -64,8 +76,10 @@ actor ProjectStore {
     }
 
     /// 현재 상태로 `decide`를 실행하고, 추가하기로 하면 다음 순번 revision으로 커밋한다.
+    /// `targetRevisionID`를 주면 판단 전에 그 revision을 같은 actor 안에서 읽어 `ProjectState.restoreTarget`에 싣는다.
     func appendRevision<Skip: Sendable>(
         to projectID: UUID,
+        restoring targetRevisionID: UUID? = nil,
         decide: @Sendable (ProjectState) -> AppendDecision<Skip>
     ) throws(ProjectStoreError) -> AppendResult<Skip> {
         let adapter = self.adapter
@@ -82,7 +96,8 @@ actor ProjectStore {
             try adapter.snapshot(revisionID: project.currentRevisionID)
         }
 
-        switch decide(ProjectState(project: project, latestSequence: latest, current: current)) {
+        let restoreTarget = targetRevisionID.map { readRestoreTarget($0, projectID: projectID) }
+        switch decide(ProjectState(project: project, latestSequence: latest, current: current, restoreTarget: restoreTarget)) {
         case let .skip(value):
             return .skipped(value)
         case let .append(append):
@@ -96,6 +111,22 @@ actor ProjectStore {
             }
             try commit()
             return .appended(Self.summary(append, projectID: projectID, sequence: sequence), append)
+        }
+    }
+
+    private func readRestoreTarget(_ id: UUID, projectID: UUID) -> RestoreTarget {
+        let summary: RevisionSummary
+        do {
+            guard let found = try adapter.revisionSummary(id) else { return .notFound }
+            summary = found
+        } catch {
+            return .unreadable
+        }
+        guard summary.projectID == projectID else { return .otherProject }
+        do {
+            return .found(summary, try adapter.snapshot(revisionID: id))
+        } catch {
+            return .unreadable
         }
     }
 

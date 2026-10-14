@@ -1,0 +1,544 @@
+schema_version: "1.0"
+decision_id: restore_request_outcome
+table: .spec-gate/runs/t-w20-f2dc76d0/specs/revision-1/W20.decision.yaml
+table_fingerprint: d38ea9062dbdb2d54bf756caf7a0a376e7f32543434e351ae68f4bb493d72902
+cells_total: 32
+rules:
+  - rule_id: R1
+    obligation_id: W20-restore_request_outcome-R1
+    wins:
+      - inputs: &a25
+          board_state: archived
+          target_revision: found
+          current_snapshot: readable
+          target_vs_current: same
+        expected:
+          outcome: rejected_archived
+      - inputs: &a30
+          board_state: archived
+          target_revision: found
+          current_snapshot: readable
+          target_vs_current: different
+        expected:
+          outcome: rejected_archived
+      - inputs: &a19
+          board_state: archived
+          target_revision: found
+          current_snapshot: unreadable
+          target_vs_current: same
+        expected:
+          outcome: rejected_archived
+      - inputs: &a20
+          board_state: archived
+          target_revision: found
+          current_snapshot: unreadable
+          target_vs_current: different
+        expected:
+          outcome: rejected_archived
+      - inputs: &a1
+          board_state: archived
+          target_revision: not_found
+          current_snapshot: readable
+          target_vs_current: same
+        expected:
+          outcome: rejected_archived
+      - inputs: &a2
+          board_state: archived
+          target_revision: not_found
+          current_snapshot: readable
+          target_vs_current: different
+        expected:
+          outcome: rejected_archived
+      - inputs: &a3
+          board_state: archived
+          target_revision: not_found
+          current_snapshot: unreadable
+          target_vs_current: same
+        expected:
+          outcome: rejected_archived
+      - inputs: &a4
+          board_state: archived
+          target_revision: not_found
+          current_snapshot: unreadable
+          target_vs_current: different
+        expected:
+          outcome: rejected_archived
+      - inputs: &a5
+          board_state: archived
+          target_revision: other_board
+          current_snapshot: readable
+          target_vs_current: same
+        expected:
+          outcome: rejected_archived
+      - inputs: &a6
+          board_state: archived
+          target_revision: other_board
+          current_snapshot: readable
+          target_vs_current: different
+        expected:
+          outcome: rejected_archived
+      - inputs: &a7
+          board_state: archived
+          target_revision: other_board
+          current_snapshot: unreadable
+          target_vs_current: same
+        expected:
+          outcome: rejected_archived
+      - inputs: &a8
+          board_state: archived
+          target_revision: other_board
+          current_snapshot: unreadable
+          target_vs_current: different
+        expected:
+          outcome: rejected_archived
+      - inputs: &a9
+          board_state: archived
+          target_revision: unreadable
+          current_snapshot: readable
+          target_vs_current: same
+        expected:
+          outcome: rejected_archived
+      - inputs: &a10
+          board_state: archived
+          target_revision: unreadable
+          current_snapshot: readable
+          target_vs_current: different
+        expected:
+          outcome: rejected_archived
+      - inputs: &a11
+          board_state: archived
+          target_revision: unreadable
+          current_snapshot: unreadable
+          target_vs_current: same
+        expected:
+          outcome: rejected_archived
+      - inputs: &a12
+          board_state: archived
+          target_revision: unreadable
+          current_snapshot: unreadable
+          target_vs_current: different
+        expected:
+          outcome: rejected_archived
+    shadowed: []
+  - rule_id: R2
+    obligation_id: W20-restore_request_outcome-R2
+    wins:
+      - inputs: &a22
+          board_state: active
+          target_revision: not_found
+          current_snapshot: readable
+          target_vs_current: same
+        expected:
+          outcome: rejected_revision_not_found
+      - inputs: &a27
+          board_state: active
+          target_revision: not_found
+          current_snapshot: readable
+          target_vs_current: different
+        expected:
+          outcome: rejected_revision_not_found
+      - inputs: &a13
+          board_state: active
+          target_revision: not_found
+          current_snapshot: unreadable
+          target_vs_current: same
+        expected:
+          outcome: rejected_revision_not_found
+      - inputs: &a14
+          board_state: active
+          target_revision: not_found
+          current_snapshot: unreadable
+          target_vs_current: different
+        expected:
+          outcome: rejected_revision_not_found
+      - inputs: &a23
+          board_state: active
+          target_revision: other_board
+          current_snapshot: readable
+          target_vs_current: same
+        expected:
+          outcome: rejected_revision_not_found
+      - inputs: &a28
+          board_state: active
+          target_revision: other_board
+          current_snapshot: readable
+          target_vs_current: different
+        expected:
+          outcome: rejected_revision_not_found
+      - inputs: &a15
+          board_state: active
+          target_revision: other_board
+          current_snapshot: unreadable
+          target_vs_current: same
+        expected:
+          outcome: rejected_revision_not_found
+      - inputs: &a16
+          board_state: active
+          target_revision: other_board
+          current_snapshot: unreadable
+          target_vs_current: different
+        expected:
+          outcome: rejected_revision_not_found
+    shadowed:
+      - inputs: *a1
+        winner: R1
+      - inputs: *a2
+        winner: R1
+      - inputs: *a3
+        winner: R1
+      - inputs: *a4
+        winner: R1
+      - inputs: *a5
+        winner: R1
+      - inputs: *a6
+        winner: R1
+      - inputs: *a7
+        winner: R1
+      - inputs: *a8
+        winner: R1
+  - rule_id: R3
+    obligation_id: W20-restore_request_outcome-R3
+    wins:
+      - inputs: &a24
+          board_state: active
+          target_revision: unreadable
+          current_snapshot: readable
+          target_vs_current: same
+        expected:
+          outcome: error_target_unreadable
+      - inputs: &a29
+          board_state: active
+          target_revision: unreadable
+          current_snapshot: readable
+          target_vs_current: different
+        expected:
+          outcome: error_target_unreadable
+      - inputs: &a17
+          board_state: active
+          target_revision: unreadable
+          current_snapshot: unreadable
+          target_vs_current: same
+        expected:
+          outcome: error_target_unreadable
+      - inputs: &a18
+          board_state: active
+          target_revision: unreadable
+          current_snapshot: unreadable
+          target_vs_current: different
+        expected:
+          outcome: error_target_unreadable
+    shadowed:
+      - inputs: *a9
+        winner: R1
+      - inputs: *a10
+        winner: R1
+      - inputs: *a11
+        winner: R1
+      - inputs: *a12
+        winner: R1
+  - rule_id: R4
+    obligation_id: W20-restore_request_outcome-R4
+    wins:
+      - inputs: &a21
+          board_state: active
+          target_revision: found
+          current_snapshot: unreadable
+          target_vs_current: same
+        expected:
+          outcome: error_current_unreadable
+      - inputs: &a26
+          board_state: active
+          target_revision: found
+          current_snapshot: unreadable
+          target_vs_current: different
+        expected:
+          outcome: error_current_unreadable
+    shadowed:
+      - inputs: *a13
+        winner: R2
+      - inputs: *a14
+        winner: R2
+      - inputs: *a15
+        winner: R2
+      - inputs: *a16
+        winner: R2
+      - inputs: *a17
+        winner: R3
+      - inputs: *a18
+        winner: R3
+      - inputs: *a19
+        winner: R1
+      - inputs: *a20
+        winner: R1
+      - inputs: *a3
+        winner: R1
+      - inputs: *a4
+        winner: R1
+      - inputs: *a7
+        winner: R1
+      - inputs: *a8
+        winner: R1
+      - inputs: *a11
+        winner: R1
+      - inputs: *a12
+        winner: R1
+  - rule_id: R5
+    obligation_id: W20-restore_request_outcome-R5
+    wins:
+      - inputs:
+          board_state: active
+          target_revision: found
+          current_snapshot: readable
+          target_vs_current: same
+        expected:
+          outcome: unchanged
+    shadowed:
+      - inputs: *a21
+        winner: R4
+      - inputs: *a22
+        winner: R2
+      - inputs: *a13
+        winner: R2
+      - inputs: *a23
+        winner: R2
+      - inputs: *a15
+        winner: R2
+      - inputs: *a24
+        winner: R3
+      - inputs: *a17
+        winner: R3
+      - inputs: *a25
+        winner: R1
+      - inputs: *a19
+        winner: R1
+      - inputs: *a1
+        winner: R1
+      - inputs: *a3
+        winner: R1
+      - inputs: *a5
+        winner: R1
+      - inputs: *a7
+        winner: R1
+      - inputs: *a9
+        winner: R1
+      - inputs: *a11
+        winner: R1
+  - rule_id: R6
+    obligation_id: W20-restore_request_outcome-R6
+    wins:
+      - inputs:
+          board_state: active
+          target_revision: found
+          current_snapshot: readable
+          target_vs_current: different
+        expected:
+          outcome: restored
+    shadowed:
+      - inputs: *a26
+        winner: R4
+      - inputs: *a27
+        winner: R2
+      - inputs: *a14
+        winner: R2
+      - inputs: *a28
+        winner: R2
+      - inputs: *a16
+        winner: R2
+      - inputs: *a29
+        winner: R3
+      - inputs: *a18
+        winner: R3
+      - inputs: *a30
+        winner: R1
+      - inputs: *a20
+        winner: R1
+      - inputs: *a2
+        winner: R1
+      - inputs: *a4
+        winner: R1
+      - inputs: *a6
+        winner: R1
+      - inputs: *a8
+        winner: R1
+      - inputs: *a10
+        winner: R1
+      - inputs: *a12
+        winner: R1
+gaps: []
+overlaps:
+  - inputs: *a21
+    rules:
+      - R4
+      - R5
+    winner: R4
+  - inputs: *a26
+    rules:
+      - R4
+      - R6
+    winner: R4
+  - inputs: *a22
+    rules:
+      - R2
+      - R5
+    winner: R2
+  - inputs: *a27
+    rules:
+      - R2
+      - R6
+    winner: R2
+  - inputs: *a13
+    rules:
+      - R2
+      - R4
+      - R5
+    winner: R2
+  - inputs: *a14
+    rules:
+      - R2
+      - R4
+      - R6
+    winner: R2
+  - inputs: *a23
+    rules:
+      - R2
+      - R5
+    winner: R2
+  - inputs: *a28
+    rules:
+      - R2
+      - R6
+    winner: R2
+  - inputs: *a15
+    rules:
+      - R2
+      - R4
+      - R5
+    winner: R2
+  - inputs: *a16
+    rules:
+      - R2
+      - R4
+      - R6
+    winner: R2
+  - inputs: *a24
+    rules:
+      - R3
+      - R5
+    winner: R3
+  - inputs: *a29
+    rules:
+      - R3
+      - R6
+    winner: R3
+  - inputs: *a17
+    rules:
+      - R3
+      - R4
+      - R5
+    winner: R3
+  - inputs: *a18
+    rules:
+      - R3
+      - R4
+      - R6
+    winner: R3
+  - inputs: *a25
+    rules:
+      - R1
+      - R5
+    winner: R1
+  - inputs: *a30
+    rules:
+      - R1
+      - R6
+    winner: R1
+  - inputs: *a19
+    rules:
+      - R1
+      - R4
+      - R5
+    winner: R1
+  - inputs: *a20
+    rules:
+      - R1
+      - R4
+      - R6
+    winner: R1
+  - inputs: *a1
+    rules:
+      - R1
+      - R2
+      - R5
+    winner: R1
+  - inputs: *a2
+    rules:
+      - R1
+      - R2
+      - R6
+    winner: R1
+  - inputs: *a3
+    rules:
+      - R1
+      - R2
+      - R4
+      - R5
+    winner: R1
+  - inputs: *a4
+    rules:
+      - R1
+      - R2
+      - R4
+      - R6
+    winner: R1
+  - inputs: *a5
+    rules:
+      - R1
+      - R2
+      - R5
+    winner: R1
+  - inputs: *a6
+    rules:
+      - R1
+      - R2
+      - R6
+    winner: R1
+  - inputs: *a7
+    rules:
+      - R1
+      - R2
+      - R4
+      - R5
+    winner: R1
+  - inputs: *a8
+    rules:
+      - R1
+      - R2
+      - R4
+      - R6
+    winner: R1
+  - inputs: *a9
+    rules:
+      - R1
+      - R3
+      - R5
+    winner: R1
+  - inputs: *a10
+    rules:
+      - R1
+      - R3
+      - R6
+    winner: R1
+  - inputs: *a11
+    rules:
+      - R1
+      - R3
+      - R4
+      - R5
+    winner: R1
+  - inputs: *a12
+    rules:
+      - R1
+      - R3
+      - R4
+      - R6
+    winner: R1

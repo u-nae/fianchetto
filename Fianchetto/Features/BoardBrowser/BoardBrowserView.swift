@@ -104,6 +104,11 @@ struct BoardBrowserView: View {
         .sheet(item: Binding(get: { replacement.map(PreviewItem.init) }, set: { if $0 == nil { model.cancelReplacement() } })) { item in
             ReplacementSheet(model: model, preview: item.preview)
         }
+        .sheet(isPresented: Binding(get: { model.restorePreview != nil }, set: { if !$0 { model.cancelRestore() } })) {
+            if let preview = model.restorePreview {
+                RestoreSheet(model: model, preview: preview)
+            }
+        }
         .alert(
             notice.map(model.noticeTitle) ?? "",
             isPresented: Binding(get: { notice != nil }, set: { if !$0 { model.dismissLinkNotice() } }),
@@ -608,7 +613,7 @@ private struct ReplacementSheet: View {
 }
 
 /// 과거 구성 띠(DESIGN.md 16.3): 기호 + '과거 구성 · 읽기 전용'과 '현재로 돌아가기', 둘째 줄에 순번과 실제 기록 시각.
-/// '현재와 비교'(W19)와 '이 구성으로…'(W20·W21)는 각 작업 항목이 동작과 함께 더한다. VoiceOver는 문구를 한 요소로 읽는다.
+/// '현재와 비교'(W19)와 '이 구성으로…' 메뉴의 '복원…'(W20)이 있다. '새 Board 만들기…'는 W21이 동작과 함께 더한다. VoiceOver는 문구를 한 요소로 읽는다.
 private struct PastConfigurationBanner: View {
     let model: BoardBrowserModel
 
@@ -631,6 +636,13 @@ private struct PastConfigurationBanner: View {
             Button("현재와 비교") { Task { await model.compareWithCurrent() } }
                 .disabled(!model.canCompareWithCurrent)
                 .accessibilityIdentifier("compare-with-current")
+            Menu("이 구성으로…") {
+                Button("복원…") { model.beginRestore() }
+                    .disabled(!model.canRestoreShown)
+            }
+            .menuStyle(.button)
+            .fixedSize()
+            .accessibilityIdentifier("restore-menu")
             Button("현재로 돌아가기") { Task { await model.returnToCurrent() } }
                 .accessibilityIdentifier("return-to-current")
         }

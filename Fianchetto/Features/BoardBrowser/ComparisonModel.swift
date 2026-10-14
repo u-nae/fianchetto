@@ -201,13 +201,7 @@ final class ComparisonModel {
     /// '변화 N개 · Board 이름 변경 · 순서 변경 N개 숨김'(0027). 같은 대상이면 셀 것이 없어 비운다.
     var summaryText: String {
         guard let summary, !isSameTarget else { return "" }
-        var parts: [String] = []
-        if summary.changedCount > 0 || !summary.boardRenamed {
-            parts.append(String(localized: "변화 \(summary.changedCount)개"))
-        }
-        if summary.boardRenamed { parts.append(String(localized: "Board 이름 변경")) }
-        if summary.hiddenReorderCount > 0 { parts.append(String(localized: "순서 변경 \(summary.hiddenReorderCount)개 숨김")) }
-        return parts.joined(separator: " · ")
+        return ChangeWording.summaryText(summary)
     }
 
     func targetText(_ target: ComparisonTarget) -> String {
@@ -252,29 +246,11 @@ final class ComparisonModel {
     }
 
     func kindText(_ kind: NodeChangeKind, row: ComparisonRow) -> String {
-        switch kind {
-        case .added: String(localized: "추가됨")
-        case .removed: String(localized: "제거됨")
-        case .renamed: String(localized: "이름 변경")
-        case .moved: String(localized: "‘\(row.change?.before?.location.last ?? String(localized: "최상위"))’에서 이동")
-        case .reordered: String(localized: "순서 변경")
-        case .targetReplaced: String(localized: "대상 교체")
-        case .urlChanged: String(localized: "URL 변경")
-        case .purposeChanged: String(localized: "아이콘 변경")
-        }
+        wording.kindText(kind, change: row.change)
     }
 
     static func kindSymbol(_ kind: NodeChangeKind) -> String {
-        switch kind {
-        case .added: "plus.circle"
-        case .removed: "minus.circle"
-        case .renamed: "pencil"
-        case .moved: "arrow.turn.down.right"
-        case .reordered: "arrow.up.arrow.down"
-        case .targetReplaced: "arrow.triangle.swap"
-        case .urlChanged: "link"
-        case .purposeChanged: "paintbrush.pointed"
-        }
+        ChangeWording.kindSymbol(kind)
     }
 
     func findRow(_ id: UUID) -> ComparisonRow? {
@@ -329,7 +305,7 @@ final class ComparisonModel {
         switch selection {
         case .boardName:
             guard let rename = diff?.projectRename else { return [] }
-            return [DetailLine(label: String(localized: "이름"), text: arrow(rename.before, rename.after))]
+            return [DetailLine(label: String(localized: "이름"), text: ChangeWording.arrow(rename.before, rename.after))]
         case .row:
             return selectedRow.map(detailLines(for:)) ?? []
         case nil:
@@ -399,16 +375,10 @@ final class ComparisonModel {
         }
     }
 
-    private func arrow(_ before: String, _ after: String) -> String {
-        String(localized: "\(before) → \(after)")
-    }
+    private var wording: ChangeWording { ChangeWording(purposeText: environment.purposeText) }
 
     private func locationText(_ state: NodeState) -> String {
         state.location.isEmpty ? String(localized: "최상위") : state.location.joined(separator: " › ")
-    }
-
-    private func purposeText(_ key: String?) -> String {
-        environment.purposeText(key.flatMap(BishopPurpose.init(rawValue:)))
     }
 
     private func lines(for change: NodeChange, kind: NodeKind) -> [DetailLine] {
@@ -427,15 +397,17 @@ final class ComparisonModel {
         }
         guard let before = change.before, let after = change.after else { return [] }
         var result: [DetailLine] = []
-        if change.kinds.contains(.renamed) { result.append(DetailLine(label: name, text: arrow(before.displayName, after.displayName))) }
-        if change.kinds.contains(.moved) { result.append(DetailLine(label: place, text: arrow(locationText(before), locationText(after)))) }
+        if change.kinds.contains(.renamed), let text = wording.valueText(.renamed, change: change) { result.append(DetailLine(label: name, text: text)) }
+        if change.kinds.contains(.moved) { result.append(DetailLine(label: place, text: ChangeWording.arrow(locationText(before), locationText(after)))) }
         if change.kinds.contains(.reordered) { result.append(DetailLine(label: "", text: String(localized: "순서 변경"))) }
-        if change.kinds.contains(.targetReplaced) {
-            result.append(DetailLine(label: target, text: arrow(before.recordedPath ?? "", after.recordedPath ?? "")))
+        if change.kinds.contains(.targetReplaced), let text = wording.valueText(.targetReplaced, change: change) {
+            result.append(DetailLine(label: target, text: text))
         }
-        if change.kinds.contains(.urlChanged) { result.append(DetailLine(label: url, text: arrow(before.url ?? "", after.url ?? ""))) }
-        if change.kinds.contains(.purposeChanged) {
-            result.append(DetailLine(label: icon, text: arrow(purposeText(before.purpose), purposeText(after.purpose))))
+        if change.kinds.contains(.urlChanged), let text = wording.valueText(.urlChanged, change: change) {
+            result.append(DetailLine(label: url, text: text))
+        }
+        if change.kinds.contains(.purposeChanged), let text = wording.valueText(.purposeChanged, change: change) {
+            result.append(DetailLine(label: icon, text: text))
         }
         return result
     }

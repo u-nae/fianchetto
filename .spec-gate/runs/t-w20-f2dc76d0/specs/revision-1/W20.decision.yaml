@@ -1,0 +1,81 @@
+schema_version: "1.0"
+task_id: W20
+decision_id: restore_request_outcome
+execution_format: table-v1
+# 복원 요청 하나에 대한 서비스의 판정. 위에서 아래로 처음 맞는 규칙(FIRST).
+# 거부 순서는 기존 커밋 판정과 같다: 보관 → 대상 revision 확인(존재·소속·읽기) → 현재 구성 읽기 → 변화 여부(PRD §6-C, §6-F, §7).
+# 어느 쪽 스냅샷도 읽지 못하면 빈 구성으로 대신하지 않는다(PRD §7).
+hit_policy: FIRST
+ordered_rules: true
+inputs:
+  - name: board_state
+    type: string
+    # archived: Project.archivedAt이 있다(0005, 0009).
+    allowed_values: [active, archived]
+    blank_means: any
+  - name: target_revision
+    type: string
+    # found: 같은 Board의 revision이고 스냅샷을 읽을 수 있다. not_found: 그런 ID가 없다. other_board: 다른 Board의 revision이다.
+    # unreadable: 같은 Board의 revision이지만 구성 JSON을 읽거나 디코딩하지 못한다(F-W20-1).
+    allowed_values: [found, not_found, other_board, unreadable]
+    blank_means: any
+  - name: current_snapshot
+    type: string
+    # unreadable: 현재 revision의 스냅샷을 읽거나 디코딩하지 못한다(빈 구성으로 대신하지 않는다, PRD §7).
+    allowed_values: [readable, unreadable]
+    blank_means: any
+  - name: target_vs_current
+    type: string
+    # same: 대상 revision의 스냅샷(Board 이름 + Node 구성)이 현재 구성과 같다(Node 저장 순서는 무시). 커밋 시점에 서비스가 다시 판정한다.
+    allowed_values: [same, different]
+    blank_means: any
+outputs:
+  - name: outcome
+    type: string
+    # rejected_archived: 보관된 Board. rejected_revision_not_found: 대상 revision 없음 또는 다른 Board.
+    # error_target_unreadable: 대상 구성 읽기 오류. error_current_unreadable: 현재 구성 읽기 오류.
+    # unchanged: revision 없이 끝. restored: cause restored(from: 대상)인 새 revision.
+    allowed_values: [rejected_archived, rejected_revision_not_found, error_target_unreadable, error_current_unreadable, unchanged, restored]
+rules:
+  - rule_id: R1
+    when: {board_state: archived}
+    then: {outcome: rejected_archived}
+  - rule_id: R2
+    when: {target_revision: [not_found, other_board]}
+    then: {outcome: rejected_revision_not_found}
+  - rule_id: R3
+    when: {target_revision: unreadable}
+    then: {outcome: error_target_unreadable}
+  - rule_id: R4
+    when: {current_snapshot: unreadable}
+    then: {outcome: error_current_unreadable}
+  - rule_id: R5
+    when: {target_vs_current: same}
+    then: {outcome: unchanged}
+  - rule_id: R6
+    when: {target_vs_current: different}
+    then: {outcome: restored}
+default_rule: null
+gap_analysis:
+  - >-
+    입력 2 × 4 × 2 × 2 = 32 조합. archived 16 조합은 R1. 남은 16 조합 중 not_found·other_board 8 조합은 R2, unreadable 대상 4 조합은 R3,
+    (found, unreadable 현재) 2 조합은 R4, (found, readable, same)은 R5, (found, readable, different)은 R6. 빈 칸이 없다(check-decision이 계산한다).
+overlap_analysis:
+  - >-
+    R1은 R2~R6과 archived 행에서 겹치며 FIRST로 R1이 이긴다. 보관된 Board는 대상이나 현재 구성 상태와 무관하게 편집이 막힌다(PRD §6-C, 0009).
+  - >-
+    R2는 R4~R6과 not_found·other_board 행에서 겹치며 R2가 이긴다. 대상이 없으면 현재 구성을 읽을 이유가 없고, 다른 Board의 구성을
+    끌어오는 것은 복원이 아니다(PRD §6-F는 "해당 시점"으로 되돌리는 동작만 정한다).
+  - >-
+    R3은 R4~R6과 unreadable 대상 행에서 겹치며 R3이 이긴다. 대상 구성을 못 읽으면 같음·다름을 판정할 수 없고 빈 구성과 비교해서는 안 된다(PRD §7).
+    R2와 R3은 target_revision 값이 달라 겹치지 않는다.
+  - >-
+    R4는 R5·R6과 unreadable 현재 행에서 겹치며 R4가 이긴다. 현재 구성을 못 읽으면 같음·다름을 판정할 수 없다(PRD §7).
+  - >-
+    R5와 R6은 서로 겹치지 않는다(same/different가 나눈다).
+source_locators:
+  - docs/PRD.md#f-복원과-새-프로젝트-만들기
+  - docs/PRD.md#c-배치와-제거
+  - docs/PRD.md#7-기록-정책과-저장-안정성
+  - docs/decisions/0005-provenance-and-archive-fields.md
+  - docs/decisions/0009-archived-board-read-only.md

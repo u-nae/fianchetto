@@ -1,0 +1,19 @@
+schema_version: "1.0"
+run_id: t-w20-f2dc76d0
+decisions:
+  - question_id: Q-W20-1
+    task_id: W20
+    question: "'복원…'을 고른 뒤 현재와의 차이를 어떤 화면에서 확인하고 확정할까요?"
+    recommended_default: A
+    answer: A
+    followed_recommendation: true
+    answer_source: AskUserQuestion
+    answered_at: 2026-10-13T05:30:00.000Z
+  - question_id: Q-W20-2
+    task_id: W20
+    question: "'이 구성으로 복원…'을 메뉴 막대 어디에 둘까요?"
+    recommended_default: A
+    answer: A
+    followed_recommendation: true
+    answer_source: AskUserQuestion
+    answered_at: 2026-10-13T05:30:00.000Z

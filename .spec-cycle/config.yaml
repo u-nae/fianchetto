@@ -1,0 +1,22 @@
+schema_version: "1.1"
+baseline:
+  - docs/PRD.md
+  - docs/TECH_STACK.md
+decision_records: docs/decisions
+work_items: docs/work-items.yaml
+run_root: .spec-gate/runs
+intake:
+  adapter: native
+  taskmaster:
+    tasks: .taskmaster/tasks/tasks.json
+    tag: null
+execution:
+  adapter: superpowers
+  command: null
+  plan_dir: docs/superpowers/plans
+verification:
+  test_globs:
+    - FianchettoTests/**/*.swift
+    - FianchettoUITests/**/*.swift
+  id_pattern: null
+  test_command: null

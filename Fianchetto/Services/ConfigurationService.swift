@@ -7,6 +7,8 @@ enum CommitRejection: Equatable, Sendable {
     /// 북마크 바이트 수가 연결 대상 수와 맞지 않는다.
     case accessMismatch
     case blankName
+    /// 복원 대상 revision이 없거나 다른 Board의 것이다.
+    case revisionNotFound
     case edit(EditRejection)
 }
 
@@ -20,6 +22,8 @@ enum ConfigurationCommitOutcome: Equatable, Sendable {
 enum ConfigurationServiceError: Error, Equatable, Sendable {
     case saveFailed
     case currentConfigurationUnreadable
+    /// 복원 대상 revision의 구성을 읽을 수 없다(빈 구성으로 대신하지 않는다).
+    case targetConfigurationUnreadable
     case storeUnavailable
 }
 
@@ -76,6 +80,33 @@ struct ConfigurationService: Sendable {
             return outcome
         case .skipped(.unreadableCurrent):
             throw .currentConfigurationUnreadable
+        case .skipped(.unreadableTarget):
+            throw .targetConfigurationUnreadable
+        }
+    }
+
+    /// 과거 revision의 구성을 새 revision으로 복원한다. 판단은 저장소 actor 안에서 하므로 결과는 커밋 시점 기준이다.
+    func restore(_ revisionID: UUID, in projectID: UUID) async throws(ConfigurationServiceError) -> ConfigurationCommitOutcome {
+        let now = self.now, makeID = self.makeID
+        let result: AppendResult<Decision>
+        do {
+            result = try await store.appendRevision(to: projectID, restoring: revisionID) { state in
+                Self.decideRestore(state: state, now: now, makeID: makeID)
+            }
+        } catch {
+            throw Self.map(error)
+        }
+        switch result {
+        case .projectNotFound:
+            return .rejected(.projectNotFound)
+        case let .appended(summary, append):
+            return .committed(summary, append.snapshot)
+        case let .skipped(.outcome(outcome)):
+            return outcome
+        case .skipped(.unreadableCurrent):
+            throw .currentConfigurationUnreadable
+        case .skipped(.unreadableTarget):
+            throw .targetConfigurationUnreadable
         }
     }
 
@@ -84,6 +115,25 @@ struct ConfigurationService: Sendable {
     enum Decision: Sendable {
         case outcome(ConfigurationCommitOutcome)
         case unreadableCurrent
+        case unreadableTarget
+    }
+
+    /// 거부 순서: project_not_found(저장소) → archived → 대상 revision → 현재 구성 읽기 → 같음 → restored.
+    /// 복원은 기록된 참조를 그대로 쓰므로 새 참조 레코드를 만들지 않는다.
+    static func decideRestore(state: ProjectState, now: () -> Date, makeID: () -> UUID) -> AppendDecision<Decision> {
+        if state.project.archivedAt != nil { return .skip(.outcome(.rejected(.archived))) }
+        let summary: RevisionSummary
+        let target: ConfigurationSnapshot
+        switch state.restoreTarget {
+        case nil, .notFound?, .otherProject?: return .skip(.outcome(.rejected(.revisionNotFound)))
+        case .unreadable?: return .skip(.unreadableTarget)
+        case let .found(foundSummary, snapshot)?: (summary, target) = (foundSummary, snapshot)
+        }
+        guard case let .success(current) = state.current else { return .skip(.unreadableCurrent) }
+        if target == current { return .skip(.outcome(.unchanged)) }
+        return .append(RevisionAppend(
+            id: makeID(), recordedAt: now(), cause: .restored(from: summary.id), snapshot: target, references: []
+        ))
     }
 
     /// 거부 순서: project_not_found(저장소) → archived → access_mismatch → 현재 구성 읽기 → 편집 결과.

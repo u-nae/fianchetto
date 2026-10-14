@@ -1,0 +1,133 @@
+schema_version: "1.0"
+run_id: t-w20-f2dc76d0
+task_id: W20
+checked_at: 2026-10-14T03:42:18.590Z
+test_globs:
+  - FianchettoTests/**/*.swift
+  - FianchettoUITests/**/*.swift
+obligations:
+  - obligation_id: W20-restore-menu-opens-sheet
+    covered: true
+    locations:
+      - FianchettoTests/Features/RestoreModelTests.swift:94
+      - FianchettoUITests/BoardBrowserUITests.swift:298
+  - obligation_id: W20-no-menu-on-current
+    covered: true
+    locations:
+      - FianchettoTests/Features/RestoreModelTests.swift:142
+  - obligation_id: W20-archived-disables-restore-only
+    covered: true
+    locations:
+      - FianchettoTests/Features/RestoreModelTests.swift:153
+  - obligation_id: W20-file-menu-enablement
+    covered: true
+    locations:
+      - FianchettoTests/Features/RestoreModelTests.swift:178
+  - obligation_id: W20-file-menu-same-sheet
+    covered: true
+    locations:
+      - FianchettoUITests/BoardBrowserUITests.swift:298
+  - obligation_id: W20-sheet-shows-diff
+    covered: true
+    locations:
+      - FianchettoTests/Features/RestorePreviewTests.swift:17
+  - obligation_id: W20-sheet-identical-no-button
+    covered: true
+    locations:
+      - FianchettoTests/Features/RestoreModelTests.swift:197
+  - obligation_id: W20-sheet-no-file-access
+    covered: true
+    locations:
+      - FianchettoTests/Features/RestoreModelTests.swift:214
+  - obligation_id: W20-sheet-keyboard-accessibility
+    covered: true
+    locations:
+      - FianchettoTests/Features/RestoreModelTests.swift:230
+      - FianchettoUITests/BoardBrowserUITests.swift:298
+  - obligation_id: W20-cancel-keeps-past-view
+    covered: true
+    locations:
+      - FianchettoTests/Features/RestoreModelTests.swift:250
+  - obligation_id: W20-confirm-creates-restored-revision
+    covered: true
+    locations:
+      - FianchettoTests/Features/RestoreModelTests.swift:264
+      - FianchettoTests/Services/RestoreServiceTests.swift:226
+  - obligation_id: W20-history-and-checkpoints-preserved
+    covered: true
+    locations:
+      - FianchettoTests/Services/RestoreServiceTests.swift:241
+  - obligation_id: W20-reuses-recorded-references
+    covered: true
+    locations:
+      - FianchettoTests/Services/RestoreServiceTests.swift:265
+  - obligation_id: W20-restores-unreachable-items
+    covered: true
+    locations:
+      - FianchettoTests/Features/RestoreModelTests.swift:288
+  - obligation_id: W20-save-failure-keeps-current
+    covered: true
+    locations:
+      - FianchettoTests/Features/RestoreModelTests.swift:309
+  - obligation_id: W20-no-disk-side-effects
+    covered: true
+    locations:
+      - FianchettoTests/Features/RestoreModelTests.swift:330
+  - obligation_id: W20-name-only-restore
+    covered: true
+    locations:
+      - FianchettoTests/Services/RestoreServiceTests.swift:280
+  - obligation_id: W20-restore-chain
+    covered: true
+    locations:
+      - FianchettoTests/Services/RestoreServiceTests.swift:293
+  - obligation_id: W20-service-outcome-table
+    covered: true
+    locations:
+      - FianchettoTests/Services/RestoreServiceTests.swift:136
+  - obligation_id: W20-service-rejects-archived
+    covered: true
+    locations:
+      - FianchettoTests/Services/RestoreServiceTests.swift:310
+  - obligation_id: W20-service-rejects-foreign-revision
+    covered: true
+    locations:
+      - FianchettoTests/Services/RestoreServiceTests.swift:321
+  - obligation_id: W20-service-target-unreadable
+    covered: true
+    locations:
+      - FianchettoTests/Services/RestoreServiceTests.swift:338
+  - obligation_id: W20-service-current-unreadable
+    covered: true
+    locations:
+      - FianchettoTests/Services/RestoreServiceTests.swift:350
+  - obligation_id: W20-restore_request_outcome-R1
+    covered: true
+    locations:
+      - FianchettoTests/Services/RestoreServiceTests.swift:118
+  - obligation_id: W20-restore_request_outcome-R2
+    covered: true
+    locations:
+      - FianchettoTests/Services/RestoreServiceTests.swift:121
+  - obligation_id: W20-restore_request_outcome-R3
+    covered: true
+    locations:
+      - FianchettoTests/Services/RestoreServiceTests.swift:124
+  - obligation_id: W20-restore_request_outcome-R4
+    covered: true
+    locations:
+      - FianchettoTests/Services/RestoreServiceTests.swift:127
+  - obligation_id: W20-restore_request_outcome-R5
+    covered: true
+    locations:
+      - FianchettoTests/Services/RestoreServiceTests.swift:130
+      - FianchettoTests/Services/RestoreServiceTests.swift:361
+  - obligation_id: W20-restore_request_outcome-R6
+    covered: true
+    locations:
+      - FianchettoTests/Services/RestoreServiceTests.swift:133
+uncovered_count: 0
+test_command:
+  command: scripts/vm-verify.sh
+  exit_code: 0
+status_written: done

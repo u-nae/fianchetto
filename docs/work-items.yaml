@@ -480,7 +480,7 @@ items:
     test_strategy: >-
       서비스 테스트: 복원 후 새 revision과 출처 ID, 기존 revision·체크포인트 수 유지, 동일 구성 무변경,
       대상이 삭제된 항목 포함 복원, 저장 실패 주입 시 이전 현재 구성 유지, 원본 파일 불변.
-    status: pending
+    status: done
     priority: high
     dependencies: [W16, W17]
     source_refs:
