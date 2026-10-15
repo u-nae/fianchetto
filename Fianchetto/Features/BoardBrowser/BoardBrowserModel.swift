@@ -164,6 +164,17 @@ final class BoardBrowserModel {
         var isSaving = false
     }
 
+    /// 과거 구성으로 새 Board를 만드는 시트의 입력(W21). nil이면 시트가 닫혀 있다.
+    struct Duplication: Equatable {
+        var sourceBoardID: UUID
+        var revisionID: UUID
+        var title: String
+        var subtitle: String
+        var name: String
+        var message: CreationMessage?
+        var isSaving = false
+    }
+
     private(set) var phase: Phase = .loading
     private(set) var activeBoards: [ProjectListing] = []
     private(set) var archivedBoards: [ProjectListing] = []
@@ -171,6 +182,7 @@ final class BoardBrowserModel {
     private(set) var current: CurrentConfiguration = .none
     var selectedNodeID: UUID?
     var creation: Creation?
+    var duplication: Duplication?
     /// Board 이름 변경 입력. Board 만들기 입력과 같은 모양이다.
     var rename: Creation?
     var nodeForm: NodeForm?
@@ -1543,7 +1555,7 @@ final class BoardBrowserModel {
     /// 띠 '복원…'과 파일 메뉴 '이 구성으로 복원…'이 켜지는 조건: 과거 구성을 보고 있고, 비교 중이 아니고, 보관되지 않았고,
     /// 현재 구성과 고른 revision의 목록 정보가 있고, 시트가 아직 열려 있지 않다. 참이면 beginRestore()가 반드시 시트를 연다.
     var canRestoreShown: Bool {
-        guard restorePreview == nil, isViewingPast, !isComparing, !selectedBoardIsArchived, openedStore != nil,
+        guard restorePreview == nil, duplication == nil, isViewingPast, !isComparing, !selectedBoardIsArchived, openedStore != nil,
               history.selectedSummary != nil, history.selectedSnapshot != nil,
               case .loaded = current else { return false }
         return true
@@ -1613,6 +1625,80 @@ final class BoardBrowserModel {
         closeSheet(saving: preview)
         guard selectedBoardID == boardID else { return }
         linkNotice = LinkNotice(kind: kind, request: nil, action: .restore)
+    }
+
+    // MARK: 과거 구성에서 새 Board 만들기(W21)
+
+    /// 띠 '새 Board 만들기…'와 파일 메뉴 '이 구성으로 새 Board 만들기…'가 켜지는 조건: 과거 구성을 보고 있고, 비교 중이 아니고,
+    /// 만들기·복원 시트가 닫혀 있고, 고른 revision의 목록 정보와 스냅샷이 있다. 보관된 Board에서도 켜진다(PRD §6-C, 0009).
+    /// 참이면 beginDuplicate()가 반드시 시트를 연다.
+    var canDuplicateShown: Bool {
+        guard duplication == nil, restorePreview == nil, isViewingPast, !isComparing, openedStore != nil,
+              history.selectedSummary != nil, history.selectedSnapshot != nil else { return false }
+        return true
+    }
+
+    /// 시트가 있고, 정리한 이름이 비어 있지 않고, 저장 중이 아니다.
+    var canConfirmDuplicate: Bool {
+        guard let sheet = duplication, !sheet.isSaving else { return false }
+        return (try? ProjectName.normalize(sheet.name)) != nil
+    }
+
+    /// 시트가 있고 저장 중이 아니다('취소' 켜짐).
+    var canCancelDuplicate: Bool { duplication.map { !$0.isSaving } ?? false }
+
+    /// 시트 내용은 이력 탭이 이미 읽은 목록 정보로 만든다. 저장소·파일을 읽지 않는다. 기본 이름은 그 revision의 Board 이름이다(DESIGN.md 16.3).
+    func beginDuplicate() {
+        guard canDuplicateShown, let boardID = selectedBoardID, let summary = history.selectedSummary else { return }
+        duplication = Duplication(
+            sourceBoardID: boardID, revisionID: summary.id,
+            title: String(localized: "#\(summary.sequence) 구성으로 새 Board 만들기"),
+            subtitle: String(localized: "\(summary.projectName) · #\(summary.sequence) · \(history.dateTimeText(summary.recordedAt))"),
+            name: String(localized: "\(summary.projectName) 사본")
+        )
+    }
+
+    func cancelDuplicate() {
+        guard canCancelDuplicate else { return }
+        duplication = nil
+    }
+
+    /// 성공하면 W07 Board 만들기처럼 새 Board를 고른다. 실패하면 입력을 유지한 채 안내한다. 시트가 그 사이 닫혔으면 아무것도 바꾸지 않는다.
+    func confirmDuplicate() async {
+        guard canConfirmDuplicate, var draft = duplication, let service = openedStore?.service else { return }
+        draft.isSaving = true
+        draft.message = nil
+        duplication = draft
+        let outcome: ConfigurationCommitOutcome
+        do {
+            outcome = try await service.duplicateProject(from: draft.revisionID, of: draft.sourceBoardID, named: draft.name)
+        } catch {
+            finishDuplicate(saving: draft, message: .saveFailed)
+            return
+        }
+        switch outcome {
+        case let .committed(summary, _):
+            guard isSavingDuplicate(draft) else { return }
+            duplication = nil
+            await reloadBoards()
+            await select(summary.projectID)
+        case .rejected(.blankName):
+            finishDuplicate(saving: draft, message: .nameRequired)
+        case .rejected, .unchanged:
+            finishDuplicate(saving: draft, message: .saveFailed)
+        }
+    }
+
+    /// 저장하던 바로 그 시트가 아직 열려 있다.
+    private func isSavingDuplicate(_ draft: Duplication) -> Bool {
+        guard let open = duplication else { return false }
+        return open.revisionID == draft.revisionID && open.sourceBoardID == draft.sourceBoardID && open.isSaving
+    }
+
+    private func finishDuplicate(saving draft: Duplication, message: CreationMessage) {
+        guard isSavingDuplicate(draft) else { return }
+        duplication?.isSaving = false
+        duplication?.message = message
     }
 
     // MARK: 제거
@@ -1823,6 +1909,7 @@ final class BoardBrowserModel {
         viewMode = dependencies.lastBoard.viewMode(for: boardID).flatMap(ViewMode.init(rawValue:)) ?? .list
         closeComparison()
         restorePreview = nil
+        duplication = nil
         history.reset(boardID: boardID)
         iconPath = []
         hasIconLocation = false

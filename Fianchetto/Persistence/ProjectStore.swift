@@ -41,6 +41,22 @@ enum AppendResult<Skip: Sendable>: Sendable {
     case projectNotFound
 }
 
+/// 복제 원본을 저장소에서 읽은 결과(W21). revision 읽기 결과는 복원과 같은 네 경우(RestoreTarget)다.
+enum DuplicationSource: Sendable {
+    case projectNotFound
+    case found(ProjectRecord, RestoreTarget)
+}
+
+enum DuplicationDecision<Skip: Sendable>: Sendable {
+    case create(ProjectRecord, first: RevisionAppend)
+    case skip(Skip)
+}
+
+enum DuplicationResult<Skip: Sendable>: Sendable {
+    case created(RevisionSummary, RevisionAppend)
+    case skipped(Skip)
+}
+
 enum ProjectStoreError: Error, Equatable, Sendable {
     case saveFailed
     case storeUnavailable
@@ -73,6 +89,38 @@ actor ProjectStore {
         }
         try commit()
         return Self.summary(first, projectID: project.id, sequence: 1)
+    }
+
+    /// 원본 Board와 revision을 같은 actor 안에서 읽어 `decide`에 주고, 만들기로 하면 새 Project와 순번 1 revision을
+    /// 한 저장 단위로 커밋한다(W21, 불변식 5). 참조 레코드는 만들지 않는다(0036).
+    func createProject<Skip: Sendable>(
+        copying sourceRevisionID: UUID, of sourceProjectID: UUID,
+        decide: @Sendable (DuplicationSource) -> DuplicationDecision<Skip>
+    ) throws(ProjectStoreError) -> DuplicationResult<Skip> {
+        let source: DuplicationSource
+        do {
+            if let project = try adapter.project(sourceProjectID) {
+                source = .found(project, readRestoreTarget(sourceRevisionID, projectID: sourceProjectID))
+            } else {
+                source = .projectNotFound
+            }
+        } catch {
+            throw .storeUnavailable
+        }
+        switch decide(source) {
+        case let .skip(value):
+            return .skipped(value)
+        case let .create(project, first):
+            do {
+                try adapter.insert(project)
+                try insert(first, projectID: project.id, sequence: 1)
+            } catch {
+                modelContext.rollback()
+                throw .storeUnavailable
+            }
+            try commit()
+            return .created(Self.summary(first, projectID: project.id, sequence: 1), first)
+        }
     }
 
     /// 현재 상태로 `decide`를 실행하고, 추가하기로 하면 다음 순번 revision으로 커밋한다.

@@ -366,6 +366,103 @@ final class BoardBrowserUITests: XCTestCase {
         XCTAssertTrue(restored.label.hasPrefix("#1에서 복원, #3, "), restored.label)
     }
 
+    // [W21-menu-opens-sheet] [W21-menu-order] [W21-file-menu-same-sheet] [W21-sheet-keyboard-accessibility] [W21-blank-name-disables-confirm]
+    // 띠의 '이 구성으로…' › '새 Board 만들기…'와 파일 메뉴 '이 구성으로 새 Board 만들기…'가 같은 시트를 열고, 기본 이름은 전체 선택되며,
+    // Esc는 취소, Return은 만들기다. 만든 뒤 새 Board가 선택된다.
+    @MainActor
+    func test_W21_createBoardFromPastConfiguration() {
+        let test = UITestApp(name: "duplicate")
+        test.launch()
+        defer { test.terminate() }
+        let app = test.app
+        XCTAssertTrue(app.staticTexts["Board가 없습니다"].waitForExistence(timeout: 10))
+        test.activateForKeyboard()
+        app.typeKey("n", modifierFlags: .command)
+        test.type("Plan", into: app.textFields["board-name-field"])
+        app.typeKey(.return, modifierFlags: [])
+        XCTAssertTrue(app.descendants(matching: .any)["board-row-Plan"].waitForExistence(timeout: 5))
+        app.menuBars.menuBarItems["파일"].click()
+        app.menuBars.menuBarItems["파일"].menuItems["Wing 추가…"].click()
+        test.type("Dev", into: app.textFields["node-name-field"])
+        app.typeKey(.return, modifierFlags: [])
+        XCTAssertTrue(app.descendants(matching: .any)["node-row-Dev"].waitForExistence(timeout: 5))
+
+        let viewMenu = app.menuBars.menuBarItems["보기"]
+        viewMenu.click()
+        viewMenu.menuItems["이력 보기"].click()
+        let first = app.descendants(matching: .any)["revision-row-1"]
+        XCTAssertTrue(first.waitForExistence(timeout: 5))
+        first.click()
+        let banner = app.descendants(matching: .any)["past-banner"]
+        XCTAssertTrue(banner.waitForExistence(timeout: 5))
+
+        // 띠의 메뉴: '복원…' 다음에 '새 Board 만들기…'가 있다.
+        var menu = app.menuButtons["restore-menu"]
+        if !menu.waitForExistence(timeout: 5) {
+            menu = app.descendants(matching: .any)["restore-menu"]
+        }
+        XCTAssertTrue(menu.waitForExistence(timeout: 5))
+        menu.click()
+        let duplicateItem = app.menuItems["새 Board 만들기…"]
+        XCTAssertTrue(duplicateItem.waitForExistence(timeout: 5))
+        let titles = app.menuItems.allElementsBoundByIndex.map(\.title)
+        let restoreIndex = titles.firstIndex(of: "복원…")
+        let duplicateIndex = titles.firstIndex(of: "새 Board 만들기…")
+        XCTAssertNotNil(restoreIndex, "\(titles)")
+        XCTAssertNotNil(duplicateIndex, "\(titles)")
+        if let restoreIndex, let duplicateIndex { XCTAssertLessThan(restoreIndex, duplicateIndex, "\(titles)") }
+        duplicateItem.click()
+        let title = app.descendants(matching: .any)["duplicate-sheet-title"]
+        XCTAssertTrue(title.waitForExistence(timeout: 5))
+        XCTAssertEqual(text(of: title), "#1 구성으로 새 Board 만들기")
+        let field = app.textFields["duplicate-name-field"]
+        XCTAssertTrue(field.waitForExistence(timeout: 5))
+        XCTAssertEqual(field.value as? String, "Plan 사본")
+
+        // 기본 이름은 전체 선택: 바로 입력하면 통째로 바뀐다.
+        app.typeText("Copy")
+        XCTAssertEqual(field.value as? String, "Copy")
+
+        // 이름을 비우면 '만들기'가 꺼지고 Return으로도 만들지 않는다.
+        app.typeKey("a", modifierFlags: .command)
+        app.typeKey(.delete, modifierFlags: [])
+        let confirmButton = app.descendants(matching: .any)["duplicate-confirm"]
+        XCTAssertTrue(confirmButton.waitForExistence(timeout: 5))
+        XCTAssertFalse(confirmButton.isEnabled)
+        app.typeKey(.return, modifierFlags: [])
+        XCTAssertTrue(title.exists)
+        XCTAssertFalse(app.descendants(matching: .any)["board-row-Plan 사본"].exists)
+
+        // Esc는 취소: 시트만 닫히고 과거 구성은 그대로다.
+        app.typeKey(.escape, modifierFlags: [])
+        XCTAssertTrue(title.waitForNonExistence(timeout: 5))
+        XCTAssertTrue(banner.exists)
+
+        // 파일 메뉴도 같은 시트를 같은 기본 이름으로 연다.
+        app.menuBars.menuBarItems["파일"].click()
+        app.menuBars.menuBarItems["파일"].menuItems["이 구성으로 새 Board 만들기…"].click()
+        XCTAssertTrue(title.waitForExistence(timeout: 5))
+        XCTAssertEqual(text(of: title), "#1 구성으로 새 Board 만들기")
+        XCTAssertEqual(field.value as? String, "Plan 사본")
+
+        // Return은 만들기: 새 Board가 선택되고 현재 구성(순번 1에는 Dev가 없다)을 보인다.
+        app.typeKey(.return, modifierFlags: [])
+        XCTAssertTrue(title.waitForNonExistence(timeout: 5))
+        XCTAssertTrue(banner.waitForNonExistence(timeout: 5))
+        // 이력 탭을 열면 사이드바가 접히므로(0032) 다시 펼쳐 목록 행을 확인한다.
+        viewMenu.click()
+        let showSidebar = viewMenu.menuItems["사이드바 보기"]
+        XCTAssertTrue(showSidebar.waitForExistence(timeout: 5))
+        showSidebar.click()
+        let created = app.descendants(matching: .any)["board-row-Plan 사본"]
+        XCTAssertTrue(created.waitForExistence(timeout: 5))
+        XCTAssertTrue(created.isSelected)
+        XCTAssertFalse(app.descendants(matching: .any)["node-row-Dev"].exists)
+        let firstOfCopy = app.descendants(matching: .any)["revision-row-1"]
+        XCTAssertTrue(firstOfCopy.waitForExistence(timeout: 5))
+        XCTAssertTrue(firstOfCopy.label.hasPrefix("과거 구성에서 만듦, #1, "), firstOfCopy.label)
+    }
+
     /// W19 ② 나란히 보기: 세그먼트로 바꾸면 왼쪽 '이전 구성'·오른쪽 '이후 구성' 열이 열 머리와 함께 보이고,
     /// 한쪽에서 고른 항목은 반대쪽에서도 고른 상태가 되며, 한쪽에만 있는 항목은 반대쪽에 행이 없다.
     @MainActor

@@ -114,6 +114,9 @@ struct BoardCommands: Commands {
             Divider()
             Button("이 구성으로 복원…") { model?.beginRestore() }
                 .disabled(!isEnabled(\.canRestoreShown))
+            // 과거 구성으로 새 Board 만들기(W21). 복원과 같은 자리, 단축키 없음(0035 선례).
+            Button("이 구성으로 새 Board 만들기…") { model?.beginDuplicate() }
+                .disabled(!isEnabled(\.canDuplicateShown))
             Divider()
             Button("Board 이름 변경…") { model?.beginRename() }
                 .disabled(!isEnabled(\.canRenameSelectedBoard))

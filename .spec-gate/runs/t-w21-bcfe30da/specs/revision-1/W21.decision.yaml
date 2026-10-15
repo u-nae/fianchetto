@@ -1,0 +1,74 @@
+schema_version: "1.0"
+task_id: W21
+decision_id: duplicate_request_outcome
+execution_format: table-v1
+# 과거 구성으로 새 Board 만들기 요청 하나에 대한 서비스의 판정. 위에서 아래로 처음 맞는 규칙(FIRST).
+# 순서: 이름(순수 검사, 저장소를 읽지 않는다. W07 Board 만들기와 같다) → 원본 Board 존재 → 원본 revision 확인(존재·소속·읽기) → 생성.
+# 보관 상태는 입력으로 두되 어떤 규칙도 읽지 않는다. 보관된 Board에서 새 Board 만들기는 허용이므로(PRD §6-C, 0009)
+# archived 행이 active 행과 같은 outcome을 받는 것을 벡터로 증명한다.
+# 원본 스냅샷을 읽지 못하면 빈 구성으로 새 Board를 만들지 않는다(PRD §7).
+hit_policy: FIRST
+ordered_rules: true
+inputs:
+  - name: new_name
+    type: string
+    # blank: 앞뒤 공백·줄바꿈을 정리한 뒤 비어 있다(PRD §5). valid: 그 밖의 모든 입력.
+    allowed_values: [valid, blank]
+    blank_means: any
+  - name: source_project
+    type: string
+    # not_found: 원본 Board ID의 Project가 저장소에 없다.
+    allowed_values: [found, not_found]
+    blank_means: any
+  - name: source_revision
+    type: string
+    # found: 원본 Board의 revision이고 스냅샷을 읽을 수 있다. not_found: 그런 ID가 없다. other_board: 다른 Board의 revision이다.
+    # unreadable: 원본 Board의 revision이지만 구성 JSON을 읽거나 디코딩하지 못한다.
+    allowed_values: [found, not_found, other_board, unreadable]
+    blank_means: any
+  - name: source_board_state
+    type: string
+    # archived: 원본 Project.archivedAt이 있다(0005). 어떤 규칙도 읽지 않는다(보관은 만들기를 막지 않는다).
+    allowed_values: [active, archived]
+    blank_means: any
+outputs:
+  - name: outcome
+    type: string
+    # rejected_blank_name: 이름 없음. rejected_project_not_found: 원본 Board 없음. rejected_revision_not_found: 원본 revision 없음 또는 다른 Board.
+    # error_source_unreadable: 원본 구성 읽기 오류. created: 새 Project(origin duplicate)와 순번 1 revision(cause duplicated)이 한 저장 단위로 커밋됐다.
+    allowed_values: [rejected_blank_name, rejected_project_not_found, rejected_revision_not_found, error_source_unreadable, created]
+rules:
+  - rule_id: R1
+    when: {new_name: blank}
+    then: {outcome: rejected_blank_name}
+  - rule_id: R2
+    when: {source_project: not_found}
+    then: {outcome: rejected_project_not_found}
+  - rule_id: R3
+    when: {source_revision: [not_found, other_board]}
+    then: {outcome: rejected_revision_not_found}
+  - rule_id: R4
+    when: {source_revision: unreadable}
+    then: {outcome: error_source_unreadable}
+  - rule_id: R5
+    when: {source_revision: found}
+    then: {outcome: created}
+default_rule: null
+gap_analysis:
+  - >-
+    입력 2 × 2 × 4 × 2 = 32 조합. blank 16 조합은 R1. 남은 16 조합 중 not_found Project 8 조합은 R2. 남은 8 조합 중
+    not_found·other_board revision 4 조합은 R3, unreadable 2 조합은 R4, found 2 조합(active·archived 각 1)은 R5. 빈 칸이 없다(check-decision이 계산한다).
+overlap_analysis:
+  - >-
+    R1은 R2~R5와 blank 행에서 겹치며 FIRST로 R1이 이긴다. 이름은 저장소를 읽기 전에 순수 검사로 거르며 W07 Board 만들기와 같은 순서다(PRD §5 빈 이름 거부).
+  - >-
+    R2는 R3~R5와 not_found Project 행에서 겹치며 R2가 이긴다. 원본 Board가 없으면 revision 소속을 판정할 수 없다.
+  - >-
+    R3·R4·R5는 source_revision 값이 서로 달라 겹치지 않는다. R5는 source_board_state를 읽지 않으므로 archived 행도 created다(PRD §6-C, 0009).
+source_locators:
+  - docs/PRD.md#f-복원과-새-프로젝트-만들기
+  - docs/PRD.md#c-배치와-제거
+  - docs/PRD.md#5-핵심-개념과-데이터-규칙
+  - docs/PRD.md#7-기록-정책과-저장-안정성
+  - docs/decisions/0005-provenance-and-archive-fields.md
+  - docs/decisions/0009-archived-board-read-only.md

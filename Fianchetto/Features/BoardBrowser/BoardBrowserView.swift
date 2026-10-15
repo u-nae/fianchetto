@@ -109,6 +109,9 @@ struct BoardBrowserView: View {
                 RestoreSheet(model: model, preview: preview)
             }
         }
+        .sheet(isPresented: Binding(get: { model.duplication != nil }, set: { if !$0 { model.cancelDuplicate() } })) {
+            DuplicateSheet(model: model)
+        }
         .alert(
             notice.map(model.noticeTitle) ?? "",
             isPresented: Binding(get: { notice != nil }, set: { if !$0 { model.dismissLinkNotice() } }),
@@ -613,7 +616,7 @@ private struct ReplacementSheet: View {
 }
 
 /// 과거 구성 띠(DESIGN.md 16.3): 기호 + '과거 구성 · 읽기 전용'과 '현재로 돌아가기', 둘째 줄에 순번과 실제 기록 시각.
-/// '현재와 비교'(W19)와 '이 구성으로…' 메뉴의 '복원…'(W20)이 있다. '새 Board 만들기…'는 W21이 동작과 함께 더한다. VoiceOver는 문구를 한 요소로 읽는다.
+/// '현재와 비교'(W19)와 '이 구성으로…' 메뉴의 '복원…'(W20)이 있다. '새 Board 만들기…'(W21)가 있다. VoiceOver는 문구를 한 요소로 읽는다.
 private struct PastConfigurationBanner: View {
     let model: BoardBrowserModel
 
@@ -639,6 +642,8 @@ private struct PastConfigurationBanner: View {
             Menu("이 구성으로…") {
                 Button("복원…") { model.beginRestore() }
                     .disabled(!model.canRestoreShown)
+                Button("새 Board 만들기…") { model.beginDuplicate() }
+                    .disabled(!model.canDuplicateShown)
             }
             .menuStyle(.button)
             .fixedSize()

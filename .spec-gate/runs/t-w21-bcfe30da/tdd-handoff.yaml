@@ -1,0 +1,556 @@
+schema_version: "1.1"
+run_id: t-w21-bcfe30da
+verdict: READY
+source:
+  baseline:
+    - path: docs/PRD.md
+      fingerprint: 9194c2af1e2024e9a8b9603694c81b01ca618e5303438a7350f15461d1b836ad
+    - path: docs/TECH_STACK.md
+      fingerprint: 3b623d55c2cc7964a0a4f6b5b04bbfbe7f722522372feb79a867e1987a3049ea
+  decision_records:
+    path: docs/decisions
+    fingerprint: d8894d86b906d1bbba4b22fe253aae4cf80a9464464871a33b394b5895b7a004
+  work_items_artifact: docs/work-items.yaml
+  work_items_fingerprint: a903f88953cc5ede91283fb75cab1052c6d162dfbff1eb6ed2dc4b2a14a5678e
+  normalized_artifact: .spec-gate/runs/t-w21-bcfe30da/normalized-tasks.yaml
+source_tasks:
+  - task_id: W21
+    title: 과거 구성에서 새 Board 만들기
+    route: BOTH
+    acceptance_refs:
+      - A09
+accepted_specifications:
+  - task_id: W21
+    route: BOTH
+    path: .spec-gate/runs/t-w21-bcfe30da/specs/revision-1/task-W21.feature
+  - task_id: W21
+    route: BOTH
+    path: .spec-gate/runs/t-w21-bcfe30da/specs/revision-1/W21.decision.yaml
+  - task_id: W21
+    route: BOTH
+    path: .spec-gate/runs/t-w21-bcfe30da/specs/revision-1/W21.decision.vectors.yaml
+test_obligations:
+  - obligation_id: W21-menu-opens-sheet
+    task_id: W21
+    kind: scenario
+    description: 띠 '이 구성으로…' › '새 Board 만들기…'가 "#n 구성으로 새 Board 만들기" 시트를 열고 부제·기본 이름(전체 선택)·안내·버튼을 보이며 아무것도 저장하지 않는다
+    source: .spec-gate/runs/t-w21-bcfe30da/specs/revision-1/task-W21.feature#과거 구성 띠의 '이 구성으로…' 메뉴에서 '새 Board 만들기…'를 고르면 이름을 받는 시트가 열린다
+  - obligation_id: W21-menu-order
+    task_id: W21
+    kind: scenario
+    description: "'이 구성으로…' 메뉴 항목은 '복원…', '새 Board 만들기…' 순서다"
+    source: .spec-gate/runs/t-w21-bcfe30da/specs/revision-1/task-W21.feature#'이 구성으로…' 메뉴에서 '새 Board 만들기…'는 '복원…' 아래에 있다
+  - obligation_id: W21-archived-menu-enabled
+    task_id: W21
+    kind: scenario
+    description: 보관된 Board의 띠에서 '새 Board 만들기…'는 켜지고 '복원…'은 꺼진다(0009)
+    source: .spec-gate/runs/t-w21-bcfe30da/specs/revision-1/task-W21.feature#보관된 Board의 과거 구성 띠에서도 '새 Board 만들기…'는 켜져 있다
+  - obligation_id: W21-file-menu-enablement
+    task_id: W21
+    kind: scenario
+    description: 파일 메뉴 '이 구성으로 새 Board 만들기…'의 켜짐 조건 여섯 가지(현재/과거/비교 중/보관/만들기 시트 열림/복원 시트 열림)와 단축키 없음
+    source: .spec-gate/runs/t-w21-bcfe30da/specs/revision-1/task-W21.feature#파일 메뉴 '이 구성으로 새 Board 만들기…'는 과거 구성을 볼 때만 켜지고 시트가 열려 있으면 꺼진다
+  - obligation_id: W21-file-menu-same-sheet
+    task_id: W21
+    kind: scenario
+    description: 파일 메뉴로 열어도 띠에서 연 것과 같은 시트가 같은 기본 이름으로 열린다
+    source: .spec-gate/runs/t-w21-bcfe30da/specs/revision-1/task-W21.feature#파일 메뉴로 열어도 띠에서 연 것과 같은 시트다
+  - obligation_id: W21-blank-name-disables-confirm
+    task_id: W21
+    kind: scenario
+    description: 공백뿐인 이름이면 '만들기'가 꺼지고 Return으로도 만들지 않는다
+    source: .spec-gate/runs/t-w21-bcfe30da/specs/revision-1/task-W21.feature#이름이 비어 있으면 '만들기'가 꺼지고 Return으로도 만들지 않는다
+  - obligation_id: W21-name-trimmed
+    task_id: W21
+    kind: scenario
+    description: 이름의 앞뒤 공백을 정리해 저장한다(PRD §5)
+    source: .spec-gate/runs/t-w21-bcfe30da/specs/revision-1/task-W21.feature#이름의 앞뒤 공백은 정리되어 저장된다
+  - obligation_id: W21-cancel-keeps-past-view
+    task_id: W21
+    kind: scenario
+    description: "'취소'는 아무것도 저장하지 않고 원본의 과거 구성 보기를 이어 간다"
+    source: .spec-gate/runs/t-w21-bcfe30da/specs/revision-1/task-W21.feature#'취소'하면 아무것도 저장하지 않고 과거 구성 보기가 이어진다
+  - obligation_id: W21-sheet-keyboard-accessibility
+    task_id: W21
+    kind: scenario
+    description: Return은 '만들기', Esc는 '취소', 제목·부제·이름 필드·안내가 VoiceOver로 읽히고 시트가 열린 동안 만들기 명령은 다시 열리지 않으며 파일 메뉴 '이 구성으로 복원…'도 꺼진다
+    source: ".spec-gate/runs/t-w21-bcfe30da/specs/revision-1/task-W21.feature#시트의 키보드와 접근성: Return은 '만들기', Esc는 '취소', 제목·부제·이름 필드·안내가 읽힌다"
+  - obligation_id: W21-single-confirm-while-saving
+    task_id: W21
+    kind: scenario
+    description: 저장 중에는 '만들기'·'취소'가 꺼지고 Board는 하나만 생긴다
+    source: .spec-gate/runs/t-w21-bcfe30da/specs/revision-1/task-W21.feature#저장 중에는 확정을 한 번만 받는다
+  - obligation_id: W21-confirm-creates-board
+    task_id: W21
+    kind: scenario
+    description: 확정 시 입력한 이름과 원본 revision 구성(종류·이름·부모·순서·URL·아이콘·당시 경로)으로 순번 1(cause duplicated) 하나뿐인 새 Board가 생기고 선택되어 현재 구성을 보이며, 만든 시각과 순번 1 기록 시각은 확정 시각(주입 시계)이지 원본 revision의 시각이 아니다
+    source: .spec-gate/runs/t-w21-bcfe30da/specs/revision-1/task-W21.feature#'만들기'를 확정하면 입력한 이름과 그 revision 구성으로 새 Board가 생기고 선택된다
+    acceptance_refs:
+      - A09
+  - obligation_id: W21-new-ids-remapped
+    task_id: W21
+    kind: scenario
+    description: 새 Board ID·Node ID는 모두 새 값이고 원본의 어느 revision과도 겹치지 않으며 부모 관계는 새 ID로 재매핑된다(불변식 1·2)
+    source: .spec-gate/runs/t-w21-bcfe30da/specs/revision-1/task-W21.feature#새 Board와 Node는 새 UUID를 쓰고 부모 관계는 새 ID로 재매핑된다
+    acceptance_refs:
+      - A09
+  - obligation_id: W21-origin-recorded
+    task_id: W21
+    kind: scenario
+    description: 새 Board의 origin은 (duplicate, 원본 Board, 원본 revision)이고 보관되어 있지 않다(0005)
+    source: .spec-gate/runs/t-w21-bcfe30da/specs/revision-1/task-W21.feature#새 Board는 원본 Board와 revision을 출처로 기록한다
+  - obligation_id: W21-source-preserved
+    task_id: W21
+    kind: scenario
+    description: 원본의 revision 수·현재 revision·각 revision·체크포인트가 그대로이고 새 Board에는 체크포인트가 없다(불변식 4)
+    source: .spec-gate/runs/t-w21-bcfe30da/specs/revision-1/task-W21.feature#원본 Board의 이력·체크포인트·현재 구성은 그대로이고 새 Board에는 체크포인트가 없다
+    acceptance_refs:
+      - A09
+  - obligation_id: W21-independent-editing
+    task_id: W21
+    kind: scenario
+    description: 만든 뒤 원본 편집은 새 Board에, 새 Board 편집(이름·제거)은 원본에 영향을 주지 않는다
+    source: .spec-gate/runs/t-w21-bcfe30da/specs/revision-1/task-W21.feature#만든 뒤 원본과 새 Board의 편집은 서로 영향을 주지 않는다
+    acceptance_refs:
+      - A09
+  - obligation_id: W21-replace-target-independent
+    task_id: W21
+    kind: scenario
+    description: 새 Board의 대상 교체는 새 참조를 만들고 원본의 현재·과거 참조는 그대로다(불변식 3)
+    source: .spec-gate/runs/t-w21-bcfe30da/specs/revision-1/task-W21.feature#새 Board에서 연결 대상을 바꾸면 새 참조가 생기고 원본의 참조는 그대로다
+  - obligation_id: W21-shares-reference-records
+    task_id: W21
+    kind: scenario
+    description: (Q-W21-1=A) 새 Board의 항목은 원본 revision의 참조 ID를 그대로 쓰고 참조 레코드 수가 늘지 않으며 당시 경로를 그대로 가진다
+    source: .spec-gate/runs/t-w21-bcfe30da/specs/revision-1/task-W21.feature#새 Board의 항목은 원본 revision이 기록한 참조 레코드를 그대로 쓰고 새 참조 레코드를 만들지 않는다
+  - obligation_id: W21-shared-access-info
+    task_id: W21
+    kind: scenario
+    description: (Q-W21-1=A) 한쪽 Board의 접근 정보 갱신이 같은 참조를 쓰는 다른 Board에서도 보이고 revision은 생기지 않는다(불변식 8)
+    source: .spec-gate/runs/t-w21-bcfe30da/specs/revision-1/task-W21.feature#한쪽 Board에서 같은 대상의 접근 정보를 갱신하면 같은 참조를 쓰는 다른 Board에서도 그 접근 정보가 보인다
+  - obligation_id: W21-archived-source-allowed
+    task_id: W21
+    kind: scenario
+    description: 보관된 Board의 과거 구성으로 만든 새 Board는 보관되지 않은 채 선택되고 원본은 보관 상태로 남는다
+    source: .spec-gate/runs/t-w21-bcfe30da/specs/revision-1/task-W21.feature#보관된 Board의 과거 구성으로도 새 Board를 만들 수 있고 원본은 보관 상태로 남는다
+  - obligation_id: W21-copies-unreachable-items
+    task_id: W21
+    kind: scenario
+    description: 접근 불가 항목도 복사하고 만들기 동안 파일 접근·해석이 없으며 고르면 "대상 없음"과 해결 동작이 보인다
+    source: .spec-gate/runs/t-w21-bcfe30da/specs/revision-1/task-W21.feature#지금 접근할 수 없는 항목도 제외하지 않고 복사하며 만들기 과정에서 파일 접근과 해석이 일어나지 않는다
+  - obligation_id: W21-no-disk-side-effects
+    task_id: W21
+    kind: scenario
+    description: 만들기는 파일 시스템 쓰기·연결 대상 열기를 하지 않고 원본 내용이 그대로다
+    source: .spec-gate/runs/t-w21-bcfe30da/specs/revision-1/task-W21.feature#만들기는 연결 대상 원본 파일·폴더를 읽거나 바꾸지 않는다
+  - obligation_id: W21-save-failure-keeps-input
+    task_id: W21
+    kind: scenario
+    description: 저장 실패 시 Project·revision이 생기지 않고 시트가 입력을 유지한 채 안내하며 과거 구성 보기가 이어지고 재시도가 된다(PRD §7)
+    source: .spec-gate/runs/t-w21-bcfe30da/specs/revision-1/task-W21.feature#저장이 실패하면 새 Board가 생기지 않고 시트는 입력을 유지한 채 저장 실패를 알린다
+  - obligation_id: W21-duplicate-chain
+    task_id: W21
+    kind: scenario
+    description: 복제로 만든 Board를 다시 복제하면 출처는 그 Board와 revision이고 ID는 어느 Board와도 겹치지 않는다
+    source: .spec-gate/runs/t-w21-bcfe30da/specs/revision-1/task-W21.feature#복제로 만든 Board의 구성으로 다시 새 Board를 만들면 출처는 그 Board와 revision이다
+  - obligation_id: W21-remap-preserves-structure
+    task_id: W21
+    kind: scenario
+    description: Domain 재매핑은 빈 구성·단일·3단 중첩·섞인 순서에서 구조를 보존하고 새 ID만 쓰며 검사기를 통과하고 결정적이다
+    source: .spec-gate/runs/t-w21-bcfe30da/specs/revision-1/task-W21.feature#ID 재매핑은 구조를 보존하고 새 ID만 쓰는 순수 함수다
+    acceptance_refs:
+      - A09
+  - obligation_id: W21-remap-leaves-source
+    task_id: W21
+    kind: scenario
+    description: 재매핑은 원본 구성 값을 바꾸지 않는다
+    source: .spec-gate/runs/t-w21-bcfe30da/specs/revision-1/task-W21.feature#ID 재매핑은 원본 구성을 바꾸지 않는다
+  - obligation_id: W21-service-outcome-table
+    task_id: W21
+    kind: scenario
+    description: 서비스 판정은 결정표 duplicate_request_outcome(FIRST)과 같고 created일 때만 Project·revision이 하나씩 늘어난다
+    source: .spec-gate/runs/t-w21-bcfe30da/specs/revision-1/task-W21.feature#서비스는 만들기 요청을 결정표 duplicate_request_outcome으로 판정하고 첫 번째로 맞는 규칙의 outcome을 돌려준다
+  - obligation_id: W21-service-atomic-commit
+    task_id: W21
+    kind: scenario
+    description: 저장 실패 주입 시 새 Project·revision이 모두 남지 않고 참조 레코드도 그대로다(불변식 5)
+    source: .spec-gate/runs/t-w21-bcfe30da/specs/revision-1/task-W21.feature#새 Project와 첫 revision은 한 저장 단위로 커밋되고 실패하면 둘 다 남지 않는다
+  - obligation_id: W21-service-rejects-foreign-revision
+    task_id: W21
+    kind: scenario
+    description: 없는 revision이나 다른 Board의 revision은 revision_not_found로 거부된다
+    source: .spec-gate/runs/t-w21-bcfe30da/specs/revision-1/task-W21.feature#없는 revision이나 다른 Board의 revision을 원본으로 주면 거부된다
+  - obligation_id: W21-service-source-unreadable
+    task_id: W21
+    kind: scenario
+    description: 원본 스냅샷을 디코딩할 수 없으면 오류이고 빈 구성으로 만들지 않는다
+    source: .spec-gate/runs/t-w21-bcfe30da/specs/revision-1/task-W21.feature#원본 revision의 스냅샷을 읽을 수 없으면 만들지 않고 오류를 알린다
+  - obligation_id: W21-service-allows-archived-source
+    task_id: W21
+    kind: scenario
+    description: 보관된 원본 Board의 요청은 거부되지 않고 새 Board는 보관되지 않는다(0009)
+    source: .spec-gate/runs/t-w21-bcfe30da/specs/revision-1/task-W21.feature#서비스는 보관된 원본 Board의 요청을 거부하지 않는다
+  - obligation_id: W21-duplicate_request_outcome-R1
+    task_id: W21
+    kind: decision-rule
+    description: 정리한 이름이 비면 다른 입력과 무관하게 rejected_blank_name
+    source: .spec-gate/runs/t-w21-bcfe30da/specs/revision-1/W21.decision.yaml#R1
+  - obligation_id: W21-duplicate_request_outcome-R2
+    task_id: W21
+    kind: decision-rule
+    description: 원본 Board가 없으면 rejected_project_not_found
+    source: .spec-gate/runs/t-w21-bcfe30da/specs/revision-1/W21.decision.yaml#R2
+  - obligation_id: W21-duplicate_request_outcome-R3
+    task_id: W21
+    kind: decision-rule
+    description: 원본 revision이 없거나 다른 Board면 rejected_revision_not_found
+    source: .spec-gate/runs/t-w21-bcfe30da/specs/revision-1/W21.decision.yaml#R3
+  - obligation_id: W21-duplicate_request_outcome-R4
+    task_id: W21
+    kind: decision-rule
+    description: 원본 revision의 스냅샷을 읽거나 디코딩할 수 없으면 error_source_unreadable
+    source: .spec-gate/runs/t-w21-bcfe30da/specs/revision-1/W21.decision.yaml#R4
+  - obligation_id: W21-duplicate_request_outcome-R5
+    task_id: W21
+    kind: decision-rule
+    description: 원본 revision을 읽었으면 보관 여부와 무관하게 created(origin duplicate, cause duplicated, 순번 1)
+    source: .spec-gate/runs/t-w21-bcfe30da/specs/revision-1/W21.decision.yaml#R5
+acceptance_coverage:
+  A09:
+    - W21-confirm-creates-board
+    - W21-new-ids-remapped
+    - W21-source-preserved
+    - W21-independent-editing
+    - W21-remap-preserves-structure
+decision_vectors:
+  - decision_id: duplicate_request_outcome
+    rules:
+      - rule_id: R1
+        obligation_id: W21-duplicate_request_outcome-R1
+        wins:
+          - inputs: &a23
+              new_name: blank
+              source_project: found
+              source_revision: found
+              source_board_state: active
+            expected:
+              outcome: rejected_blank_name
+          - inputs: &a24
+              new_name: blank
+              source_project: found
+              source_revision: found
+              source_board_state: archived
+            expected:
+              outcome: rejected_blank_name
+          - inputs: &a13
+              new_name: blank
+              source_project: found
+              source_revision: not_found
+              source_board_state: active
+            expected:
+              outcome: rejected_blank_name
+          - inputs: &a14
+              new_name: blank
+              source_project: found
+              source_revision: not_found
+              source_board_state: archived
+            expected:
+              outcome: rejected_blank_name
+          - inputs: &a15
+              new_name: blank
+              source_project: found
+              source_revision: other_board
+              source_board_state: active
+            expected:
+              outcome: rejected_blank_name
+          - inputs: &a16
+              new_name: blank
+              source_project: found
+              source_revision: other_board
+              source_board_state: archived
+            expected:
+              outcome: rejected_blank_name
+          - inputs: &a19
+              new_name: blank
+              source_project: found
+              source_revision: unreadable
+              source_board_state: active
+            expected:
+              outcome: rejected_blank_name
+          - inputs: &a20
+              new_name: blank
+              source_project: found
+              source_revision: unreadable
+              source_board_state: archived
+            expected:
+              outcome: rejected_blank_name
+          - inputs: &a1
+              new_name: blank
+              source_project: not_found
+              source_revision: found
+              source_board_state: active
+            expected:
+              outcome: rejected_blank_name
+          - inputs: &a2
+              new_name: blank
+              source_project: not_found
+              source_revision: found
+              source_board_state: archived
+            expected:
+              outcome: rejected_blank_name
+          - inputs: &a3
+              new_name: blank
+              source_project: not_found
+              source_revision: not_found
+              source_board_state: active
+            expected:
+              outcome: rejected_blank_name
+          - inputs: &a4
+              new_name: blank
+              source_project: not_found
+              source_revision: not_found
+              source_board_state: archived
+            expected:
+              outcome: rejected_blank_name
+          - inputs: &a5
+              new_name: blank
+              source_project: not_found
+              source_revision: other_board
+              source_board_state: active
+            expected:
+              outcome: rejected_blank_name
+          - inputs: &a6
+              new_name: blank
+              source_project: not_found
+              source_revision: other_board
+              source_board_state: archived
+            expected:
+              outcome: rejected_blank_name
+          - inputs: &a7
+              new_name: blank
+              source_project: not_found
+              source_revision: unreadable
+              source_board_state: active
+            expected:
+              outcome: rejected_blank_name
+          - inputs: &a8
+              new_name: blank
+              source_project: not_found
+              source_revision: unreadable
+              source_board_state: archived
+            expected:
+              outcome: rejected_blank_name
+        shadowed: []
+      - rule_id: R2
+        obligation_id: W21-duplicate_request_outcome-R2
+        wins:
+          - inputs: &a21
+              new_name: valid
+              source_project: not_found
+              source_revision: found
+              source_board_state: active
+            expected:
+              outcome: rejected_project_not_found
+          - inputs: &a22
+              new_name: valid
+              source_project: not_found
+              source_revision: found
+              source_board_state: archived
+            expected:
+              outcome: rejected_project_not_found
+          - inputs: &a9
+              new_name: valid
+              source_project: not_found
+              source_revision: not_found
+              source_board_state: active
+            expected:
+              outcome: rejected_project_not_found
+          - inputs: &a10
+              new_name: valid
+              source_project: not_found
+              source_revision: not_found
+              source_board_state: archived
+            expected:
+              outcome: rejected_project_not_found
+          - inputs: &a11
+              new_name: valid
+              source_project: not_found
+              source_revision: other_board
+              source_board_state: active
+            expected:
+              outcome: rejected_project_not_found
+          - inputs: &a12
+              new_name: valid
+              source_project: not_found
+              source_revision: other_board
+              source_board_state: archived
+            expected:
+              outcome: rejected_project_not_found
+          - inputs: &a17
+              new_name: valid
+              source_project: not_found
+              source_revision: unreadable
+              source_board_state: active
+            expected:
+              outcome: rejected_project_not_found
+          - inputs: &a18
+              new_name: valid
+              source_project: not_found
+              source_revision: unreadable
+              source_board_state: archived
+            expected:
+              outcome: rejected_project_not_found
+        shadowed:
+          - inputs: *a1
+            winner: R1
+          - inputs: *a2
+            winner: R1
+          - inputs: *a3
+            winner: R1
+          - inputs: *a4
+            winner: R1
+          - inputs: *a5
+            winner: R1
+          - inputs: *a6
+            winner: R1
+          - inputs: *a7
+            winner: R1
+          - inputs: *a8
+            winner: R1
+      - rule_id: R3
+        obligation_id: W21-duplicate_request_outcome-R3
+        wins:
+          - inputs:
+              new_name: valid
+              source_project: found
+              source_revision: not_found
+              source_board_state: active
+            expected:
+              outcome: rejected_revision_not_found
+          - inputs:
+              new_name: valid
+              source_project: found
+              source_revision: not_found
+              source_board_state: archived
+            expected:
+              outcome: rejected_revision_not_found
+          - inputs:
+              new_name: valid
+              source_project: found
+              source_revision: other_board
+              source_board_state: active
+            expected:
+              outcome: rejected_revision_not_found
+          - inputs:
+              new_name: valid
+              source_project: found
+              source_revision: other_board
+              source_board_state: archived
+            expected:
+              outcome: rejected_revision_not_found
+        shadowed:
+          - inputs: *a9
+            winner: R2
+          - inputs: *a10
+            winner: R2
+          - inputs: *a11
+            winner: R2
+          - inputs: *a12
+            winner: R2
+          - inputs: *a13
+            winner: R1
+          - inputs: *a14
+            winner: R1
+          - inputs: *a15
+            winner: R1
+          - inputs: *a16
+            winner: R1
+          - inputs: *a3
+            winner: R1
+          - inputs: *a4
+            winner: R1
+          - inputs: *a5
+            winner: R1
+          - inputs: *a6
+            winner: R1
+      - rule_id: R4
+        obligation_id: W21-duplicate_request_outcome-R4
+        wins:
+          - inputs:
+              new_name: valid
+              source_project: found
+              source_revision: unreadable
+              source_board_state: active
+            expected:
+              outcome: error_source_unreadable
+          - inputs:
+              new_name: valid
+              source_project: found
+              source_revision: unreadable
+              source_board_state: archived
+            expected:
+              outcome: error_source_unreadable
+        shadowed:
+          - inputs: *a17
+            winner: R2
+          - inputs: *a18
+            winner: R2
+          - inputs: *a19
+            winner: R1
+          - inputs: *a20
+            winner: R1
+          - inputs: *a7
+            winner: R1
+          - inputs: *a8
+            winner: R1
+      - rule_id: R5
+        obligation_id: W21-duplicate_request_outcome-R5
+        wins:
+          - inputs:
+              new_name: valid
+              source_project: found
+              source_revision: found
+              source_board_state: active
+            expected:
+              outcome: created
+          - inputs:
+              new_name: valid
+              source_project: found
+              source_revision: found
+              source_board_state: archived
+            expected:
+              outcome: created
+        shadowed:
+          - inputs: *a21
+            winner: R2
+          - inputs: *a22
+            winner: R2
+          - inputs: *a23
+            winner: R1
+          - inputs: *a24
+            winner: R1
+          - inputs: *a1
+            winner: R1
+          - inputs: *a2
+            winner: R1
+decision_log: .spec-gate/runs/t-w21-bcfe30da/decision-log.yaml
+critic_report: .spec-gate/runs/t-w21-bcfe30da/critic-pass-2.yaml
+non_blocking_notes:
+  - finding_id: F-W21-10
+    task_id: W21
+    note: "1차 비평이 요청한 변경 다섯 건이 모두 원문 근거와 함께 반영됐고, obligation description이 시나리오 본문과 다시 일치한다. 요청 변경이 없던 F-W21-5(Background 순번 4의 원인 묶음)·F-W21-9(결정표 확인)는 그대로 두었고 F-W21-7은 가정으로 남겼다. 회귀는 없다: 결정표 W21.decision.yaml은 revision-0과 바이트 동일하고, 벡터 파일은 table 경로만 revision-1로 바뀌었다."
+  - finding_id: F-W21-11
+    task_id: W21
+    note: 인간 답 A가 Feature 머리글·'참조' 절·가정·결정표 출력 정의·의존 시나리오 일곱 곳에 같은 뜻으로 반영됐고, 서로 모순되는 문장이 남아 있지 않다. 답이 권장안과 같아 revision-0의 본문은 바뀌지 않았고 표기만 "권장안 기준"에서 "확정"으로 바뀌었다. 미답 질문이 없으므로 author_status 전환도 맞다. 게이트 종료 뒤 이 답을 docs/decisions/로 옮기는 일은 통합 절차대로 handoff 이후에 한다.
+  - finding_id: F-W21-12
+    task_id: W21
+    note: 결정표 완전성·겹침·벡터 최신성·Gherkin 구문·obligation 양방향 대응을 산출물로 확인했다. source_revision에 읽기 실패 값(unreadable)과 규칙(R4)이 있고, 만들기는 참조 레코드를 읽지 않으므로(Q-W21-1=A) 참조 읽기 실패 입력이 없는 것이 맞다. Project 레코드 손상은 W20 board_state와 같은 관례로 표 밖의 저장소 오류다. A09(새 ID·구조와 연결 유지·원본과 독립)는 W21-new-ids-remapped, W21-confirm-creates-board, W21-source-preserved, W21-independent-editing, W21-remap-preserves-structure가 각각 깨지면 실패하는 단언으로 증명한다.
+  - finding_id: F-W21-13
+    task_id: W21
+    note: 1차 F-W21-5와 같다. 실제 편집으로는 addGroup 한 revision이 웹 링크·Bishop을 함께 더하지 못한다. fixture를 저장소에 직접 넣는 테스트에는 영향이 없고 시나리오 기대값도 맞지만, 이 Background를 UI 테스트에서 실제 편집으로 재현하면 revision 수(5)와 순번이 달라진다. 수용 경계와 무관하다.
+  - finding_id: F-W21-14
+    task_id: W21
+    note: 기본 이름 '<당시 이름> 사본'은 사이드바의 현재 이름과 다를 수 있다는 1차 참고 사항을 가정 12로 받아 디자인 세션 몫으로 넘겼다. 사용자가 이름을 입력하므로 데이터 의미는 바뀌지 않고 되돌리기 쉬워 정책 질문이 아니다. 다만 디자인 세션이 '현재 이름'으로 정하면 :31·:61·:95·:167 네 곳의 기대값 "서비스 알파 사본"이 "서비스 A 사본"으로 바뀌므로 구현 전에 확정하는 편이 TDD 왕복을 줄인다.
+  - finding_id: F-W21-15
+    task_id: W21
+    note: 1차 F-W21-4가 요청한 대로 양방향이 고정됐다. 그 결과 파일 메뉴 '이 구성으로 복원…'의 켜짐 조건 하나(만들기 시트 열림 → 꺼짐)가 W20 명세가 아니라 W21 명세에만 있다. 모순은 아니고 조건이 늘어난 것뿐이지만, 같은 명령의 켜짐 규칙이 두 작업 항목에 나뉘어 있으므로 W20 명세를 다음에 고칠 일이 있으면 outline에 같은 행을 더하는 것이 유지보수에 낫다. 지금 W21에서 고칠 것은 없다.

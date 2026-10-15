@@ -110,6 +110,31 @@ struct ConfigurationService: Sendable {
         }
     }
 
+    /// 과거 revision의 구성으로 새 Board를 만든다(W21, 결정표 duplicate_request_outcome). 판단과 커밋은 저장소 actor 안에서 한다.
+    func duplicateProject(
+        from revisionID: UUID, of sourceProjectID: UUID, named name: String
+    ) async throws(ConfigurationServiceError) -> ConfigurationCommitOutcome {
+        let now = self.now, makeID = self.makeID
+        let result: DuplicationResult<Decision>
+        do {
+            result = try await store.createProject(copying: revisionID, of: sourceProjectID) { source in
+                Self.decideDuplicate(named: name, source: source, now: now, makeID: makeID)
+            }
+        } catch {
+            throw Self.map(error)
+        }
+        switch result {
+        case let .created(summary, first):
+            return .committed(summary, first.snapshot)
+        case let .skipped(.outcome(outcome)):
+            return outcome
+        case .skipped(.unreadableCurrent):
+            throw .currentConfigurationUnreadable
+        case .skipped(.unreadableTarget):
+            throw .targetConfigurationUnreadable
+        }
+    }
+
     // MARK: 판단 (ProjectStore actor 안에서 실행)
 
     enum Decision: Sendable {
@@ -134,6 +159,37 @@ struct ConfigurationService: Sendable {
         return .append(RevisionAppend(
             id: makeID(), recordedAt: now(), cause: .restored(from: summary.id), snapshot: target, references: []
         ))
+    }
+
+    /// 순서(FIRST): 이름 → 원본 Board → 원본 revision(없음·다른 Board / 읽기 실패) → 생성. 보관 상태는 읽지 않는다(PRD §6-C, 0009).
+    /// 새 Board는 원본 참조 레코드를 그대로 쓰므로 참조를 만들지 않는다(0036). 만든 시각과 순번 1 기록 시각은 같은 `now()` 값이다.
+    static func decideDuplicate(
+        named name: String, source: DuplicationSource, now: () -> Date, makeID: () -> UUID
+    ) -> DuplicationDecision<Decision> {
+        let projectName: String
+        do {
+            projectName = try ProjectName.normalize(name)
+        } catch {
+            return .skip(.outcome(.rejected(.blankName)))
+        }
+        guard case let .found(sourceProject, target) = source else { return .skip(.outcome(.rejected(.projectNotFound))) }
+        let summary: RevisionSummary
+        let snapshot: ConfigurationSnapshot
+        switch target {
+        case .notFound, .otherProject: return .skip(.outcome(.rejected(.revisionNotFound)))
+        case .unreadable: return .skip(.unreadableTarget)
+        case let .found(foundSummary, foundSnapshot): (summary, snapshot) = (foundSummary, foundSnapshot)
+        }
+        let recordedAt = now()
+        let projectID = makeID()
+        let revisionID = makeID()
+        let copy = ConfigurationDuplicator.duplicate(snapshot, projectName: projectName, makeID: makeID)
+        let project = ProjectRecord(
+            id: projectID, createdAt: recordedAt, currentRevisionID: revisionID, archivedAt: nil,
+            origin: ProjectOrigin(kind: .duplicate, sourceProjectID: sourceProject.id, sourceRevisionID: summary.id)
+        )
+        let first = RevisionAppend(id: revisionID, recordedAt: recordedAt, cause: .duplicated, snapshot: copy, references: [])
+        return .create(project, first: first)
     }
 
     /// 거부 순서: project_not_found(저장소) → archived → access_mismatch → 현재 구성 읽기 → 편집 결과.

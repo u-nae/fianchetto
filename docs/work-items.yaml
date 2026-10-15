@@ -502,7 +502,7 @@ items:
     test_strategy: >-
       Domain 단위 테스트: ID 재매핑 후 구조 동형, 원본과 겹치는 ID 없음. 서비스 테스트: 새 Board의
       revision 1개와 origin, 이후 원본 편집이 새 Board에 영향 없음(그 반대도).
-    status: pending
+    status: done
     priority: high
     dependencies: [W17, W10]
     source_refs:
