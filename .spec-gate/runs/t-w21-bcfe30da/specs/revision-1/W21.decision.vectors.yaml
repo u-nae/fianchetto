@@ -1,0 +1,444 @@
+schema_version: "1.0"
+decision_id: duplicate_request_outcome
+table: .spec-gate/runs/t-w21-bcfe30da/specs/revision-1/W21.decision.yaml
+table_fingerprint: 5c7e3f4ce623f6ba74863244d79e4f73c7c63123267620d1dd0b831ff8b3579f
+cells_total: 32
+rules:
+  - rule_id: R1
+    obligation_id: W21-duplicate_request_outcome-R1
+    wins:
+      - inputs: &a23
+          new_name: blank
+          source_project: found
+          source_revision: found
+          source_board_state: active
+        expected:
+          outcome: rejected_blank_name
+      - inputs: &a24
+          new_name: blank
+          source_project: found
+          source_revision: found
+          source_board_state: archived
+        expected:
+          outcome: rejected_blank_name
+      - inputs: &a13
+          new_name: blank
+          source_project: found
+          source_revision: not_found
+          source_board_state: active
+        expected:
+          outcome: rejected_blank_name
+      - inputs: &a14
+          new_name: blank
+          source_project: found
+          source_revision: not_found
+          source_board_state: archived
+        expected:
+          outcome: rejected_blank_name
+      - inputs: &a15
+          new_name: blank
+          source_project: found
+          source_revision: other_board
+          source_board_state: active
+        expected:
+          outcome: rejected_blank_name
+      - inputs: &a16
+          new_name: blank
+          source_project: found
+          source_revision: other_board
+          source_board_state: archived
+        expected:
+          outcome: rejected_blank_name
+      - inputs: &a19
+          new_name: blank
+          source_project: found
+          source_revision: unreadable
+          source_board_state: active
+        expected:
+          outcome: rejected_blank_name
+      - inputs: &a20
+          new_name: blank
+          source_project: found
+          source_revision: unreadable
+          source_board_state: archived
+        expected:
+          outcome: rejected_blank_name
+      - inputs: &a1
+          new_name: blank
+          source_project: not_found
+          source_revision: found
+          source_board_state: active
+        expected:
+          outcome: rejected_blank_name
+      - inputs: &a2
+          new_name: blank
+          source_project: not_found
+          source_revision: found
+          source_board_state: archived
+        expected:
+          outcome: rejected_blank_name
+      - inputs: &a3
+          new_name: blank
+          source_project: not_found
+          source_revision: not_found
+          source_board_state: active
+        expected:
+          outcome: rejected_blank_name
+      - inputs: &a4
+          new_name: blank
+          source_project: not_found
+          source_revision: not_found
+          source_board_state: archived
+        expected:
+          outcome: rejected_blank_name
+      - inputs: &a5
+          new_name: blank
+          source_project: not_found
+          source_revision: other_board
+          source_board_state: active
+        expected:
+          outcome: rejected_blank_name
+      - inputs: &a6
+          new_name: blank
+          source_project: not_found
+          source_revision: other_board
+          source_board_state: archived
+        expected:
+          outcome: rejected_blank_name
+      - inputs: &a7
+          new_name: blank
+          source_project: not_found
+          source_revision: unreadable
+          source_board_state: active
+        expected:
+          outcome: rejected_blank_name
+      - inputs: &a8
+          new_name: blank
+          source_project: not_found
+          source_revision: unreadable
+          source_board_state: archived
+        expected:
+          outcome: rejected_blank_name
+    shadowed: []
+  - rule_id: R2
+    obligation_id: W21-duplicate_request_outcome-R2
+    wins:
+      - inputs: &a21
+          new_name: valid
+          source_project: not_found
+          source_revision: found
+          source_board_state: active
+        expected:
+          outcome: rejected_project_not_found
+      - inputs: &a22
+          new_name: valid
+          source_project: not_found
+          source_revision: found
+          source_board_state: archived
+        expected:
+          outcome: rejected_project_not_found
+      - inputs: &a9
+          new_name: valid
+          source_project: not_found
+          source_revision: not_found
+          source_board_state: active
+        expected:
+          outcome: rejected_project_not_found
+      - inputs: &a10
+          new_name: valid
+          source_project: not_found
+          source_revision: not_found
+          source_board_state: archived
+        expected:
+          outcome: rejected_project_not_found
+      - inputs: &a11
+          new_name: valid
+          source_project: not_found
+          source_revision: other_board
+          source_board_state: active
+        expected:
+          outcome: rejected_project_not_found
+      - inputs: &a12
+          new_name: valid
+          source_project: not_found
+          source_revision: other_board
+          source_board_state: archived
+        expected:
+          outcome: rejected_project_not_found
+      - inputs: &a17
+          new_name: valid
+          source_project: not_found
+          source_revision: unreadable
+          source_board_state: active
+        expected:
+          outcome: rejected_project_not_found
+      - inputs: &a18
+          new_name: valid
+          source_project: not_found
+          source_revision: unreadable
+          source_board_state: archived
+        expected:
+          outcome: rejected_project_not_found
+    shadowed:
+      - inputs: *a1
+        winner: R1
+      - inputs: *a2
+        winner: R1
+      - inputs: *a3
+        winner: R1
+      - inputs: *a4
+        winner: R1
+      - inputs: *a5
+        winner: R1
+      - inputs: *a6
+        winner: R1
+      - inputs: *a7
+        winner: R1
+      - inputs: *a8
+        winner: R1
+  - rule_id: R3
+    obligation_id: W21-duplicate_request_outcome-R3
+    wins:
+      - inputs:
+          new_name: valid
+          source_project: found
+          source_revision: not_found
+          source_board_state: active
+        expected:
+          outcome: rejected_revision_not_found
+      - inputs:
+          new_name: valid
+          source_project: found
+          source_revision: not_found
+          source_board_state: archived
+        expected:
+          outcome: rejected_revision_not_found
+      - inputs:
+          new_name: valid
+          source_project: found
+          source_revision: other_board
+          source_board_state: active
+        expected:
+          outcome: rejected_revision_not_found
+      - inputs:
+          new_name: valid
+          source_project: found
+          source_revision: other_board
+          source_board_state: archived
+        expected:
+          outcome: rejected_revision_not_found
+    shadowed:
+      - inputs: *a9
+        winner: R2
+      - inputs: *a10
+        winner: R2
+      - inputs: *a11
+        winner: R2
+      - inputs: *a12
+        winner: R2
+      - inputs: *a13
+        winner: R1
+      - inputs: *a14
+        winner: R1
+      - inputs: *a15
+        winner: R1
+      - inputs: *a16
+        winner: R1
+      - inputs: *a3
+        winner: R1
+      - inputs: *a4
+        winner: R1
+      - inputs: *a5
+        winner: R1
+      - inputs: *a6
+        winner: R1
+  - rule_id: R4
+    obligation_id: W21-duplicate_request_outcome-R4
+    wins:
+      - inputs:
+          new_name: valid
+          source_project: found
+          source_revision: unreadable
+          source_board_state: active
+        expected:
+          outcome: error_source_unreadable
+      - inputs:
+          new_name: valid
+          source_project: found
+          source_revision: unreadable
+          source_board_state: archived
+        expected:
+          outcome: error_source_unreadable
+    shadowed:
+      - inputs: *a17
+        winner: R2
+      - inputs: *a18
+        winner: R2
+      - inputs: *a19
+        winner: R1
+      - inputs: *a20
+        winner: R1
+      - inputs: *a7
+        winner: R1
+      - inputs: *a8
+        winner: R1
+  - rule_id: R5
+    obligation_id: W21-duplicate_request_outcome-R5
+    wins:
+      - inputs:
+          new_name: valid
+          source_project: found
+          source_revision: found
+          source_board_state: active
+        expected:
+          outcome: created
+      - inputs:
+          new_name: valid
+          source_project: found
+          source_revision: found
+          source_board_state: archived
+        expected:
+          outcome: created
+    shadowed:
+      - inputs: *a21
+        winner: R2
+      - inputs: *a22
+        winner: R2
+      - inputs: *a23
+        winner: R1
+      - inputs: *a24
+        winner: R1
+      - inputs: *a1
+        winner: R1
+      - inputs: *a2
+        winner: R1
+gaps: []
+overlaps:
+  - inputs: *a21
+    rules:
+      - R2
+      - R5
+    winner: R2
+  - inputs: *a22
+    rules:
+      - R2
+      - R5
+    winner: R2
+  - inputs: *a9
+    rules:
+      - R2
+      - R3
+    winner: R2
+  - inputs: *a10
+    rules:
+      - R2
+      - R3
+    winner: R2
+  - inputs: *a11
+    rules:
+      - R2
+      - R3
+    winner: R2
+  - inputs: *a12
+    rules:
+      - R2
+      - R3
+    winner: R2
+  - inputs: *a17
+    rules:
+      - R2
+      - R4
+    winner: R2
+  - inputs: *a18
+    rules:
+      - R2
+      - R4
+    winner: R2
+  - inputs: *a23
+    rules:
+      - R1
+      - R5
+    winner: R1
+  - inputs: *a24
+    rules:
+      - R1
+      - R5
+    winner: R1
+  - inputs: *a13
+    rules:
+      - R1
+      - R3
+    winner: R1
+  - inputs: *a14
+    rules:
+      - R1
+      - R3
+    winner: R1
+  - inputs: *a15
+    rules:
+      - R1
+      - R3
+    winner: R1
+  - inputs: *a16
+    rules:
+      - R1
+      - R3
+    winner: R1
+  - inputs: *a19
+    rules:
+      - R1
+      - R4
+    winner: R1
+  - inputs: *a20
+    rules:
+      - R1
+      - R4
+    winner: R1
+  - inputs: *a1
+    rules:
+      - R1
+      - R2
+      - R5
+    winner: R1
+  - inputs: *a2
+    rules:
+      - R1
+      - R2
+      - R5
+    winner: R1
+  - inputs: *a3
+    rules:
+      - R1
+      - R2
+      - R3
+    winner: R1
+  - inputs: *a4
+    rules:
+      - R1
+      - R2
+      - R3
+    winner: R1
+  - inputs: *a5
+    rules:
+      - R1
+      - R2
+      - R3
+    winner: R1
+  - inputs: *a6
+    rules:
+      - R1
+      - R2
+      - R3
+    winner: R1
+  - inputs: *a7
+    rules:
+      - R1
+      - R2
+      - R4
+    winner: R1
+  - inputs: *a8
+    rules:
+      - R1
+      - R2
+      - R4
+    winner: R1
