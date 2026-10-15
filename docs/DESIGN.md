@@ -202,7 +202,8 @@ W15에서 연결 상태를 트리에 표시한다. 상태 이름은 W14 안내 �
   `past-banner`·`return-to-current`·`past-item-card`(W18), `compare-bar`·`compare-before`·`compare-after`·`compare-close`·`compare-summary`·
   `compare-tree`·`compare-row-<이름>`·`compare-details`·`compare-with-current`(W19 ①), `compare-mode`·`compare-before-tree`·`compare-after-tree`·
   `compare-before-title`·`compare-after-title`(W19 ②), `restore-menu`(과거 구성 띠의 '이 구성으로…')·`restore-sheet-title`·`restore-summary`·
-  `restore-board-name`·`restore-row-<항목 이름>`·`restore-identical`·`restore-cancel`·`restore-confirm`(W20).
+  `restore-board-name`·`restore-row-<항목 이름>`·`restore-identical`·`restore-cancel`·`restore-confirm`(W20),
+  `duplicate-sheet-title`·`duplicate-name-field`·`duplicate-cancel`·`duplicate-confirm`(W21).
   행의 `accessibilityElement(children: .ignore)`와 `accessibilityLabel`, 선택 행의 `.isSelected` trait도 유지한다.
   새 화면의 제안 식별자는 구현되면 이 목록으로 옮긴다.
 - 메뉴 항목 제목과 단축키를 바꾸지 않는다. 바꾸려면 `BoardBrowserUITests`·`NativeCommandUITests`의 메뉴 검사도 같은 변경에서 고친다.
@@ -368,8 +369,8 @@ W15에서 연결 상태를 트리에 표시한다. 상태 이름은 W14 안내 �
 ### 16.5 식별자(제안)
 - W17에서 구현된 `history-tab`, `history-toggle`(툴바 버튼), `revision-row-<순번>`, `date-lookup`은 11장 목록으로 옮겼다.
   W18에서 구현된 `past-banner`, `return-to-current`, `past-item-card`('고른 항목' 카드)도 11장 목록으로 옮겼다.
-- W21 새 Board 만들기 시트: `duplicate-sheet-title`, `duplicate-name-field`, `duplicate-cancel`, `duplicate-confirm`. 띠 메뉴는 W20의
-  `restore-menu`를 그대로 쓴다. 구현되면 11장 목록으로 옮긴다.
+- W21 새 Board 만들기 시트의 `duplicate-sheet-title`, `duplicate-name-field`, `duplicate-cancel`, `duplicate-confirm`도 11장 목록으로 옮겼다.
+  띠 메뉴는 W20의 `restore-menu`를 그대로 쓴다.
 
 ## 17. 아이콘 보기 (W28, 0020·0022)
 
