@@ -652,6 +652,31 @@
     "확인 실패" : {
       "extractionState" : "manual"
     }
+,
+    "새 Board 만들기…" : {
+      "comment" : "과거 구성 띠 메뉴(W21).",
+      "extractionState" : "manual"
+    },
+    "이 구성으로 새 Board 만들기…" : {
+      "comment" : "파일 메뉴(W21, 0035 선례).",
+      "extractionState" : "manual"
+    },
+    "#%lld 구성으로 새 Board 만들기" : {
+      "comment" : "새 Board 만들기 시트 제목(W21, 0036).",
+      "extractionState" : "manual"
+    },
+    "%@ · #%lld · %@" : {
+      "comment" : "새 Board 만들기 시트 부제: 당시 Board 이름 · 순번 · 기록 시각(W21).",
+      "extractionState" : "manual"
+    },
+    "%@ 사본" : {
+      "comment" : "새 Board 만들기 시트의 기본 이름(W21).",
+      "extractionState" : "manual"
+    },
+    "새 Board는 이 구성으로 시작하고 이력은 새로 쌓입니다. 원래 Board는 바뀌지 않습니다." : {
+      "comment" : "새 Board 만들기 시트 안내(W21).",
+      "extractionState" : "manual"
+    }
   },
   "version" : "1.0"
 }

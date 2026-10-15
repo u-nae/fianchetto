@@ -59,6 +59,8 @@ git ls-files -z --cached --others --exclude-standard |
   tar --no-mac-metadata --null -T - -cf - | vm "tar -xf - -C ~/$REMOTE.next"
 vm "rm -rf ~/$REMOTE && mv ~/$REMOTE.next ~/$REMOTE"
 
+# 이전 세션의 앱이 남아 있으면(종료 시 창 복원으로 되살아난다) 같은 번들의 UI 테스트 앱이 창을 만들지 못한다. 먼저 끈다.
+vm "pkill -x Fianchetto || true"
 status=0
 vm "cd ~/$REMOTE && SKIP_UI_TESTS=${SKIP_UI_TESTS:-0} FIANCHETTO_DERIVED_DATA=\$HOME/DerivedData/Fianchetto-verify scripts/verify.sh" ||
   status=$?
