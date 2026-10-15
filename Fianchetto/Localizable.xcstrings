@@ -651,8 +651,7 @@
     },
     "확인 실패" : {
       "extractionState" : "manual"
-    }
-,
+    },
     "새 Board 만들기…" : {
       "comment" : "과거 구성 띠 메뉴(W21).",
       "extractionState" : "manual"
