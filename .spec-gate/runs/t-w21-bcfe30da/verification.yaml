@@ -1,0 +1,158 @@
+schema_version: "1.0"
+run_id: t-w21-bcfe30da
+task_id: W21
+checked_at: 2026-10-15T16:19:26.816Z
+test_globs:
+  - FianchettoTests/**/*.swift
+  - FianchettoUITests/**/*.swift
+obligations:
+  - obligation_id: W21-menu-opens-sheet
+    covered: true
+    locations:
+      - FianchettoTests/Features/DuplicateModelTests.swift:105
+      - FianchettoUITests/BoardBrowserUITests.swift:369
+  - obligation_id: W21-menu-order
+    covered: true
+    locations:
+      - FianchettoUITests/BoardBrowserUITests.swift:369
+  - obligation_id: W21-archived-menu-enabled
+    covered: true
+    locations:
+      - FianchettoTests/Features/DuplicateModelTests.swift:127
+  - obligation_id: W21-file-menu-enablement
+    covered: true
+    locations:
+      - FianchettoTests/Features/DuplicateModelTests.swift:153
+  - obligation_id: W21-file-menu-same-sheet
+    covered: true
+    locations:
+      - FianchettoUITests/BoardBrowserUITests.swift:369
+  - obligation_id: W21-blank-name-disables-confirm
+    covered: true
+    locations:
+      - FianchettoTests/Features/DuplicateModelTests.swift:186
+      - FianchettoUITests/BoardBrowserUITests.swift:369
+  - obligation_id: W21-name-trimmed
+    covered: true
+    locations:
+      - FianchettoTests/Services/DuplicateServiceTests.swift:385
+  - obligation_id: W21-cancel-keeps-past-view
+    covered: true
+    locations:
+      - FianchettoTests/Features/DuplicateModelTests.swift:201
+  - obligation_id: W21-sheet-keyboard-accessibility
+    covered: true
+    locations:
+      - FianchettoTests/Features/DuplicateModelTests.swift:218
+      - FianchettoUITests/BoardBrowserUITests.swift:369
+  - obligation_id: W21-single-confirm-while-saving
+    covered: true
+    locations:
+      - FianchettoTests/Features/DuplicateModelTests.swift:233
+  - obligation_id: W21-confirm-creates-board
+    covered: true
+    locations:
+      - FianchettoTests/Features/DuplicateModelTests.swift:250
+  - obligation_id: W21-new-ids-remapped
+    covered: true
+    locations:
+      - FianchettoTests/Domain/ConfigurationDuplicatorTests.swift:93
+      - FianchettoTests/Services/DuplicateServiceTests.swift:270
+  - obligation_id: W21-origin-recorded
+    covered: true
+    locations:
+      - FianchettoTests/Services/DuplicateServiceTests.swift:251
+  - obligation_id: W21-source-preserved
+    covered: true
+    locations:
+      - FianchettoTests/Services/DuplicateServiceTests.swift:300
+  - obligation_id: W21-independent-editing
+    covered: true
+    locations:
+      - FianchettoTests/Services/DuplicateServiceTests.swift:326
+  - obligation_id: W21-replace-target-independent
+    covered: true
+    locations:
+      - FianchettoTests/Services/DuplicateServiceTests.swift:350
+  - obligation_id: W21-shares-reference-records
+    covered: true
+    locations:
+      - FianchettoTests/Services/DuplicateServiceTests.swift:285
+  - obligation_id: W21-shared-access-info
+    covered: true
+    locations:
+      - FianchettoTests/Features/DuplicateModelTests.swift:361
+  - obligation_id: W21-archived-source-allowed
+    covered: true
+    locations:
+      - FianchettoTests/Features/DuplicateModelTests.swift:284
+  - obligation_id: W21-copies-unreachable-items
+    covered: true
+    locations:
+      - FianchettoTests/Features/DuplicateModelTests.swift:298
+  - obligation_id: W21-no-disk-side-effects
+    covered: true
+    locations:
+      - FianchettoTests/Features/DuplicateModelTests.swift:319
+  - obligation_id: W21-save-failure-keeps-input
+    covered: true
+    locations:
+      - FianchettoTests/Features/DuplicateModelTests.swift:338
+  - obligation_id: W21-duplicate-chain
+    covered: true
+    locations:
+      - FianchettoTests/Services/DuplicateServiceTests.swift:370
+  - obligation_id: W21-remap-preserves-structure
+    covered: true
+    locations:
+      - FianchettoTests/Domain/ConfigurationDuplicatorTests.swift:60
+  - obligation_id: W21-remap-leaves-source
+    covered: true
+    locations:
+      - FianchettoTests/Domain/ConfigurationDuplicatorTests.swift:81
+  - obligation_id: W21-service-outcome-table
+    covered: true
+    locations:
+      - FianchettoTests/Services/DuplicateServiceTests.swift:131
+  - obligation_id: W21-service-atomic-commit
+    covered: true
+    locations:
+      - FianchettoTests/Services/DuplicateServiceTests.swift:435
+  - obligation_id: W21-service-rejects-foreign-revision
+    covered: true
+    locations:
+      - FianchettoTests/Services/DuplicateServiceTests.swift:408
+  - obligation_id: W21-service-source-unreadable
+    covered: true
+    locations:
+      - FianchettoTests/Services/DuplicateServiceTests.swift:424
+  - obligation_id: W21-service-allows-archived-source
+    covered: true
+    locations:
+      - FianchettoTests/Services/DuplicateServiceTests.swift:396
+  - obligation_id: W21-duplicate_request_outcome-R1
+    covered: true
+    locations:
+      - FianchettoTests/Services/DuplicateServiceTests.swift:116
+      - FianchettoTests/Services/DuplicateServiceTests.swift:452
+  - obligation_id: W21-duplicate_request_outcome-R2
+    covered: true
+    locations:
+      - FianchettoTests/Services/DuplicateServiceTests.swift:119
+      - FianchettoTests/Services/DuplicateServiceTests.swift:462
+  - obligation_id: W21-duplicate_request_outcome-R3
+    covered: true
+    locations:
+      - FianchettoTests/Services/DuplicateServiceTests.swift:122
+  - obligation_id: W21-duplicate_request_outcome-R4
+    covered: true
+    locations:
+      - FianchettoTests/Services/DuplicateServiceTests.swift:125
+  - obligation_id: W21-duplicate_request_outcome-R5
+    covered: true
+    locations:
+      - FianchettoTests/Services/DuplicateServiceTests.swift:128
+uncovered_count: 0
+test_command: null
+human_confirmed_tests: true
+status_written: done
