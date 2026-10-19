@@ -112,6 +112,10 @@ struct BoardCommands: Commands {
             Button("상태 새로고침") { Task { await model?.refreshStatuses() } }
                 .disabled(!isEnabled(\.canRefreshStatuses))
             Divider()
+            // 체크포인트 저장(W22): 현재 구성 명령이라 과거 구성 명령과 섞지 않고 홀로 둔다. 단축키 없음(⌘S는 쓰지 않는다, DESIGN 16.6).
+            Button("체크포인트 저장…") { Task { await model?.beginCheckpoint() } }
+                .disabled(!isEnabled(\.canSaveCheckpoint))
+            Divider()
             Button("이 구성으로 복원…") { model?.beginRestore() }
                 .disabled(!isEnabled(\.canRestoreShown))
             // 과거 구성으로 새 Board 만들기(W21). 복원과 같은 자리, 단축키 없음(0035 선례).

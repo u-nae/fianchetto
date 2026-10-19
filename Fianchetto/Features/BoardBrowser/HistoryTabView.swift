@@ -42,18 +42,22 @@ struct HistoryTabView: View {
                         ForEach(history.sections) { section in
                             Section(section.title) {
                                 ForEach(section.entries) { entry in
-                                    switch entry {
-                                    case let .revision(row):
-                                        HistoryRowView(history: history, row: row)
-                                            .tag(HistoryPanelModel.Selection.revision(row.id))
-                                            .contextMenu { compareMenu(.revision(row.id)) }
-                                            .id(row.id)
-                                            .onAppear {
-                                                // 마지막 행이 체크포인트 행이어도 다음 묶음을 불러온다(W22).
-                                                if entry.id == history.entries.last?.id { Task { await history.loadMore() } }
-                                            }
-                                    case .checkpoint:
-                                        EmptyView()
+                                    Group {
+                                        switch entry {
+                                        case let .revision(row):
+                                            HistoryRowView(history: history, row: row)
+                                                .tag(HistoryPanelModel.Selection.revision(row.id))
+                                                .contextMenu { compareMenu(.revision(row.id)) }
+                                        case let .checkpoint(summary):
+                                            CheckpointRowView(history: history, summary: summary, isSelected: selection == .checkpoint(summary.id))
+                                                .tag(HistoryPanelModel.Selection.checkpoint(summary.id))
+                                                .contextMenu { compareMenu(.checkpoint(summary.id)) }
+                                        }
+                                    }
+                                    .id(entry.id)
+                                    .onAppear {
+                                        // 마지막 행이 체크포인트 행이어도 다음 묶음을 불러온다(W22).
+                                        if entry.id == history.entries.last?.id { Task { await history.loadMore() } }
                                     }
                                 }
                             }
@@ -201,5 +205,31 @@ private struct HistoryRowView: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(history.accessibilityLabel(row))
         .accessibilityIdentifier("revision-row-\(row.summary.sequence)")
+    }
+}
+
+/// 체크포인트 행(W22, DESIGN.md 16.2): 깃발 기호 + 제목, 아래 줄 '체크포인트 · #순번 · 시각'. VoiceOver는 한 요소로 읽는다.
+private struct CheckpointRowView: View {
+    let history: HistoryPanelModel
+    let summary: CheckpointSummary
+    let isSelected: Bool
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Image(systemName: "flag.fill")
+                .frame(width: 16)
+                .foregroundStyle(isSelected ? AnyShapeStyle(.white) : AnyShapeStyle(Color(.themeAccentText)))
+            VStack(alignment: .leading, spacing: 2) {
+                Text(summary.title)
+                    .fontWeight(.medium)
+                Text(history.caption(checkpoint: summary))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .monospacedDigit()
+            }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(history.accessibilityLabel(checkpoint: summary))
+        .accessibilityIdentifier("checkpoint-row-\(summary.title)")
     }
 }
