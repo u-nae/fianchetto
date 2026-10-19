@@ -1438,20 +1438,18 @@ final class BoardBrowserModel {
         await openComparison(before: .revision(id), after: .current)
     }
 
-    /// 이력 행 오른쪽 클릭 '이 기록과 비교': 그 행이 지금 보는 구성이거나 비교 중이면 꺼진다.
+    /// 이력 행 오른쪽 클릭 '이 기록과 비교': 그 행의 revision이 지금 보는 구성이거나 비교 중이면 꺼진다.
+    /// 체크포인트 행은 연결 revision 행과 같다(W22).
     func canCompareRecord(_ row: HistoryPanelModel.Selection) -> Bool {
         guard selectedBoardID != nil, !isComparing else { return false }
-        return row != history.selection
+        return history.revisionID(of: row) != history.revisionID(of: history.selection)
     }
 
     /// 그 행과 지금 보는 구성을 순번이 작은 쪽을 이전으로 두어 비교한다(0027).
     func compareRecord(_ row: HistoryPanelModel.Selection) async {
         guard canCompareRecord(row) else { return }
         let shown: ComparisonTarget = history.selectedRevisionID.map(ComparisonTarget.revision) ?? .current
-        let other: ComparisonTarget = switch row {
-        case .current: .current
-        case let .revision(id): .revision(id)
-        }
+        let other: ComparisonTarget = history.revisionID(of: row).map(ComparisonTarget.revision) ?? .current
         await openComparison(before: earlier(shown, other), after: earlier(shown, other) == shown ? other : shown)
     }
 

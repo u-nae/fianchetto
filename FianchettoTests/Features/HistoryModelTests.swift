@@ -290,7 +290,11 @@ struct HistoryModelTests {
             let o = try await opened(directory, seeds, clock: HistoryClock(now: localTime("2026-10-03 18:00:00")))
             await openHistory(o)
             #expect(o.history.sections.map(\.title) == ["오늘 · 10월 3일", "10월 1일", "2025년 12월 30일"])
-            #expect(o.history.sections.map { $0.rows.map(\.summary.sequence) } == [[4, 3], [2], [1]])
+            #expect(o.history.sections.map { section in
+                section.entries.compactMap { entry -> Int? in
+                    if case let .revision(row) = entry { row.summary.sequence } else { nil }
+                }
+            } == [[4, 3], [2], [1]])
         }
     }
 

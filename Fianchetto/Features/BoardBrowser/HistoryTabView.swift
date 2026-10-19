@@ -41,14 +41,20 @@ struct HistoryTabView: View {
                             .contextMenu { compareMenu(.current) }
                         ForEach(history.sections) { section in
                             Section(section.title) {
-                                ForEach(section.rows) { row in
-                                    HistoryRowView(history: history, row: row)
-                                        .tag(HistoryPanelModel.Selection.revision(row.id))
-                                        .contextMenu { compareMenu(.revision(row.id)) }
-                                        .id(row.id)
-                                        .onAppear {
-                                            if row.id == history.rows.last?.id { Task { await history.loadMore() } }
-                                        }
+                                ForEach(section.entries) { entry in
+                                    switch entry {
+                                    case let .revision(row):
+                                        HistoryRowView(history: history, row: row)
+                                            .tag(HistoryPanelModel.Selection.revision(row.id))
+                                            .contextMenu { compareMenu(.revision(row.id)) }
+                                            .id(row.id)
+                                            .onAppear {
+                                                // 마지막 행이 체크포인트 행이어도 다음 묶음을 불러온다(W22).
+                                                if entry.id == history.entries.last?.id { Task { await history.loadMore() } }
+                                            }
+                                    case .checkpoint:
+                                        EmptyView()
+                                    }
                                 }
                             }
                         }

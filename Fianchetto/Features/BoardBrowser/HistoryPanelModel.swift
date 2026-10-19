@@ -21,10 +21,32 @@ final class HistoryPanelModel {
         var id: UUID { summary.id }
     }
 
-    /// 목록의 고른 행. '현재 구성' 행 또는 revision 행 하나(단일 선택).
+    /// 목록의 고른 행. '현재 구성' 행, revision 행, 체크포인트 행(W22) 중 하나(단일 선택).
     enum Selection: Hashable {
         case current
         case revision(UUID)
+        case checkpoint(UUID)
+    }
+
+    /// 목록 한 행: revision 행 또는 체크포인트 행(W22). 순서는 Domain HistoryTimeline이 정한다.
+    enum Entry: Identifiable, Equatable {
+        case revision(Row)
+        case checkpoint(CheckpointSummary)
+
+        var id: UUID {
+            switch self {
+            case let .revision(row): row.id
+            case let .checkpoint(summary): summary.id
+            }
+        }
+
+        /// 날짜 구역을 정하는 행 자신의 시각.
+        var instant: Date {
+            switch self {
+            case let .revision(row): row.summary.recordedAt
+            case let .checkpoint(summary): summary.createdAt
+            }
+        }
     }
 
     enum Notice: Equatable {
@@ -37,7 +59,7 @@ final class HistoryPanelModel {
     struct Section: Identifiable, Equatable {
         var day: Date
         var title: String
-        var rows: [Row]
+        var entries: [Entry]
         var id: Date { day }
     }
 
@@ -56,6 +78,12 @@ final class HistoryPanelModel {
     private(set) var selectedSnapshot: ConfigurationSnapshot?
     /// 고른 revision의 목록 정보(과거 구성 띠의 순번·기록 시각).
     private(set) var selectedSummary: RevisionSummary?
+    /// Board의 모든 체크포인트 목록 정보(W22). open()에서 revision 첫 묶음과 함께 한 번 읽는다.
+    private(set) var checkpoints: [CheckpointSummary] = []
+    /// 고른 체크포인트(패널 내용). nil이면 revision 행 또는 '현재 구성'을 골랐다.
+    private(set) var selectedCheckpoint: CheckpointRecord?
+    /// 패널 접힘(화면 상태, 저장하지 않는다). 체크포인트를 고를 때마다 펴진 상태로 돌아간다.
+    var isCheckpointCollapsed = false
     /// 고른 revision이 바뀐 뒤 부른다(과거·현재 모드 전환, W18).
     var selectionChanged: (@MainActor () async -> Void)?
     /// 행을 고르려 할 때(바뀌지 않아도) 먼저 부른다(W19: 비교 닫기).
@@ -84,7 +112,30 @@ final class HistoryPanelModel {
         lookupDate = now
     }
 
-    var selection: Selection { selectedRevisionID.map(Selection.revision) ?? .current }
+    var selection: Selection {
+        if let checkpoint = selectedCheckpoint { return .checkpoint(checkpoint.id) }
+        return selectedRevisionID.map(Selection.revision) ?? .current
+    }
+
+    /// 선택이 가리키는 revision('현재 구성'은 nil). 비교 메뉴의 켜짐 판단에 쓴다.
+    func revisionID(of selection: Selection) -> UUID? {
+        switch selection {
+        case .current: nil
+        case let .revision(id): id
+        case let .checkpoint(id): checkpoints.first { $0.id == id }?.revisionID ?? (selectedCheckpoint?.id == id ? selectedCheckpoint?.revisionID : nil)
+        }
+    }
+
+    /// rows(순번 역순)와 checkpoints의 병합. 날짜 구역은 이것을 연속 구간으로 묶는다.
+    var entries: [Entry] {
+        let rowsByID = Dictionary(rows.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        return HistoryTimeline.merge(revisions: rows.map(\.summary), checkpoints: checkpoints).compactMap { entry in
+            switch entry {
+            case let .revision(summary): rowsByID[summary.id].map(Entry.revision)
+            case let .checkpoint(summary): .checkpoint(summary)
+            }
+        }
+    }
 
     // MARK: 불러오기
 
@@ -98,6 +149,9 @@ final class HistoryPanelModel {
         selectedRevisionID = nil
         selectedSnapshot = nil
         selectedSummary = nil
+        checkpoints = []
+        selectedCheckpoint = nil
+        isCheckpointCollapsed = false
         lookupFoundNothing = false
         scrollTarget = nil
         isLoaded = false
@@ -110,8 +164,10 @@ final class HistoryPanelModel {
         guard !isLoaded, let boardID, let store = store() else { return }
         do {
             let page = try await rows(from: store.revisionSummaries(projectID: boardID, below: nil, limit: Self.pageSize), store: store)
+            let allCheckpoints = try await store.checkpointSummaries(projectID: boardID)
             guard self.boardID == boardID else { return }
             rows = page
+            checkpoints = allCheckpoints
             hasMore = page.count == Self.pageSize
             listFailed = false
             isLoaded = true
@@ -159,8 +215,14 @@ final class HistoryPanelModel {
             selectedRevisionID = nil
             selectedSnapshot = nil
             selectedSummary = nil
+            selectedCheckpoint = nil
             await selectionChanged?()
         case let .revision(id):
+            // 체크포인트를 보다가 같은 revision 행을 고르면 패널만 사라지고 구성·띠는 그대로다(W22).
+            if selectedCheckpoint != nil, id == selectedRevisionID {
+                selectedCheckpoint = nil
+                return
+            }
             guard id != selectedRevisionID, let store = store() else { return }
             let boardID = boardID
             do {
@@ -169,12 +231,49 @@ final class HistoryPanelModel {
                 selectedRevisionID = id
                 selectedSnapshot = snapshot
                 selectedSummary = rows.first { $0.id == id }?.summary
+                selectedCheckpoint = nil
+                await selectionChanged?()
+            } catch {
+                guard self.boardID == boardID else { return }
+                notice = .unreadableRevision
+            }
+        case let .checkpoint(id):
+            // 체크포인트 행은 연결 revision의 과거 구성으로 들어간다(W18 규칙 그대로). 현재 revision의 것도 같다(DESIGN 16.6).
+            guard let summary = checkpoints.first(where: { $0.id == id }), selectedCheckpoint?.id != id, let store = store() else { return }
+            let boardID = boardID
+            do {
+                guard let record = try await store.checkpoint(id) else { throw StoreReadError.notFound(id) }
+                let snapshot: ConfigurationSnapshot
+                let revisionSummary: RevisionSummary?
+                if summary.revisionID == selectedRevisionID, let current = selectedSnapshot {
+                    snapshot = current
+                    revisionSummary = selectedSummary
+                } else {
+                    snapshot = try await store.snapshot(revisionID: summary.revisionID)
+                    if let loaded = rows.first(where: { $0.id == summary.revisionID })?.summary {
+                        revisionSummary = loaded
+                    } else {
+                        revisionSummary = try await store.revisionSummary(summary.revisionID)
+                    }
+                }
+                guard self.boardID == boardID else { return }
+                selectedRevisionID = summary.revisionID
+                selectedSnapshot = snapshot
+                selectedSummary = revisionSummary
+                selectedCheckpoint = record
+                isCheckpointCollapsed = false
                 await selectionChanged?()
             } catch {
                 guard self.boardID == boardID else { return }
                 notice = .unreadableRevision
             }
         }
+    }
+
+    /// 저장 직후 부른다. 목록을 불러온 뒤면 더하고(병합이 자리를 정한다), 아직이면 무시한다(open()이 읽는다).
+    func add(checkpoint: CheckpointSummary) {
+        guard isLoaded, checkpoint.id != checkpoints.first(where: { $0.id == checkpoint.id })?.id else { return }
+        checkpoints.append(checkpoint)
     }
 
     /// '날짜로 찾기': 고른 분의 끝(0023) 이하의 마지막 기록을 고르고 그 행까지 불러와 보이게 한다.
@@ -220,8 +319,8 @@ final class HistoryPanelModel {
     // MARK: 표시
 
     var sections: [Section] {
-        HistorySections.group(rows, recordedAt: \.summary.recordedAt, calendar: calendar).map { day, rows in
-            Section(day: day, title: headingText(HistoryDayHeading.classify(day, now: now, calendar: calendar)), rows: rows)
+        HistorySections.group(entries, recordedAt: \.instant, calendar: calendar).map { day, entries in
+            Section(day: day, title: headingText(HistoryDayHeading.classify(day, now: now, calendar: calendar)), entries: entries)
         }
     }
 
@@ -236,7 +335,11 @@ final class HistoryPanelModel {
     }
 
     func timeText(_ row: Row) -> String {
-        row.summary.recordedAt.formatted(Date.FormatStyle(
+        timeText(row.summary.recordedAt)
+    }
+
+    func timeText(_ date: Date) -> String {
+        date.formatted(Date.FormatStyle(
             date: .omitted, time: .shortened, locale: environment.locale, calendar: calendar, timeZone: calendar.timeZone
         ))
     }
@@ -253,6 +356,21 @@ final class HistoryPanelModel {
 
     func accessibilityLabel(_ row: Row) -> String {
         [causeText(row), "#\(row.summary.sequence)", timeText(row)].joined(separator: ", ")
+    }
+
+    /// 체크포인트 행 아래 줄: '체크포인트 · #순번 · 시각'(W22).
+    func caption(checkpoint summary: CheckpointSummary) -> String {
+        String(localized: "체크포인트 · #\(summary.sequence) · \(timeText(summary.createdAt))")
+    }
+
+    /// 체크포인트 행의 VoiceOver 라벨: '체크포인트, <제목>, #순번 구성, <시각> 저장'.
+    func accessibilityLabel(checkpoint summary: CheckpointSummary) -> String {
+        String(localized: "체크포인트, \(summary.title), #\(summary.sequence) 구성, \(timeText(summary.createdAt)) 저장")
+    }
+
+    /// 패널의 저장 시각: '<날짜 시각> 저장'.
+    func savedText(_ date: Date) -> String {
+        String(localized: "\(dateTimeText(date)) 저장")
     }
 
     /// 원인 문구(DESIGN.md 16.2).
