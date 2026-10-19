@@ -108,6 +108,8 @@ Asset Catalog(`Fianchetto/Assets.xcassets`)의 Color Set으로 정의한다. 코
 | Bishop(파일) | `fianchetto.bishop`(커스텀, 0013) | 트리 행 |
 | Bishop(폴더) | `fianchetto.bishop.folder`(커스텀, 0013) | 트리 행 |
 | 웹 링크 | `link` | 트리 행 |
+| 체크포인트 저장 | `flag` | 구성 열 툴바 버튼(16.6) |
+| 체크포인트 | `flag.fill`(`ThemeAccentText`) | 이력 탭 체크포인트 행, 체크포인트 패널(16.2·16.6) |
 | 보관된 Board 표시 | `archivebox` | 읽기 전용 띠 |
 | Board 없음 | 체스판 일러스트(`ChessboardIllustration`, 0016) | 빈 화면 |
 | 구성 비어 있음 | 체스판 일러스트(`ChessboardIllustration`, 0016) | 빈 화면 |
@@ -203,7 +205,9 @@ W15에서 연결 상태를 트리에 표시한다. 상태 이름은 W14 안내 �
   `compare-tree`·`compare-row-<이름>`·`compare-details`·`compare-with-current`(W19 ①), `compare-mode`·`compare-before-tree`·`compare-after-tree`·
   `compare-before-title`·`compare-after-title`(W19 ②), `restore-menu`(과거 구성 띠의 '이 구성으로…')·`restore-sheet-title`·`restore-summary`·
   `restore-board-name`·`restore-row-<항목 이름>`·`restore-identical`·`restore-cancel`·`restore-confirm`(W20),
-  `duplicate-sheet-title`·`duplicate-name-field`·`duplicate-cancel`·`duplicate-confirm`(W21).
+  `duplicate-sheet-title`·`duplicate-name-field`·`duplicate-cancel`·`duplicate-confirm`(W21),
+  `checkpoint-sheet-title`·`checkpoint-title-field`·`checkpoint-memo-field`·`checkpoint-next-field`·`checkpoint-cancel`·`checkpoint-save`·
+  `checkpoint-save-error`·`checkpoint-row-<제목>`·`checkpoint-panel`·`checkpoint-panel-toggle`·`checkpoint-toolbar`(W22).
   행의 `accessibilityElement(children: .ignore)`와 `accessibilityLabel`, 선택 행의 `.isSelected` trait도 유지한다.
   새 화면의 제안 식별자는 구현되면 이 목록으로 옮긴다.
 - 메뉴 항목 제목과 단축키를 바꾸지 않는다. 바꾸려면 `BoardBrowserUITests`·`NativeCommandUITests`의 메뉴 검사도 같은 변경에서 고친다.
@@ -229,7 +233,9 @@ W15에서 연결 상태를 트리에 표시한다. 상태 이름은 W14 안내 �
   항목 이름은 그대로 둔다. 앱이 만드는 문구는 모두 '제거'를 쓴다. 목록에 `onKeyPress`를 쓰지 않는다. 목록의 키보드 포커스를 가져가
   방향키와 펼치기까지 막는다.
 - **드래그:** 놓을 수 있는 Wing 행과 빈 영역만 시스템 강조 색 테두리로 표시한다.
-- **툴바:** 구성 열에 'Bishop 추가'와 'Wing 추가'를 둔다. 메뉴와 같은 명령이고 같은 조건에서 꺼진다.
+- **툴바:** 구성 열에 'Bishop 추가'와 'Wing 추가'를 두고, 'Wing 추가' 바로 오른쪽(구성 열 툴바의 끝)에 '체크포인트 저장'(`flag`, 도움말 '체크포인트 저장', W22)을 둔다. 현재 구성에 쓰는 명령이라 추가 버튼과 한 묶음으로 둔다. 메뉴와 같은 명령이고 같은 조건에서 꺼진다.
+- **파일 메뉴 '체크포인트 저장…'(W22, 0037):** 단축키 없음. '상태 새로고침' 뒤 구분선 다음에 단독 그룹으로 두고, '이 구성으로 복원…' 그룹 앞에 놓는다.
+  현재 구성 명령이라 과거 구성 명령과 섞지 않는다. ⌘S는 습관적으로 누를 때마다 시트가 떠서 쓰지 않는다.
 - **보기 메뉴 순서:** 아이콘으로 보기·목록으로 보기 → (구분선) → 들어가기·상위 Wing으로·뒤로 → (구분선) → 사이드바 가리기/보기(⌃⌘S) →
   인스펙터 보기/가리기(⌥⌘I) → 이력 보기(⌘Y) → 현재 구성으로 돌아가기 → 현재와 비교 → 비교 닫기.
   앞뒤에 시스템 항목('탭 막대 보기'·'모든 탭 보기', '전체 화면 시작')이 붙는다. 탭 항목은 창이 `WindowGroup`이라 생기며, 단일 창 전환(점검 7번) 때 다시 본다.
@@ -304,7 +310,12 @@ W15에서 연결 상태를 트리에 표시한다. 상태 이름은 W14 안내 �
 - 날짜별 구역 머리글은 기록이 있는 날만 만든다: '오늘 · 10월 3일', '어제 · 10월 2일', '10월 1일', 다른 해는 '2025년 12월 30일'.
   기록이 없는 날을 빈 구역으로 보여 주지 않는다. 매일 스냅샷이 있는 것처럼 보이면 안 된다.
 - 목록 순서는 revision 순번의 역순(최신이 위)이다. 필요한 만큼만 불러오고, 고른 revision만 디코딩한다.
-- revision 행: 왼쪽 기호 + 원인 문구(본문), 아래 줄 '#순번 · 시각'(`.caption`, `.secondary`, `.monospacedDigit()`). 오른쪽에 체크포인트 수(`flag` + 숫자, W22에서 표시).
+- revision 행: 왼쪽 기호 + 원인 문구(본문), 아래 줄 '#순번 · 시각'(`.caption`, `.secondary`, `.monospacedDigit()`). 체크포인트 수는 표시하지 않는다(0037, 체크포인트마다 행이 있다).
+- 체크포인트 행(W22, 0037): 체크포인트마다 행 하나를 둔다. revision 행은 순번 역순을 그대로 지키고, 체크포인트 행은 기록 시각이 그 체크포인트의
+  저장 시각 이하인 첫 revision 행 바로 앞에 끼운다(없으면 맨 아래). 체크포인트는 붙은 revision이 현재일 때 저장되므로 대개 그 revision 행 바로 위에 온다.
+  같은 자리에 여러 개면 최신이 위다. 날짜 구역은 각 행 자신의 시각을 따른다.
+  행은 `flag.fill`(`ThemeAccentText`, 선택하면 흰색) + 제목(본문, medium 굵기), 아래 줄 '체크포인트 · #n · 시각'(`.caption`, `.secondary`, `.monospacedDigit()`)이다.
+  VoiceOver는 한 요소로 '체크포인트, <제목>, #n 구성, <시각> 저장'이라 읽는다. 오른쪽 클릭 메뉴는 revision 행과 같은 '이 기록과 비교'(#n 기준)다.
 - 원인 문구와 기호(행에는 `RevisionSummary`만 쓰고, 차이 요약은 붙이지 않는다):
 
 | cause | 문구 | 기호 |
@@ -371,6 +382,35 @@ W15에서 연결 상태를 트리에 표시한다. 상태 이름은 W14 안내 �
   W18에서 구현된 `past-banner`, `return-to-current`, `past-item-card`('고른 항목' 카드)도 11장 목록으로 옮겼다.
 - W21 새 Board 만들기 시트의 `duplicate-sheet-title`, `duplicate-name-field`, `duplicate-cancel`, `duplicate-confirm`도 11장 목록으로 옮겼다.
   띠 메뉴는 W20의 `restore-menu`를 그대로 쓴다.
+- W22 체크포인트의 저장 시트 `checkpoint-sheet-title`·`checkpoint-title-field`·`checkpoint-memo-field`·`checkpoint-next-field`·
+  `checkpoint-cancel`·`checkpoint-save`·`checkpoint-save-error`, 이력 행 `checkpoint-row-<제목>`, 패널 `checkpoint-panel`·`checkpoint-panel-toggle`,
+  툴바 버튼 `checkpoint-toolbar`도 11장 목록으로 옮겼다. 파일 메뉴는 문구로 찾는다. 같은 제목의 체크포인트가 있으면 행 식별자가 겹친다.
+  `node-row-<이름>`과 같은 방식이며, UI 테스트는 서로 다른 제목을 쓴다. 패널은 접근성 컨테이너라 안의 문구를 패널 아래에서 찾는다.
+
+### 16.6 체크포인트 (W22, 0037)
+- 진입: 파일 메뉴 '체크포인트 저장…'(단축키 없음, 11.1)과 구성 열 툴바의 `flag` 버튼(도움말 '체크포인트 저장'). 현재 구성에서만 켜진다.
+  과거 구성을 보는 중, 비교 중, 보관된 Board(0009), 고른 Board 없음, 현재 구성을 읽지 못해 오류를 보이는 중, 다른 시트가 열림, 저장 중에는 꺼진다.
+  저장 시트가 열린 동안에는 '다시 선택…'도 꺼진다. 파일 선택 창을 시트 위에 띄우지 않는다.
+- 저장 시트: 폭 480(확인·목록 시트 폭, 8장), 왼쪽 정렬, `.padding()`, 요소 사이 12. 복원 시트와 같은 결이다.
+  - 제목 '체크포인트 저장'(`.headline`), 그 아래 '현재 구성 · #n · 시각 기록'(`.callout`, `.secondary`, `.monospacedDigit()`). 시트를 열 때 고정한 revision이다.
+  - 라벨을 칸 위에 둔다(`.callout`). '제목' 입력 칸(둥근 테두리, 안내 '예: 인증 리팩토링 1차 완료')에 처음 초점을 둔다.
+    '진행 메모'(높이 약 92)와 '다음 할 일'(약 72)은 여러 줄 입력 칸이고, 텍스트 바탕(`textBackgroundColor`)에 구분선 색 테두리, 모서리 5다.
+    다음 할 일은 목록이 아니라 여러 줄 텍스트다.
+  - 안내 '저장한 체크포인트는 고칠 수 없습니다. 고치려면 같은 구성에 새로 저장합니다.'(`.caption`, `.secondary`).
+  - '취소'(Esc)와 기본 버튼 '저장'. '저장'은 제목이 비었거나 공백뿐이면 꺼진다. 저장 중에는 '저장'과 '취소'가 모두 꺼진다.
+  - 저장에 실패하면 입력을 유지하고, 버튼 위에 `exclamationmark.triangle` + '저장하지 못했습니다. 입력한 내용은 그대로 있으니 다시 시도하세요.'(`.callout`)를 보인다.
+  - W23 이미지 첨부는 '다음 할 일' 아래에 더한다. W22에서는 꺼진 자리를 미리 두지 않는다.
+- 이력 탭: 체크포인트 행(16.2).
+- 체크포인트를 골랐을 때: 가운데 영역은 #n을 고른 것과 같은 과거 구성 보기다(띠와 버튼도 같다, 16.3). 체크포인트가 현재 revision에 붙어 있어도
+  같다. 편집 가능한 현재 구성 위에 패널을 얹지 않는다. 띠 바로 아래에 체크포인트 패널을 둔다.
+  - 첫 줄: `flag.fill`(`ThemeAccentText`) + 제목(`.headline`) + '10월 15일 오후 3:05 저장'(`.caption`, `.secondary`, `.monospacedDigit()`),
+    행 끝에 접기 버튼(`chevron.up`, 도움말 '체크포인트 접기'). 접으면 첫 줄만 남고 `chevron.down`이 된다.
+    다른 체크포인트를 고르면 펴진 상태로 시작한다. 비교 중에는 패널을 그리지 않는다(비교 띠가 그 자리를 쓴다).
+  - 아래: '진행 메모'와 '다음 할 일'을 두 열로 둔다(라벨 `.caption` `.secondary`, 본문 `.callout`, 텍스트 선택 가능). 내용이 빈 쪽 열은 빼고,
+    둘 다 비면 첫 줄만 남는다.
+  - 바탕은 텍스트 바탕(`textBackgroundColor`)이고 위아래에 구분선을 둔다. 높이는 내용만큼이고, 길면 최대 200pt(기본 창 높이의 약 1/3)에서 멈추고 스크롤한다.
+  - 접힘은 화면 상태다. 저장하지 않고 revision도 만들지 않는다.
+  - 인스펙터의 '고른 항목' 카드는 그대로 둔다. W23 첨부 썸네일은 패널 아래 줄에 더한다.
 
 ## 17. 아이콘 보기 (W28, 0020·0022)
 
