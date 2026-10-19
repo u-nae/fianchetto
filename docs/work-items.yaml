@@ -525,7 +525,7 @@ items:
       서비스 테스트: 저장 전후 revision 수 불변, 고정 revision 연결, 빈 제목 거부, 저장 실패 주입 시
       체크포인트 미생성, 같은 revision 다중 체크포인트. 화면 상태 테스트: 시트 동안 편집 비활성.
       XCUITest: 체크포인트 저장 후 조회.
-    status: in-progress
+    status: done
     priority: high
     dependencies: [W18]
     source_refs:

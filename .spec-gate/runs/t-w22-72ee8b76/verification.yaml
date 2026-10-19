@@ -1,0 +1,215 @@
+schema_version: "1.0"
+run_id: t-w22-72ee8b76
+task_id: W22
+checked_at: 2026-10-19T08:24:26.188Z
+test_globs:
+  - FianchettoTests/**/*.swift
+  - FianchettoUITests/**/*.swift
+obligations:
+  - obligation_id: W22-file-menu-opens-sheet
+    covered: true
+    locations:
+      - FianchettoTests/Features/CheckpointModelTests.swift:99
+      - FianchettoUITests/BoardBrowserUITests.swift:466
+  - obligation_id: W22-file-menu-placement
+    covered: true
+    locations:
+      - FianchettoUITests/BoardBrowserUITests.swift:466
+  - obligation_id: W22-toolbar-opens-sheet
+    covered: true
+    locations:
+      - FianchettoTests/Features/CheckpointModelTests.swift:118
+      - FianchettoUITests/BoardBrowserUITests.swift:466
+  - obligation_id: W22-entry-enablement
+    covered: true
+    locations:
+      - FianchettoTests/Features/CheckpointModelTests.swift:135
+  - obligation_id: W22-open-read-failure
+    covered: true
+    locations:
+      - FianchettoTests/Features/CheckpointModelTests.swift:170
+  - obligation_id: W22-blank-title-disables-save
+    covered: true
+    locations:
+      - FianchettoTests/Features/CheckpointModelTests.swift:195
+  - obligation_id: W22-title-trimmed-notes-verbatim
+    covered: true
+    locations:
+      - FianchettoTests/Services/CheckpointServiceTests.swift:217
+  - obligation_id: W22-optional-notes-empty
+    covered: true
+    locations:
+      - FianchettoTests/Services/CheckpointServiceTests.swift:228
+  - obligation_id: W22-no-revision-while-typing
+    covered: true
+    locations:
+      - FianchettoTests/Features/CheckpointModelTests.swift:210
+  - obligation_id: W22-cancel-discards-input
+    covered: true
+    locations:
+      - FianchettoTests/Features/CheckpointModelTests.swift:223
+  - obligation_id: W22-sheet-keyboard-accessibility
+    covered: true
+    locations:
+      - FianchettoTests/Features/CheckpointModelTests.swift:241
+      - FianchettoUITests/BoardBrowserUITests.swift:466
+      - FianchettoUITests/BoardBrowserUITests.swift:531
+  - obligation_id: W22-sheet-blocks-editing
+    covered: true
+    locations:
+      - FianchettoTests/Features/CheckpointModelTests.swift:256
+  - obligation_id: W22-single-save-while-saving
+    covered: true
+    locations:
+      - FianchettoTests/Features/CheckpointModelTests.swift:292
+  - obligation_id: W22-save-attaches-to-fixed-revision
+    covered: true
+    locations:
+      - FianchettoTests/Features/CheckpointModelTests.swift:308
+  - obligation_id: W22-multiple-checkpoints-same-revision
+    covered: true
+    locations:
+      - FianchettoTests/Services/CheckpointServiceTests.swift:239
+  - obligation_id: W22-checkpoint-immutable-after-edit
+    covered: true
+    locations:
+      - FianchettoTests/Services/CheckpointServiceTests.swift:253
+  - obligation_id: W22-save-failure-keeps-input
+    covered: true
+    locations:
+      - FianchettoTests/Features/CheckpointModelTests.swift:350
+  - obligation_id: W22-save-no-file-access
+    covered: true
+    locations:
+      - FianchettoTests/Features/CheckpointModelTests.swift:369
+  - obligation_id: W22-history-row-shape
+    covered: true
+    locations:
+      - FianchettoTests/Features/CheckpointHistoryModelTests.swift:127
+      - FianchettoUITests/BoardBrowserUITests.swift:467
+  - obligation_id: W22-history-row-order
+    covered: true
+    locations:
+      - FianchettoTests/Features/CheckpointHistoryModelTests.swift:141
+  - obligation_id: W22-history-old-revision-new-checkpoint
+    covered: true
+    locations:
+      - FianchettoTests/Features/CheckpointHistoryModelTests.swift:158
+  - obligation_id: W22-history-no-count-on-revision-rows
+    covered: true
+    locations:
+      - FianchettoTests/Features/CheckpointHistoryModelTests.swift:171
+  - obligation_id: W22-history-paging-keeps-rows
+    covered: true
+    locations:
+      - FianchettoTests/Features/CheckpointHistoryModelTests.swift:187
+      - FianchettoTests/Features/CheckpointHistoryModelTests.swift:210
+      - FianchettoTests/Features/CheckpointHistoryModelTests.swift:224
+      - FianchettoTests/Services/CheckpointServiceTests.swift:319
+  - obligation_id: W22-history-updates-after-save
+    covered: true
+    locations:
+      - FianchettoTests/Features/CheckpointModelTests.swift:335
+  - obligation_id: W22-timeline-merge-pure
+    covered: true
+    locations:
+      - FianchettoTests/Domain/HistoryTimelineTests.swift:56
+  - obligation_id: W22-select-shows-past-and-panel
+    covered: true
+    locations:
+      - FianchettoTests/Features/CheckpointModelTests.swift:385
+      - FianchettoUITests/BoardBrowserUITests.swift:467
+  - obligation_id: W22-select-current-revision-checkpoint
+    covered: true
+    locations:
+      - FianchettoTests/Features/CheckpointHistoryModelTests.swift:243
+      - FianchettoTests/Features/CheckpointModelTests.swift:405
+  - obligation_id: W22-panel-omits-empty-columns
+    covered: true
+    locations:
+      - FianchettoTests/Features/CheckpointModelTests.swift:421
+  - obligation_id: W22-panel-collapse
+    covered: true
+    locations:
+      - FianchettoTests/Features/CheckpointModelTests.swift:438
+      - FianchettoUITests/BoardBrowserUITests.swift:467
+  - obligation_id: W22-switch-to-revision-row
+    covered: true
+    locations:
+      - FianchettoTests/Features/CheckpointHistoryModelTests.swift:260
+  - obligation_id: W22-return-to-current
+    covered: true
+    locations:
+      - FianchettoTests/Features/CheckpointHistoryModelTests.swift:278
+      - FianchettoTests/Features/CheckpointModelTests.swift:541
+  - obligation_id: W22-compare-with-current-hides-panel
+    covered: true
+    locations:
+      - FianchettoTests/Features/CheckpointModelTests.swift:459
+  - obligation_id: W22-compare-record-menu
+    covered: true
+    locations:
+      - FianchettoTests/Features/CheckpointModelTests.swift:481
+  - obligation_id: W22-restore-is-separate
+    covered: true
+    locations:
+      - FianchettoTests/Features/CheckpointModelTests.swift:503
+  - obligation_id: W22-unreadable-revision-notice
+    covered: true
+    locations:
+      - FianchettoTests/Features/CheckpointHistoryModelTests.swift:296
+  - obligation_id: W22-icon-view-same-panel
+    covered: true
+    locations:
+      - FianchettoTests/Features/CheckpointModelTests.swift:524
+  - obligation_id: W22-weblink-from-revision
+    covered: true
+    locations:
+      - FianchettoTests/Features/CheckpointHistoryModelTests.swift:313
+  - obligation_id: W22-service-outcome-table
+    covered: true
+    locations:
+      - FianchettoTests/Services/CheckpointServiceTests.swift:131
+  - obligation_id: W22-service-record-fields
+    covered: true
+    locations:
+      - FianchettoTests/Services/CheckpointServiceTests.swift:197
+  - obligation_id: W22-service-atomic-commit
+    covered: true
+    locations:
+      - FianchettoTests/Services/CheckpointServiceTests.swift:270
+  - obligation_id: W22-service-rejects-foreign-revision
+    covered: true
+    locations:
+      - FianchettoTests/Services/CheckpointServiceTests.swift:284
+  - obligation_id: W22-service-rejects-archived
+    covered: true
+    locations:
+      - FianchettoTests/Services/CheckpointServiceTests.swift:296
+  - obligation_id: W22-checkpoint_request_outcome-R1
+    covered: true
+    locations:
+      - FianchettoTests/Services/CheckpointServiceTests.swift:116
+  - obligation_id: W22-checkpoint_request_outcome-R2
+    covered: true
+    locations:
+      - FianchettoTests/Services/CheckpointServiceTests.swift:119
+      - FianchettoTests/Services/CheckpointServiceTests.swift:309
+  - obligation_id: W22-checkpoint_request_outcome-R3
+    covered: true
+    locations:
+      - FianchettoTests/Services/CheckpointServiceTests.swift:122
+  - obligation_id: W22-checkpoint_request_outcome-R4
+    covered: true
+    locations:
+      - FianchettoTests/Services/CheckpointServiceTests.swift:125
+  - obligation_id: W22-checkpoint_request_outcome-R5
+    covered: true
+    locations:
+      - FianchettoTests/Services/CheckpointServiceTests.swift:128
+uncovered_count: 0
+test_command:
+  command: scripts/vm-verify.sh
+  exit_code: 0
+human_confirmed_tests: null
+status_written: done
