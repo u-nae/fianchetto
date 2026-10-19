@@ -260,7 +260,9 @@ struct CheckpointModelTests {
             await o.model.selectNode(try #require(o.model.loadedSnapshot?.node(named: "backend")).id)
             let edits: @MainActor () -> [Bool] = {
                 [o.model.canAddToBoard, o.model.canRenameSelectedNode, o.model.canMoveSelected, o.model.canRemoveSelected,
-                 o.model.canRenameSelectedBoard, o.model.canArchiveSelected, o.model.canCreateBoard, o.model.canReselectSelected]
+                 o.model.canRenameSelectedBoard, o.model.canArchiveSelected, o.model.canCreateBoard, o.model.canReselectSelected,
+                 o.model.canReplaceSelectedTarget, o.model.canAcceptDrop(on: nil),
+                 o.model.canAcceptNodeDrop(o.model.loadedSnapshot!.node(named: "backend")!.id, on: nil)]
             }
             let views: @MainActor () -> [Bool] = {
                 [o.model.canRefreshStatuses, o.model.canOpenSelected, o.model.canRevealSelected, o.model.canShowHistory]

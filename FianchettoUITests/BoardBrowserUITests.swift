@@ -528,6 +528,9 @@ final class BoardBrowserUITests: XCTestCase {
         XCTAssertTrue(saveButton.isEnabled)
         let memoField = app.descendants(matching: .any)["checkpoint-memo-field"]
         XCTAssertTrue(memoField.waitForExistence(timeout: 5))
+        // VoiceOver가 칸의 이름을 읽는다(W22-sheet-keyboard-accessibility).
+        XCTAssertEqual(memoField.label, "진행 메모")
+        XCTAssertEqual(app.descendants(matching: .any)["checkpoint-next-field"].label, "다음 할 일")
         memoField.click()
         app.typeText("memo line")
         app.typeKey(.return, modifierFlags: [])

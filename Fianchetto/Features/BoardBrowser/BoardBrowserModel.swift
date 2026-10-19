@@ -840,7 +840,8 @@ final class BoardBrowserModel {
 
     /// 놓은 곳이 최상위(nil)나 그룹이고, 보관되지 않은 Board가 선택돼 있을 때만 받는다.
     func canAcceptDrop(on nodeID: UUID?) -> Bool {
-        guard selectedBoardID != nil, !selectedBoardIsArchived, !isViewingPast, !isComparing, case let .loaded(snapshot) = shown else { return false }
+        guard selectedBoardID != nil, !selectedBoardIsArchived, !isViewingPast, !isComparing, checkpointDraft == nil,
+              case let .loaded(snapshot) = shown else { return false }
         guard let nodeID else { return true }
         return snapshot.nodes.first { $0.id == nodeID }?.kind == .group
     }
@@ -954,7 +955,8 @@ final class BoardBrowserModel {
     /// 앱 안에서 끌어온 항목을 받을 수 있는지: 보관되지 않은 Board의 현재 구성에 있는 항목이고,
     /// 놓은 곳이 빈 곳(nil)이거나 연결 폴더가 아닌 이 Board의 항목이어야 한다(PRD §6-C).
     func canAcceptNodeDrop(_ nodeID: UUID, on targetID: UUID?) -> Bool {
-        guard selectedBoardID != nil, !selectedBoardIsArchived, !isViewingPast, !isComparing, case let .loaded(snapshot) = shown,
+        guard selectedBoardID != nil, !selectedBoardIsArchived, !isViewingPast, !isComparing, checkpointDraft == nil,
+              case let .loaded(snapshot) = shown,
               snapshot.nodes.contains(where: { $0.id == nodeID })
         else { return false }
         guard let targetID else { return true }
@@ -1921,7 +1923,7 @@ final class BoardBrowserModel {
     }
 
     var canReplaceSelectedTarget: Bool {
-        guard !isViewingPast, !isComparing, case let .loaded(snapshot) = shown, let id = selectedNodeID,
+        guard !isViewingPast, !isComparing, checkpointDraft == nil, case let .loaded(snapshot) = shown, let id = selectedNodeID,
               let node = snapshot.nodes.first(where: { $0.id == id })
         else { return false }
         return node.kind == .file || node.kind == .folder

@@ -30,12 +30,14 @@ struct CheckpointSheet: View {
                 Text("진행 메모")
                     .font(.callout)
                 editor(binding(\.progressNote), height: 92)
+                    .accessibilityLabel("진행 메모")
                     .accessibilityIdentifier("checkpoint-memo-field")
             }
             VStack(alignment: .leading, spacing: 4) {
                 Text("다음 할 일")
                     .font(.callout)
                 editor(binding(\.nextSteps), height: 72)
+                    .accessibilityLabel("다음 할 일")
                     .accessibilityIdentifier("checkpoint-next-field")
             }
             Text("저장한 체크포인트는 고칠 수 없습니다. 고치려면 같은 구성에 새로 저장합니다.")

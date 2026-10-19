@@ -188,19 +188,20 @@ struct StoreAdapter {
         try read(FetchDescriptor<SchemaV1.ResourceReferenceModel>(predicate: #Predicate { $0.id == id })).first.map(Self.record)
     }
 
-    /// Board의 모든 체크포인트 목록 정보(W22). revision을 먼저 읽어 순번을 붙이고 저장 시각 역순으로 돌려준다. 메모 본문은 싣지 않는다.
+    /// Board의 모든 체크포인트 목록 정보(W22). 체크포인트(소수)를 먼저 읽고, 그 revision만 id·순번으로 읽어 Board의 것을 고른다.
+    /// Board의 모든 revision이나 스냅샷은 읽지 않는다(PRD §8 경량화). 저장 시각 역순이고 메모 본문은 싣지 않는다.
     func checkpointSummaries(projectID: UUID) throws(StoreReadError) -> [CheckpointSummary] {
-        let revisions = try read(FetchDescriptor<SchemaV1.RevisionModel>(predicate: #Predicate { $0.projectID == projectID }))
-        let sequences = Dictionary(revisions.map { ($0.id, $0.sequence) }, uniquingKeysWith: { first, _ in first })
-        guard !sequences.isEmpty else { return [] }
-        let ids = Array(sequences.keys)
-        return try read(FetchDescriptor<SchemaV1.CheckpointModel>(
-            predicate: #Predicate { ids.contains($0.revisionID) }, sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
-        )).map { model in
-            CheckpointSummary(
-                id: model.id, revisionID: model.revisionID, sequence: sequences[model.revisionID] ?? 0,
-                title: model.title, createdAt: model.createdAt
-            )
+        let checkpoints = try read(FetchDescriptor<SchemaV1.CheckpointModel>(sortBy: [SortDescriptor(\.createdAt, order: .reverse)]))
+        let revisionIDs = Array(Set(checkpoints.map(\.revisionID)))
+        guard !revisionIDs.isEmpty else { return [] }
+        var descriptor = FetchDescriptor<SchemaV1.RevisionModel>(
+            predicate: #Predicate { $0.projectID == projectID && revisionIDs.contains($0.id) }
+        )
+        descriptor.propertiesToFetch = [\.id, \.sequence]
+        let sequences = Dictionary(try read(descriptor).map { ($0.id, $0.sequence) }, uniquingKeysWith: { first, _ in first })
+        return checkpoints.compactMap { model in
+            guard let sequence = sequences[model.revisionID] else { return nil }
+            return CheckpointSummary(id: model.id, revisionID: model.revisionID, sequence: sequence, title: model.title, createdAt: model.createdAt)
         }
     }
 
