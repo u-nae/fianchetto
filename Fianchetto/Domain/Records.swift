@@ -92,6 +92,15 @@ struct CheckpointRecord: Hashable, Sendable {
     var attachments: [AttachmentRecord]
 }
 
+/// 이력 탭 체크포인트 행의 목록 정보(W22). 메모 본문은 싣지 않는다. 연결 revision의 순번을 함께 둔다.
+struct CheckpointSummary: Hashable, Sendable, Identifiable {
+    var id: UUID
+    var revisionID: UUID
+    var sequence: Int
+    var title: String
+    var createdAt: Date
+}
+
 /// Board 목록 한 줄. 이름은 현재 revision이 가진다(0007).
 struct ProjectListing: Hashable, Sendable, Identifiable {
     var id: UUID
