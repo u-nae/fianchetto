@@ -205,7 +205,9 @@ W15에서 연결 상태를 트리에 표시한다. 상태 이름은 W14 안내 �
   `compare-tree`·`compare-row-<이름>`·`compare-details`·`compare-with-current`(W19 ①), `compare-mode`·`compare-before-tree`·`compare-after-tree`·
   `compare-before-title`·`compare-after-title`(W19 ②), `restore-menu`(과거 구성 띠의 '이 구성으로…')·`restore-sheet-title`·`restore-summary`·
   `restore-board-name`·`restore-row-<항목 이름>`·`restore-identical`·`restore-cancel`·`restore-confirm`(W20),
-  `duplicate-sheet-title`·`duplicate-name-field`·`duplicate-cancel`·`duplicate-confirm`(W21).
+  `duplicate-sheet-title`·`duplicate-name-field`·`duplicate-cancel`·`duplicate-confirm`(W21),
+  `checkpoint-sheet-title`·`checkpoint-title-field`·`checkpoint-memo-field`·`checkpoint-next-field`·`checkpoint-cancel`·`checkpoint-save`·
+  `checkpoint-save-error`·`checkpoint-row-<제목>`·`checkpoint-panel`·`checkpoint-panel-toggle`·`checkpoint-toolbar`(W22).
   행의 `accessibilityElement(children: .ignore)`와 `accessibilityLabel`, 선택 행의 `.isSelected` trait도 유지한다.
   새 화면의 제안 식별자는 구현되면 이 목록으로 옮긴다.
 - 메뉴 항목 제목과 단축키를 바꾸지 않는다. 바꾸려면 `BoardBrowserUITests`·`NativeCommandUITests`의 메뉴 검사도 같은 변경에서 고친다.
@@ -380,10 +382,10 @@ W15에서 연결 상태를 트리에 표시한다. 상태 이름은 W14 안내 �
   W18에서 구현된 `past-banner`, `return-to-current`, `past-item-card`('고른 항목' 카드)도 11장 목록으로 옮겼다.
 - W21 새 Board 만들기 시트의 `duplicate-sheet-title`, `duplicate-name-field`, `duplicate-cancel`, `duplicate-confirm`도 11장 목록으로 옮겼다.
   띠 메뉴는 W20의 `restore-menu`를 그대로 쓴다.
-- W22 체크포인트(제안): 저장 시트 `checkpoint-sheet-title`·`checkpoint-title-field`·`checkpoint-memo-field`·`checkpoint-next-field`·
+- W22 체크포인트의 저장 시트 `checkpoint-sheet-title`·`checkpoint-title-field`·`checkpoint-memo-field`·`checkpoint-next-field`·
   `checkpoint-cancel`·`checkpoint-save`·`checkpoint-save-error`, 이력 행 `checkpoint-row-<제목>`, 패널 `checkpoint-panel`·`checkpoint-panel-toggle`,
-  툴바 버튼 `checkpoint-toolbar`. 파일 메뉴는 문구로 찾는다. 같은 제목의 체크포인트가 있으면 행 식별자가 겹친다. `node-row-<이름>`과 같은 방식이며,
-  UI 테스트는 서로 다른 제목을 쓴다. 구현되면 11장 목록으로 옮긴다.
+  툴바 버튼 `checkpoint-toolbar`도 11장 목록으로 옮겼다. 파일 메뉴는 문구로 찾는다. 같은 제목의 체크포인트가 있으면 행 식별자가 겹친다.
+  `node-row-<이름>`과 같은 방식이며, UI 테스트는 서로 다른 제목을 쓴다. 패널은 접근성 컨테이너라 안의 문구를 패널 아래에서 찾는다.
 
 ### 16.6 체크포인트 (W22, 0037)
 - 진입: 파일 메뉴 '체크포인트 저장…'(단축키 없음, 11.1)과 구성 열 툴바의 `flag` 버튼(도움말 '체크포인트 저장'). 현재 구성에서만 켜진다.
@@ -406,7 +408,7 @@ W15에서 연결 상태를 트리에 표시한다. 상태 이름은 W14 안내 �
     다른 체크포인트를 고르면 펴진 상태로 시작한다. 비교 중에는 패널을 그리지 않는다(비교 띠가 그 자리를 쓴다).
   - 아래: '진행 메모'와 '다음 할 일'을 두 열로 둔다(라벨 `.caption` `.secondary`, 본문 `.callout`, 텍스트 선택 가능). 내용이 빈 쪽 열은 빼고,
     둘 다 비면 첫 줄만 남는다.
-  - 바탕은 텍스트 바탕(`textBackgroundColor`)이고 위아래에 구분선을 둔다. 길면 높이를 가운데 영역의 약 1/3로 제한하고 스크롤한다.
+  - 바탕은 텍스트 바탕(`textBackgroundColor`)이고 위아래에 구분선을 둔다. 높이는 내용만큼이고, 길면 최대 200pt(기본 창 높이의 약 1/3)에서 멈추고 스크롤한다.
   - 접힘은 화면 상태다. 저장하지 않고 revision도 만들지 않는다.
   - 인스펙터의 '고른 항목' 카드는 그대로 둔다. W23 첨부 썸네일은 패널 아래 줄에 더한다.
 
