@@ -188,6 +188,26 @@ struct StoreAdapter {
         try read(FetchDescriptor<SchemaV1.ResourceReferenceModel>(predicate: #Predicate { $0.id == id })).first.map(Self.record)
     }
 
+    /// Board의 모든 체크포인트 목록 정보(W22). revision을 먼저 읽어 순번을 붙이고 저장 시각 역순으로 돌려준다. 메모 본문은 싣지 않는다.
+    func checkpointSummaries(projectID: UUID) throws(StoreReadError) -> [CheckpointSummary] {
+        let revisions = try read(FetchDescriptor<SchemaV1.RevisionModel>(predicate: #Predicate { $0.projectID == projectID }))
+        let sequences = Dictionary(revisions.map { ($0.id, $0.sequence) }, uniquingKeysWith: { first, _ in first })
+        guard !sequences.isEmpty else { return [] }
+        let ids = Array(sequences.keys)
+        return try read(FetchDescriptor<SchemaV1.CheckpointModel>(
+            predicate: #Predicate { ids.contains($0.revisionID) }, sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
+        )).map { model in
+            CheckpointSummary(
+                id: model.id, revisionID: model.revisionID, sequence: sequences[model.revisionID] ?? 0,
+                title: model.title, createdAt: model.createdAt
+            )
+        }
+    }
+
+    func checkpoint(_ id: UUID) throws(StoreReadError) -> CheckpointRecord? {
+        try read(FetchDescriptor<SchemaV1.CheckpointModel>(predicate: #Predicate { $0.id == id })).first.map(Self.record)
+    }
+
     func checkpoints(revisionID: UUID) throws(StoreReadError) -> [CheckpointRecord] {
         try read(FetchDescriptor<SchemaV1.CheckpointModel>(
             predicate: #Predicate { $0.revisionID == revisionID }, sortBy: [SortDescriptor(\.createdAt)]
