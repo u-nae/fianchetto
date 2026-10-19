@@ -5,6 +5,8 @@ import SwiftUI
 struct CheckpointPanelView: View {
     let model: BoardBrowserModel
     let panel: BoardBrowserModel.CheckpointPanel
+    /// 두 열의 실제 높이. 패널은 이 높이만큼 차지하고 200을 넘으면 스크롤한다.
+    @State private var contentHeight: CGFloat = 0
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -30,11 +32,12 @@ struct CheckpointPanelView: View {
                 }
                 if !panel.isCollapsed, panel.progressNote != nil || panel.nextSteps != nil {
                     // 내용이 짧으면 내용 높이만큼, 길면 200(기본 창 높이의 약 1/3)에서 멈추고 스크롤한다(16.6의 상한).
-                    ViewThatFits(in: .vertical) {
-                        columns
-                        ScrollView { columns }
+                    // ViewThatFits는 제안받은 높이를 그대로 차지하므로 내용 높이를 재서 프레임을 정한다(디자인 세션 VM 확인).
+                    ScrollView {
+                        columns.onGeometryChange(for: CGFloat.self) { $0.size.height } action: { contentHeight = $0 }
                     }
-                    .frame(maxHeight: 200)
+                    .scrollBounceBehavior(.basedOnSize)
+                    .frame(height: min(max(contentHeight, 1), 200))
                 }
             }
             .padding(8)

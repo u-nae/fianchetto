@@ -49,7 +49,7 @@ struct HistoryTabView: View {
                                                 .tag(HistoryPanelModel.Selection.revision(row.id))
                                                 .contextMenu { compareMenu(.revision(row.id)) }
                                         case let .checkpoint(summary):
-                                            CheckpointRowView(history: history, summary: summary)
+                                            CheckpointRowView(history: history, summary: summary, isSelected: selection == .checkpoint(summary.id))
                                                 .tag(HistoryPanelModel.Selection.checkpoint(summary.id))
                                                 .contextMenu { compareMenu(.checkpoint(summary.id)) }
                                         }
@@ -209,17 +209,17 @@ private struct HistoryRowView: View {
 }
 
 /// 체크포인트 행(W22, DESIGN.md 16.2): 깃발 기호 + 제목, 아래 줄 '체크포인트 · #순번 · 시각'. VoiceOver는 한 요소로 읽는다.
-/// 깃발 색은 목록 상태를 따른다: 강조 선택(초점 있는 선택)에서만 흰색이 되고, 초점을 잃은 선택·비선택에서는 강조 색이다.
+/// 깃발 색: 선택되면 제목과 같은 글자색(`.primary` — 강조 선택에서는 흰색, 초점을 잃은 선택에서는 기본 글자색), 아니면 강조 색이다.
 private struct CheckpointRowView: View {
     let history: HistoryPanelModel
     let summary: CheckpointSummary
-    @Environment(\.backgroundProminence) private var backgroundProminence
+    let isSelected: Bool
 
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
             Image(systemName: "flag.fill")
                 .frame(width: 16)
-                .foregroundStyle(backgroundProminence == .increased ? AnyShapeStyle(.primary) : AnyShapeStyle(Color(.themeAccentText)))
+                .foregroundStyle(isSelected ? AnyShapeStyle(.primary) : AnyShapeStyle(Color(.themeAccentText)))
             VStack(alignment: .leading, spacing: 2) {
                 Text(summary.title)
                     .fontWeight(.medium)
