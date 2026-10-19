@@ -29,12 +29,10 @@ struct CheckpointPanelView: View {
                     .accessibilityIdentifier("checkpoint-panel-toggle")
                 }
                 if !panel.isCollapsed, panel.progressNote != nil || panel.nextSteps != nil {
-                    ScrollView {
-                        HStack(alignment: .top, spacing: 16) {
-                            column("진행 메모", panel.progressNote)
-                            column("다음 할 일", panel.nextSteps)
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                    // 내용이 짧으면 내용 높이만큼, 길면 200(기본 창 높이의 약 1/3)에서 멈추고 스크롤한다(16.6의 상한).
+                    ViewThatFits(in: .vertical) {
+                        columns
+                        ScrollView { columns }
                     }
                     .frame(maxHeight: 200)
                 }
@@ -47,6 +45,14 @@ struct CheckpointPanelView: View {
         // 컨테이너로 묶어야 식별자가 첫 자식(깃발)이 아니라 패널에 붙고, 안의 문구를 패널 아래에서 찾을 수 있다.
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("checkpoint-panel")
+    }
+
+    private var columns: some View {
+        HStack(alignment: .top, spacing: 16) {
+            column("진행 메모", panel.progressNote)
+            column("다음 할 일", panel.nextSteps)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     @ViewBuilder

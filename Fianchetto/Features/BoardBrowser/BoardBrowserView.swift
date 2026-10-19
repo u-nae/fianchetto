@@ -262,7 +262,7 @@ private struct ConfigurationTreeView: View {
                 Button { model.beginAddGroup() } label: { Label("Wing 추가", image: .fianchettoWing) }
                     .help("Wing 추가")
                     .disabled(!model.canAddToBoard)
-                // 체크포인트 저장(W22, DESIGN 16.6): 현재 구성 명령이라 추가 버튼 옆, 이력 버튼 앞에 둔다.
+                // 체크포인트 저장(W22, DESIGN 16.6): 현재 구성 명령이라 추가 버튼 옆('Wing 추가' 오른쪽)에 둔다.
                 Button { Task { await model.beginCheckpoint() } } label: { Label("체크포인트 저장", systemImage: "flag") }
                     .help("체크포인트 저장")
                     .disabled(!model.canSaveCheckpoint)
