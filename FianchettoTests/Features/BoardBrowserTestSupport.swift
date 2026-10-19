@@ -183,18 +183,21 @@ struct BrowserHarness {
     let launcher: RecordingLauncher
     let model: BoardBrowserModel
     let clock: HistoryClock
+    /// 서비스가 revision·체크포인트 기록 시각에 쓰는 시계. 요청마다 1초씩 늘어난다.
+    let serviceClock: TestClock
 
     init(
         directory: URL, lastBoard: InMemoryLastBoard = InMemoryLastBoard(), script: OpenScript = OpenScript(), storeKnown: Bool = true,
-        clock: HistoryClock = HistoryClock(), loadGate: LoadGate? = nil
+        clock: HistoryClock = HistoryClock(), loadGate: LoadGate? = nil, serviceClock: TestClock = TestClock(startingAt: date(0))
     ) {
         self.clock = clock
+        self.serviceClock = serviceClock
         let historyClock = clock
         self.directory = directory
         url = directory.appending(path: "Fianchetto.store")
         self.lastBoard = lastBoard
         self.script = script
-        let fault = self.fault, clock = TestClock(startingAt: date(0)), ids = TestIDs(startingAt: 30001)
+        let fault = self.fault, clock = self.serviceClock, ids = TestIDs(startingAt: 30001)
         let events = AccessEvents()
         let launcher = RecordingLauncher(events: events)
         self.launcher = launcher

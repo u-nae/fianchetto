@@ -675,6 +675,66 @@
     "새 Board는 이 구성으로 시작하고 이력은 새로 쌓입니다. 원래 Board는 바뀌지 않습니다." : {
       "comment" : "새 Board 만들기 시트 안내(W21).",
       "extractionState" : "manual"
+    },
+    "체크포인트 저장…" : {
+      "comment" : "파일 메뉴(W22, 0037).",
+      "extractionState" : "manual"
+    },
+    "체크포인트 저장" : {
+      "comment" : "체크포인트 저장 시트 제목·툴바 도움말·안내 제목(W22, 0037).",
+      "extractionState" : "manual"
+    },
+    "현재 구성 · #%lld · %@ 기록" : {
+      "comment" : "체크포인트 저장 시트 부제(W22).",
+      "extractionState" : "manual"
+    },
+    "제목" : {
+      "comment" : "체크포인트 저장 시트 라벨(W22).",
+      "extractionState" : "manual"
+    },
+    "진행 메모" : {
+      "comment" : "체크포인트 저장 시트·패널 라벨(W22).",
+      "extractionState" : "manual"
+    },
+    "다음 할 일" : {
+      "comment" : "체크포인트 저장 시트·패널 라벨(W22).",
+      "extractionState" : "manual"
+    },
+    "예: 인증 리팩토링 1차 완료" : {
+      "comment" : "체크포인트 제목 칸 안내(W22).",
+      "extractionState" : "manual"
+    },
+    "저장한 체크포인트는 고칠 수 없습니다. 고치려면 같은 구성에 새로 저장합니다." : {
+      "comment" : "체크포인트 저장 시트 안내(W22).",
+      "extractionState" : "manual"
+    },
+    "저장" : {
+      "comment" : "체크포인트 저장 시트 기본 버튼(W22).",
+      "extractionState" : "manual"
+    },
+    "저장하지 못했습니다. 입력한 내용은 그대로 있으니 다시 시도하세요." : {
+      "comment" : "체크포인트 저장 실패(W22).",
+      "extractionState" : "manual"
+    },
+    "체크포인트 · #%lld · %@" : {
+      "comment" : "이력 탭 체크포인트 행 아래 줄(W22).",
+      "extractionState" : "manual"
+    },
+    "체크포인트, %@, #%lld 구성, %@ 저장" : {
+      "comment" : "이력 탭 체크포인트 행 VoiceOver(W22).",
+      "extractionState" : "manual"
+    },
+    "%@ 저장" : {
+      "comment" : "체크포인트 패널 저장 시각(W22).",
+      "extractionState" : "manual"
+    },
+    "체크포인트 접기" : {
+      "comment" : "체크포인트 패널 접기 버튼(W22).",
+      "extractionState" : "manual"
+    },
+    "체크포인트 펴기" : {
+      "comment" : "체크포인트 패널 접기 버튼(W22).",
+      "extractionState" : "manual"
     }
   },
   "version" : "1.0"

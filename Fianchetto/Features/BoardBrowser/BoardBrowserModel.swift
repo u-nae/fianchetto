@@ -62,6 +62,8 @@ final class BoardBrowserModel {
             case openFailed(OpenFailure)
             /// 과거 구성에서 다른 대상을 골랐다. 같은 대상의 접근 복구만 된다(W18).
             case pastSameTargetOnly
+            /// 시트를 열 때 현재 revision 정보를 읽지 못했다(W22).
+            case readFailed
         }
 
         /// 안내를 띄운 동작. 알림 제목을 정한다.
@@ -71,6 +73,7 @@ final class BoardBrowserModel {
             case remove
             case open
             case restore
+            case checkpoint
         }
 
         var kind: Kind
@@ -164,6 +167,23 @@ final class BoardBrowserModel {
         var isSaving = false
     }
 
+    /// 체크포인트 저장 시트의 입력(W22). nil이면 시트가 닫혀 있다. revision은 시트를 열 때 고정한다.
+    struct CheckpointDraft: Equatable {
+        var boardID: UUID
+        var revisionID: UUID
+        var sequence: Int
+        var subtitle: String
+        var title = ""
+        var progressNote = ""
+        var nextSteps = ""
+        var message: CheckpointMessage?
+        var isSaving = false
+    }
+
+    enum CheckpointMessage: Equatable {
+        case saveFailed
+    }
+
     /// 과거 구성으로 새 Board를 만드는 시트의 입력(W21). nil이면 시트가 닫혀 있다.
     struct Duplication: Equatable {
         var sourceBoardID: UUID
@@ -183,6 +203,7 @@ final class BoardBrowserModel {
     var selectedNodeID: UUID?
     var creation: Creation?
     var duplication: Duplication?
+    var checkpointDraft: CheckpointDraft?
     /// Board 이름 변경 입력. Board 만들기 입력과 같은 모양이다.
     var rename: Creation?
     var nodeForm: NodeForm?
@@ -545,7 +566,7 @@ final class BoardBrowserModel {
 
     // MARK: Board 만들기
 
-    var canCreateBoard: Bool { phase == .ready }
+    var canCreateBoard: Bool { phase == .ready && checkpointDraft == nil }
 
     var canConfirmCreate: Bool { creation.map { !$0.isSaving } ?? false }
 
@@ -591,7 +612,7 @@ final class BoardBrowserModel {
 
     /// 과거 구성을 보는 동안에도 편집 동작은 모두 거짓이다(W18, DESIGN 16.4).
     private var canEditSelectedBoard: Bool {
-        selectedBoardID != nil && openedStore != nil && !selectedBoardIsArchived && !isViewingPast && !isComparing
+        selectedBoardID != nil && openedStore != nil && !selectedBoardIsArchived && !isViewingPast && !isComparing && checkpointDraft == nil
     }
 
     /// Bishop 추가·Wing 추가·웹 링크 추가.
@@ -615,7 +636,8 @@ final class BoardBrowserModel {
     }
 
     private func editableBoard() -> UUID? {
-        guard let boardID = selectedBoardID, openedStore != nil, !isViewingPast, !isComparing else { return nil }
+        // 체크포인트 저장 시트가 열린 동안에는 구성 편집을 시작하지 않는다(W22, PRD §6-G).
+        guard let boardID = selectedBoardID, openedStore != nil, !isViewingPast, !isComparing, checkpointDraft == nil else { return nil }
         guard !selectedBoardIsArchived else {
             linkNotice = LinkNotice(kind: .archived, request: nil)
             return nil
@@ -715,8 +737,8 @@ final class BoardBrowserModel {
         selectedBoardIsArchived ? String(localized: "보관된 Board · 읽기 전용") : nil
     }
 
-    var canArchiveSelected: Bool { selectedBoardID != nil && !selectedBoardIsArchived }
-    var canUnarchiveSelected: Bool { selectedBoardID != nil && selectedBoardIsArchived }
+    var canArchiveSelected: Bool { selectedBoardID != nil && !selectedBoardIsArchived && checkpointDraft == nil }
+    var canUnarchiveSelected: Bool { selectedBoardID != nil && selectedBoardIsArchived && checkpointDraft == nil }
 
     func beginRename() {
         guard let boardID = selectedBoardID, let board = board(boardID) else { return }
@@ -818,7 +840,8 @@ final class BoardBrowserModel {
 
     /// 놓은 곳이 최상위(nil)나 그룹이고, 보관되지 않은 Board가 선택돼 있을 때만 받는다.
     func canAcceptDrop(on nodeID: UUID?) -> Bool {
-        guard selectedBoardID != nil, !selectedBoardIsArchived, !isViewingPast, !isComparing, case let .loaded(snapshot) = shown else { return false }
+        guard selectedBoardID != nil, !selectedBoardIsArchived, !isViewingPast, !isComparing, checkpointDraft == nil,
+              case let .loaded(snapshot) = shown else { return false }
         guard let nodeID else { return true }
         return snapshot.nodes.first { $0.id == nodeID }?.kind == .group
     }
@@ -849,6 +872,7 @@ final class BoardBrowserModel {
         case .remove: String(localized: "제거")
         case .open: String(localized: "열기")
         case .restore: String(localized: "구성 복원")
+        case .checkpoint: String(localized: "체크포인트 저장")
         }
     }
 
@@ -872,6 +896,8 @@ final class BoardBrowserModel {
             openFailureText(failure)
         case .pastSameTargetOnly:
             String(localized: "과거 구성에서는 같은 대상의 접근만 복구할 수 있습니다.")
+        case .readFailed:
+            String(localized: "기록을 불러오지 못했습니다")
         }
     }
 
@@ -929,7 +955,8 @@ final class BoardBrowserModel {
     /// 앱 안에서 끌어온 항목을 받을 수 있는지: 보관되지 않은 Board의 현재 구성에 있는 항목이고,
     /// 놓은 곳이 빈 곳(nil)이거나 연결 폴더가 아닌 이 Board의 항목이어야 한다(PRD §6-C).
     func canAcceptNodeDrop(_ nodeID: UUID, on targetID: UUID?) -> Bool {
-        guard selectedBoardID != nil, !selectedBoardIsArchived, !isViewingPast, !isComparing, case let .loaded(snapshot) = shown,
+        guard selectedBoardID != nil, !selectedBoardIsArchived, !isViewingPast, !isComparing, checkpointDraft == nil,
+              case let .loaded(snapshot) = shown,
               snapshot.nodes.contains(where: { $0.id == nodeID })
         else { return false }
         guard let targetID else { return true }
@@ -1360,7 +1387,9 @@ final class BoardBrowserModel {
         linkStatuses.merge(statuses) { _, new in new }
     }
 
-    var canReselectSelected: Bool { !isComparing && (selectedNode.map { $0.kind == .file || $0.kind == .folder } ?? false) }
+    var canReselectSelected: Bool {
+        !isComparing && checkpointDraft == nil && (selectedNode.map { $0.kind == .file || $0.kind == .folder } ?? false)
+    }
 
     /// 다시 선택: 같은 대상이면 접근을 복구하고, 아니면 연결 대상 변경 확인 창을 연다.
     func reselectSelectedTarget() async {
@@ -1438,20 +1467,18 @@ final class BoardBrowserModel {
         await openComparison(before: .revision(id), after: .current)
     }
 
-    /// 이력 행 오른쪽 클릭 '이 기록과 비교': 그 행이 지금 보는 구성이거나 비교 중이면 꺼진다.
+    /// 이력 행 오른쪽 클릭 '이 기록과 비교': 그 행의 revision이 지금 보는 구성이거나 비교 중이면 꺼진다.
+    /// 체크포인트 행은 연결 revision 행과 같다(W22).
     func canCompareRecord(_ row: HistoryPanelModel.Selection) -> Bool {
         guard selectedBoardID != nil, !isComparing else { return false }
-        return row != history.selection
+        return history.revisionID(of: row) != history.revisionID(of: history.selection)
     }
 
     /// 그 행과 지금 보는 구성을 순번이 작은 쪽을 이전으로 두어 비교한다(0027).
     func compareRecord(_ row: HistoryPanelModel.Selection) async {
         guard canCompareRecord(row) else { return }
         let shown: ComparisonTarget = history.selectedRevisionID.map(ComparisonTarget.revision) ?? .current
-        let other: ComparisonTarget = switch row {
-        case .current: .current
-        case let .revision(id): .revision(id)
-        }
+        let other: ComparisonTarget = history.revisionID(of: row).map(ComparisonTarget.revision) ?? .current
         await openComparison(before: earlier(shown, other), after: earlier(shown, other) == shown ? other : shown)
     }
 
@@ -1701,6 +1728,124 @@ final class BoardBrowserModel {
         duplication?.message = message
     }
 
+    // MARK: 체크포인트(W22)
+
+    /// 어느 시트든 열려 있다. 체크포인트 저장 시트는 다른 시트 위에 열지 않는다.
+    private var hasOpenSheet: Bool {
+        creation != nil || rename != nil || nodeForm != nil || moveDialog != nil || removal != nil || replacement != nil
+            || restorePreview != nil || duplication != nil || checkpointDraft != nil
+    }
+
+    /// 파일 메뉴 '체크포인트 저장…'과 툴바 깃발이 켜지는 조건: Board를 골랐고 저장소가 열렸고 현재 구성을 읽었고, 보관·과거 보기·비교 중이 아니고,
+    /// 어느 시트도 열려 있지 않다(PRD §6-G 현재 구성에서 저장, 0009). 참이면 beginCheckpoint()가 읽기에 성공하는 한 반드시 시트를 연다.
+    var canSaveCheckpoint: Bool {
+        guard selectedBoardID != nil, openedStore != nil, !selectedBoardIsArchived, !isViewingPast, !isComparing, !hasOpenSheet,
+              case .loaded = current else { return false }
+        return true
+    }
+
+    /// 시트가 있고, 정리한 제목이 비어 있지 않고, 저장 중이 아니다.
+    var canConfirmCheckpoint: Bool {
+        guard let draft = checkpointDraft, !draft.isSaving else { return false }
+        return (try? ProjectName.normalize(draft.title)) != nil
+    }
+
+    /// 시트가 있고 저장 중이 아니다('취소' 켜짐).
+    var canCancelCheckpoint: Bool { checkpointDraft.map { !$0.isSaving } ?? false }
+
+    /// 현재 revision 목록 정보를 한 번 읽어 고정하고 시트를 연다(PRD §6-G '작성 시작 시 연결할 revision을 고정').
+    /// 읽지 못하면 시트를 열지 않고 안내한다(빈 값으로 열지 않는다).
+    func beginCheckpoint() async {
+        guard canSaveCheckpoint, let boardID = selectedBoardID, let store = openedStore?.store else { return }
+        do {
+            guard let summary = try await store.currentRevisionSummary(projectID: boardID) else { throw StoreReadError.notFound(boardID) }
+            guard selectedBoardID == boardID, canSaveCheckpoint else { return }
+            checkpointDraft = CheckpointDraft(
+                boardID: boardID, revisionID: summary.id, sequence: summary.sequence,
+                subtitle: String(localized: "현재 구성 · #\(summary.sequence) · \(history.dateTimeText(summary.recordedAt)) 기록")
+            )
+        } catch {
+            guard selectedBoardID == boardID else { return }
+            linkNotice = LinkNotice(kind: .readFailed, request: nil, action: .checkpoint)
+        }
+    }
+
+    func cancelCheckpoint() {
+        guard canCancelCheckpoint else { return }
+        checkpointDraft = nil
+    }
+
+    /// 저장에 성공하면 시트를 닫고 화면은 현재 구성에 머문다(새 체크포인트를 고르지 않는다). 이력 탭이 불러와 있으면 행을 더한다.
+    /// 실패하면 입력을 유지한 채 안내한다. 시트가 그 사이 닫혔으면 아무것도 바꾸지 않는다.
+    func confirmCheckpoint() async {
+        guard canConfirmCheckpoint, var draft = checkpointDraft, let service = openedStore?.service else { return }
+        draft.isSaving = true
+        draft.message = nil
+        checkpointDraft = draft
+        let outcome: CheckpointOutcome
+        do {
+            outcome = try await service.saveCheckpoint(
+                title: draft.title, progressNote: draft.progressNote, nextSteps: draft.nextSteps,
+                on: draft.revisionID, in: draft.boardID
+            )
+        } catch {
+            finishCheckpoint(saving: draft, message: .saveFailed)
+            return
+        }
+        switch outcome {
+        case let .saved(record):
+            guard isSavingCheckpoint(draft) else { return }
+            checkpointDraft = nil
+            history.add(checkpoint: CheckpointSummary(
+                id: record.id, revisionID: record.revisionID, sequence: draft.sequence, title: record.title, createdAt: record.createdAt
+            ))
+        case .rejected:
+            finishCheckpoint(saving: draft, message: .saveFailed)
+        }
+    }
+
+    /// 저장하던 바로 그 시트가 아직 열려 있다.
+    private func isSavingCheckpoint(_ draft: CheckpointDraft) -> Bool {
+        guard let open = checkpointDraft else { return false }
+        return open.boardID == draft.boardID && open.revisionID == draft.revisionID && open.isSaving
+    }
+
+    private func finishCheckpoint(saving draft: CheckpointDraft, message: CheckpointMessage) {
+        guard isSavingCheckpoint(draft) else { return }
+        checkpointDraft?.isSaving = false
+        checkpointDraft?.message = message
+    }
+
+    /// 띠 아래 체크포인트 패널(W22, DESIGN 16.6). 체크포인트를 골랐고 비교 중이 아닐 때만 있다. 공백뿐인 열은 nil.
+    struct CheckpointPanel: Equatable {
+        var title: String
+        var savedText: String
+        var progressNote: String?
+        var nextSteps: String?
+        var isCollapsed: Bool
+    }
+
+    var checkpointPanel: CheckpointPanel? {
+        guard !isComparing, let record = history.selectedCheckpoint else { return nil }
+        func column(_ text: String) -> String? {
+            text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : text
+        }
+        return CheckpointPanel(
+            title: record.title, savedText: history.savedText(record.createdAt),
+            progressNote: column(record.progressNote), nextSteps: column(record.nextSteps),
+            isCollapsed: history.isCheckpointCollapsed
+        )
+    }
+
+    /// 접기는 화면 상태다. 저장하지 않고 revision도 만들지 않는다.
+    func toggleCheckpointPanel() {
+        history.isCheckpointCollapsed.toggle()
+    }
+
+    var checkpointToggleHelp: String {
+        history.isCheckpointCollapsed ? String(localized: "체크포인트 펴기") : String(localized: "체크포인트 접기")
+    }
+
     // MARK: 제거
 
     /// 첫 버전에는 Undo가 없으므로 종류와 상관없이 확인 창을 연다.
@@ -1778,7 +1923,7 @@ final class BoardBrowserModel {
     }
 
     var canReplaceSelectedTarget: Bool {
-        guard !isViewingPast, !isComparing, case let .loaded(snapshot) = shown, let id = selectedNodeID,
+        guard !isViewingPast, !isComparing, checkpointDraft == nil, case let .loaded(snapshot) = shown, let id = selectedNodeID,
               let node = snapshot.nodes.first(where: { $0.id == id })
         else { return false }
         return node.kind == .file || node.kind == .folder
@@ -1910,6 +2055,7 @@ final class BoardBrowserModel {
         closeComparison()
         restorePreview = nil
         duplication = nil
+        checkpointDraft = nil
         history.reset(boardID: boardID)
         iconPath = []
         hasIconLocation = false

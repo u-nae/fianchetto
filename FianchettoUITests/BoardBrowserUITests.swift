@@ -463,6 +463,129 @@ final class BoardBrowserUITests: XCTestCase {
         XCTAssertTrue(firstOfCopy.label.hasPrefix("과거 구성에서 만듦, #1, "), firstOfCopy.label)
     }
 
+    // [W22-file-menu-placement] [W22-file-menu-opens-sheet] [W22-toolbar-opens-sheet] [W22-sheet-keyboard-accessibility]
+    // [W22-history-row-shape] [W22-select-shows-past-and-panel] [W22-panel-collapse]
+    // 파일 메뉴 '체크포인트 저장…'은 '상태 새로고침' 뒤 구분선 다음, '이 구성으로 복원…' 앞에 홀로 있고, 툴바 깃발과 같은 시트를 연다.
+    // 제목 칸의 Return은 저장, 메모 칸의 Return은 줄바꿈, Esc는 취소. 저장한 체크포인트 행을 고르면 과거 구성 띠와 패널이 보이고 접기 버튼은 본문만 숨긴다.
+    @MainActor
+    func test_W22_saveAndViewCheckpoint() {
+        let test = UITestApp(name: "checkpoint")
+        test.launch()
+        defer { test.terminate() }
+        let app = test.app
+        XCTAssertTrue(app.staticTexts["Board가 없습니다"].waitForExistence(timeout: 10))
+        test.activateForKeyboard()
+        app.typeKey("n", modifierFlags: .command)
+        test.type("Plan", into: app.textFields["board-name-field"])
+        app.typeKey(.return, modifierFlags: [])
+        XCTAssertTrue(app.descendants(matching: .any)["board-row-Plan"].waitForExistence(timeout: 5))
+        let fileMenu = app.menuBars.menuBarItems["파일"]
+        fileMenu.click()
+        fileMenu.menuItems["Wing 추가…"].click()
+        test.type("Dev", into: app.textFields["node-name-field"])
+        app.typeKey(.return, modifierFlags: [])
+        XCTAssertTrue(app.descendants(matching: .any)["node-row-Dev"].waitForExistence(timeout: 5))
+
+        // 1. 파일 메뉴 자리: '상태 새로고침' → 구분선 → '체크포인트 저장…' → 구분선 → '이 구성으로 복원…'.
+        fileMenu.click()
+        let saveItem = fileMenu.menuItems["체크포인트 저장…"]
+        XCTAssertTrue(saveItem.waitForExistence(timeout: 5))
+        XCTAssertTrue(saveItem.isEnabled)
+        let titles = fileMenu.menuItems.allElementsBoundByIndex.map(\.title)
+        guard let refresh = titles.firstIndex(of: "상태 새로고침"), let save = titles.firstIndex(of: "체크포인트 저장…"),
+              let restore = titles.firstIndex(of: "이 구성으로 복원…") else {
+            return XCTFail("메뉴 항목이 없다: \(titles)")
+        }
+        XCTAssertLessThan(refresh, save, "\(titles)")
+        XCTAssertLessThan(save, restore, "\(titles)")
+        XCTAssertEqual(titles[(refresh + 1)..<save].filter { !$0.isEmpty }, [], "'상태 새로고침'과 사이에 다른 항목: \(titles)")
+        XCTAssertEqual(titles[(save + 1)..<restore].filter { !$0.isEmpty }, [], "'이 구성으로 복원…'과 사이에 다른 항목: \(titles)")
+        if titles.contains("") {
+            // 구분선이 빈 제목의 항목으로 노출되면 앞뒤에 정확히 하나씩 있다.
+            XCTAssertEqual(titles[(refresh + 1)..<save].count, 1, "구분선 하나: \(titles)")
+            XCTAssertEqual(titles[(save + 1)..<restore].count, 1, "구분선 하나: \(titles)")
+        }
+        app.typeKey(.escape, modifierFlags: [])
+
+        // 2. 파일 메뉴로 시트를 연다: 제목, 부제 '현재 구성 · #2 · …', 빈 제목 칸, 꺼진 '저장'.
+        fileMenu.click()
+        fileMenu.menuItems["체크포인트 저장…"].click()
+        let sheetTitle = app.descendants(matching: .any)["checkpoint-sheet-title"]
+        XCTAssertTrue(sheetTitle.waitForExistence(timeout: 5))
+        XCTAssertEqual(text(of: sheetTitle), "체크포인트 저장")
+        let subtitle = app.staticTexts.matching(NSPredicate(format: "value BEGINSWITH %@ OR label BEGINSWITH %@", "현재 구성 · #2 · ", "현재 구성 · #2 · ")).firstMatch
+        XCTAssertTrue(subtitle.waitForExistence(timeout: 5))
+        let titleField = app.textFields["checkpoint-title-field"]
+        XCTAssertTrue(titleField.waitForExistence(timeout: 5))
+        XCTAssertEqual(titleField.value as? String, "")
+        let saveButton = app.descendants(matching: .any)["checkpoint-save"]
+        XCTAssertTrue(saveButton.waitForExistence(timeout: 5))
+        XCTAssertFalse(saveButton.isEnabled)
+
+        // 3. 초점이 제목 칸이라 바로 입력된다. 메모 칸의 Return은 줄바꿈이고 제목 칸의 Return은 저장이다.
+        app.typeText("First")
+        XCTAssertEqual(titleField.value as? String, "First")
+        XCTAssertTrue(saveButton.isEnabled)
+        let memoField = app.descendants(matching: .any)["checkpoint-memo-field"]
+        XCTAssertTrue(memoField.waitForExistence(timeout: 5))
+        // VoiceOver가 칸의 이름을 읽는다(W22-sheet-keyboard-accessibility).
+        XCTAssertEqual(memoField.label, "진행 메모")
+        XCTAssertEqual(app.descendants(matching: .any)["checkpoint-next-field"].label, "다음 할 일")
+        memoField.click()
+        app.typeText("memo line")
+        app.typeKey(.return, modifierFlags: [])
+        XCTAssertTrue(sheetTitle.exists, "메모 칸의 Return은 저장하지 않는다")
+        titleField.click()
+        app.typeKey(.return, modifierFlags: [])
+        XCTAssertTrue(sheetTitle.waitForNonExistence(timeout: 5))
+
+        // 4. 이력 탭의 체크포인트 행을 고르면 과거 구성 띠와 패널이 보인다.
+        let viewMenu = app.menuBars.menuBarItems["보기"]
+        viewMenu.click()
+        viewMenu.menuItems["이력 보기"].click()
+        let row = app.descendants(matching: .any)["checkpoint-row-First"]
+        XCTAssertTrue(row.waitForExistence(timeout: 5))
+        XCTAssertTrue(row.label.hasPrefix("체크포인트, First, #2 구성, "), row.label)
+        row.click()
+        let banner = app.descendants(matching: .any)["past-banner"]
+        XCTAssertTrue(banner.waitForExistence(timeout: 5))
+        XCTAssertTrue(banner.label.contains("#2"), banner.label)
+        let panel = app.descendants(matching: .any)["checkpoint-panel"]
+        XCTAssertTrue(panel.waitForExistence(timeout: 5))
+        // 메모 칸의 Return이 줄바꿈을 넣었으므로 저장된 메모는 "memo line\n"이다(입력 그대로 저장). 질의는 패널 안으로 좁힌다(앱 전체 술어 질의는 시간 초과).
+        let memoText = panel.staticTexts.matching(NSPredicate(format: "value BEGINSWITH %@ OR label BEGINSWITH %@", "memo line", "memo line")).firstMatch
+        XCTAssertTrue(memoText.waitForExistence(timeout: 5), panel.debugDescription)
+        XCTAssertTrue(panel.staticTexts["First"].exists, panel.debugDescription)
+        let toolbarButton = app.toolbars.buttons["checkpoint-toolbar"]
+        XCTAssertTrue(toolbarButton.waitForExistence(timeout: 5))
+        XCTAssertFalse(toolbarButton.isEnabled, "과거 구성을 볼 때는 꺼진다")
+
+        // 5. 접기 버튼은 본문만 숨긴다.
+        let toggle = app.descendants(matching: .any)["checkpoint-panel-toggle"]
+        XCTAssertTrue(toggle.waitForExistence(timeout: 5))
+        toggle.click()
+        XCTAssertTrue(memoText.waitForNonExistence(timeout: 5))
+        XCTAssertTrue(panel.exists)
+        toggle.click()
+        XCTAssertTrue(memoText.waitForExistence(timeout: 5))
+
+        // 6. 현재로 돌아가면 띠와 패널이 사라진다.
+        app.descendants(matching: .any)["return-to-current"].click()
+        XCTAssertTrue(banner.waitForNonExistence(timeout: 5))
+        XCTAssertFalse(panel.exists)
+
+        // 7. 툴바 깃발은 같은 시트를 연다. 'Wing 추가' 바로 오른쪽이다(이력 버튼은 이미 추가 버튼들 왼쪽에 있어 그 앞에 둘 수 없다). Esc는 취소.
+        XCTAssertTrue(toolbarButton.isEnabled)
+        let addWing = app.toolbars.buttons["Wing 추가"]
+        if addWing.exists { XCTAssertGreaterThan(toolbarButton.frame.minX, addWing.frame.minX) }
+        toolbarButton.click()
+        XCTAssertTrue(sheetTitle.waitForExistence(timeout: 5))
+        app.typeKey(.escape, modifierFlags: [])
+        XCTAssertTrue(sheetTitle.waitForNonExistence(timeout: 5))
+        XCTAssertTrue(row.exists)
+        XCTAssertFalse(app.descendants(matching: .any)["checkpoint-row-"].exists)
+    }
+
     /// W19 ② 나란히 보기: 세그먼트로 바꾸면 왼쪽 '이전 구성'·오른쪽 '이후 구성' 열이 열 머리와 함께 보이고,
     /// 한쪽에서 고른 항목은 반대쪽에서도 고른 상태가 되며, 한쪽에만 있는 항목은 반대쪽에 행이 없다.
     @MainActor

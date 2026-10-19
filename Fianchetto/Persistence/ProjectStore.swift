@@ -57,6 +57,29 @@ enum DuplicationResult<Skip: Sendable>: Sendable {
     case skipped(Skip)
 }
 
+/// 체크포인트를 붙일 revision을 저장소에서 읽은 결과(W22). 스냅샷은 읽지 않는다.
+enum CheckpointRevision: Equatable, Sendable {
+    case found(RevisionSummary)
+    case notFound
+    /// 다른 Project의 revision이다.
+    case otherProject
+}
+
+enum CheckpointSource: Sendable {
+    case projectNotFound
+    case found(ProjectRecord, CheckpointRevision)
+}
+
+enum CheckpointDecision<Skip: Sendable>: Sendable {
+    case save(CheckpointRecord)
+    case skip(Skip)
+}
+
+enum CheckpointResult<Skip: Sendable>: Sendable {
+    case saved(CheckpointRecord)
+    case skipped(Skip)
+}
+
 enum ProjectStoreError: Error, Equatable, Sendable {
     case saveFailed
     case storeUnavailable
@@ -120,6 +143,43 @@ actor ProjectStore {
             }
             try commit()
             return .created(Self.summary(first, projectID: project.id, sequence: 1), first)
+        }
+    }
+
+    /// Board와 revision을 같은 actor 안에서 읽어 `decide`에 주고, 저장하기로 하면 체크포인트 하나를 한 저장 단위로 커밋한다.
+    /// revision을 만들지 않고 currentRevisionID를 옮기지 않는다(PRD §6-G, A10).
+    func saveCheckpoint<Skip: Sendable>(
+        on revisionID: UUID, of projectID: UUID,
+        decide: @Sendable (CheckpointSource) -> CheckpointDecision<Skip>
+    ) throws(ProjectStoreError) -> CheckpointResult<Skip> {
+        let source: CheckpointSource
+        do {
+            if let project = try adapter.project(projectID) {
+                let revision: CheckpointRevision
+                if let summary = try adapter.revisionSummary(revisionID) {
+                    revision = summary.projectID == projectID ? .found(summary) : .otherProject
+                } else {
+                    revision = .notFound
+                }
+                source = .found(project, revision)
+            } else {
+                source = .projectNotFound
+            }
+        } catch {
+            throw .storeUnavailable
+        }
+        switch decide(source) {
+        case let .skip(value):
+            return .skipped(value)
+        case let .save(record):
+            do {
+                try adapter.insert(record)
+            } catch {
+                modelContext.rollback()
+                throw .storeUnavailable
+            }
+            try commit()
+            return .saved(record)
         }
     }
 
@@ -253,6 +313,21 @@ actor ProjectStore {
     func currentSnapshot(projectID: UUID) throws(StoreReadError) -> ConfigurationSnapshot {
         guard let project = try adapter.project(projectID) else { throw .notFound(projectID) }
         return try adapter.snapshot(revisionID: project.currentRevisionID)
+    }
+
+    /// 현재 revision의 목록 정보. Board가 없으면 nil. 체크포인트 시트를 열 때 revision을 고정하는 데 쓴다(W22).
+    func currentRevisionSummary(projectID: UUID) throws(StoreReadError) -> RevisionSummary? {
+        guard let project = try adapter.project(projectID) else { return nil }
+        guard let summary = try adapter.revisionSummary(project.currentRevisionID) else { throw .notFound(project.currentRevisionID) }
+        return summary
+    }
+
+    func checkpointSummaries(projectID: UUID) throws(StoreReadError) -> [CheckpointSummary] {
+        try adapter.checkpointSummaries(projectID: projectID)
+    }
+
+    func checkpoint(_ id: UUID) throws(StoreReadError) -> CheckpointRecord? {
+        try adapter.checkpoint(id)
     }
 
     func reference(_ id: UUID) throws(StoreReadError) -> ResourceReferenceRecord? {

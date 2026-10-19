@@ -64,3 +64,29 @@ enum HistorySections {
         return sections
     }
 }
+
+/// 이력 탭의 revision 행과 체크포인트 행 병합(W22). revision 행은 순번 역순 그대로, 체크포인트 행은 기록 시각이
+/// 저장 시각 이하인 첫 revision 행 앞(없으면 맨 아래). 같은 자리는 저장 시각 역순 → 순번 역순 → ID 문자열 순. 입력을 바꾸지 않는다.
+enum HistoryTimeline {
+    enum Entry: Equatable, Sendable {
+        case revision(RevisionSummary)
+        case checkpoint(CheckpointSummary)
+    }
+
+    static func merge(revisions: [RevisionSummary], checkpoints: [CheckpointSummary]) -> [Entry] {
+        let ordered = revisions.sorted { $0.sequence > $1.sequence }
+        var pending = checkpoints.sorted {
+            ($1.createdAt, $1.sequence, $0.id.uuidString) < ($0.createdAt, $0.sequence, $1.id.uuidString)
+        }[...]
+        var entries: [Entry] = []
+        for revision in ordered {
+            while let next = pending.first, next.createdAt >= revision.recordedAt {
+                entries.append(.checkpoint(next))
+                pending.removeFirst()
+            }
+            entries.append(.revision(revision))
+        }
+        entries.append(contentsOf: pending.map(Entry.checkpoint))
+        return entries
+    }
+}

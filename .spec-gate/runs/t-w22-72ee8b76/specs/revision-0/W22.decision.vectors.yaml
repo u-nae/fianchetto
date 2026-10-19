@@ -1,0 +1,796 @@
+schema_version: "1.0"
+decision_id: checkpoint_request_outcome
+table: .spec-gate/runs/t-w22-72ee8b76/specs/revision-0/W22.decision.yaml
+table_fingerprint: c31729688ec3428fecbddbb315de61bff3f996b363a24defa2d29fc2dd5af738
+cells_total: 48
+rules:
+  - rule_id: R1
+    obligation_id: W22-checkpoint_request_outcome-R1
+    wins:
+      - inputs: &a41
+          title: blank
+          project: found
+          board_state: active
+          revision: found
+          revision_currency: current
+        expected:
+          outcome: rejected_blank_title
+      - inputs: &a42
+          title: blank
+          project: found
+          board_state: active
+          revision: found
+          revision_currency: not_current
+        expected:
+          outcome: rejected_blank_title
+      - inputs: &a33
+          title: blank
+          project: found
+          board_state: active
+          revision: not_found
+          revision_currency: current
+        expected:
+          outcome: rejected_blank_title
+      - inputs: &a34
+          title: blank
+          project: found
+          board_state: active
+          revision: not_found
+          revision_currency: not_current
+        expected:
+          outcome: rejected_blank_title
+      - inputs: &a35
+          title: blank
+          project: found
+          board_state: active
+          revision: other_board
+          revision_currency: current
+        expected:
+          outcome: rejected_blank_title
+      - inputs: &a36
+          title: blank
+          project: found
+          board_state: active
+          revision: other_board
+          revision_currency: not_current
+        expected:
+          outcome: rejected_blank_title
+      - inputs: &a19
+          title: blank
+          project: found
+          board_state: archived
+          revision: found
+          revision_currency: current
+        expected:
+          outcome: rejected_blank_title
+      - inputs: &a20
+          title: blank
+          project: found
+          board_state: archived
+          revision: found
+          revision_currency: not_current
+        expected:
+          outcome: rejected_blank_title
+      - inputs: &a21
+          title: blank
+          project: found
+          board_state: archived
+          revision: not_found
+          revision_currency: current
+        expected:
+          outcome: rejected_blank_title
+      - inputs: &a22
+          title: blank
+          project: found
+          board_state: archived
+          revision: not_found
+          revision_currency: not_current
+        expected:
+          outcome: rejected_blank_title
+      - inputs: &a23
+          title: blank
+          project: found
+          board_state: archived
+          revision: other_board
+          revision_currency: current
+        expected:
+          outcome: rejected_blank_title
+      - inputs: &a24
+          title: blank
+          project: found
+          board_state: archived
+          revision: other_board
+          revision_currency: not_current
+        expected:
+          outcome: rejected_blank_title
+      - inputs: &a1
+          title: blank
+          project: not_found
+          board_state: active
+          revision: found
+          revision_currency: current
+        expected:
+          outcome: rejected_blank_title
+      - inputs: &a2
+          title: blank
+          project: not_found
+          board_state: active
+          revision: found
+          revision_currency: not_current
+        expected:
+          outcome: rejected_blank_title
+      - inputs: &a3
+          title: blank
+          project: not_found
+          board_state: active
+          revision: not_found
+          revision_currency: current
+        expected:
+          outcome: rejected_blank_title
+      - inputs: &a4
+          title: blank
+          project: not_found
+          board_state: active
+          revision: not_found
+          revision_currency: not_current
+        expected:
+          outcome: rejected_blank_title
+      - inputs: &a5
+          title: blank
+          project: not_found
+          board_state: active
+          revision: other_board
+          revision_currency: current
+        expected:
+          outcome: rejected_blank_title
+      - inputs: &a6
+          title: blank
+          project: not_found
+          board_state: active
+          revision: other_board
+          revision_currency: not_current
+        expected:
+          outcome: rejected_blank_title
+      - inputs: &a7
+          title: blank
+          project: not_found
+          board_state: archived
+          revision: found
+          revision_currency: current
+        expected:
+          outcome: rejected_blank_title
+      - inputs: &a8
+          title: blank
+          project: not_found
+          board_state: archived
+          revision: found
+          revision_currency: not_current
+        expected:
+          outcome: rejected_blank_title
+      - inputs: &a9
+          title: blank
+          project: not_found
+          board_state: archived
+          revision: not_found
+          revision_currency: current
+        expected:
+          outcome: rejected_blank_title
+      - inputs: &a10
+          title: blank
+          project: not_found
+          board_state: archived
+          revision: not_found
+          revision_currency: not_current
+        expected:
+          outcome: rejected_blank_title
+      - inputs: &a11
+          title: blank
+          project: not_found
+          board_state: archived
+          revision: other_board
+          revision_currency: current
+        expected:
+          outcome: rejected_blank_title
+      - inputs: &a12
+          title: blank
+          project: not_found
+          board_state: archived
+          revision: other_board
+          revision_currency: not_current
+        expected:
+          outcome: rejected_blank_title
+    shadowed: []
+  - rule_id: R2
+    obligation_id: W22-checkpoint_request_outcome-R2
+    wins:
+      - inputs: &a39
+          title: valid
+          project: not_found
+          board_state: active
+          revision: found
+          revision_currency: current
+        expected:
+          outcome: rejected_project_not_found
+      - inputs: &a40
+          title: valid
+          project: not_found
+          board_state: active
+          revision: found
+          revision_currency: not_current
+        expected:
+          outcome: rejected_project_not_found
+      - inputs: &a29
+          title: valid
+          project: not_found
+          board_state: active
+          revision: not_found
+          revision_currency: current
+        expected:
+          outcome: rejected_project_not_found
+      - inputs: &a30
+          title: valid
+          project: not_found
+          board_state: active
+          revision: not_found
+          revision_currency: not_current
+        expected:
+          outcome: rejected_project_not_found
+      - inputs: &a31
+          title: valid
+          project: not_found
+          board_state: active
+          revision: other_board
+          revision_currency: current
+        expected:
+          outcome: rejected_project_not_found
+      - inputs: &a32
+          title: valid
+          project: not_found
+          board_state: active
+          revision: other_board
+          revision_currency: not_current
+        expected:
+          outcome: rejected_project_not_found
+      - inputs: &a13
+          title: valid
+          project: not_found
+          board_state: archived
+          revision: found
+          revision_currency: current
+        expected:
+          outcome: rejected_project_not_found
+      - inputs: &a14
+          title: valid
+          project: not_found
+          board_state: archived
+          revision: found
+          revision_currency: not_current
+        expected:
+          outcome: rejected_project_not_found
+      - inputs: &a15
+          title: valid
+          project: not_found
+          board_state: archived
+          revision: not_found
+          revision_currency: current
+        expected:
+          outcome: rejected_project_not_found
+      - inputs: &a16
+          title: valid
+          project: not_found
+          board_state: archived
+          revision: not_found
+          revision_currency: not_current
+        expected:
+          outcome: rejected_project_not_found
+      - inputs: &a17
+          title: valid
+          project: not_found
+          board_state: archived
+          revision: other_board
+          revision_currency: current
+        expected:
+          outcome: rejected_project_not_found
+      - inputs: &a18
+          title: valid
+          project: not_found
+          board_state: archived
+          revision: other_board
+          revision_currency: not_current
+        expected:
+          outcome: rejected_project_not_found
+    shadowed:
+      - inputs: *a1
+        winner: R1
+      - inputs: *a2
+        winner: R1
+      - inputs: *a3
+        winner: R1
+      - inputs: *a4
+        winner: R1
+      - inputs: *a5
+        winner: R1
+      - inputs: *a6
+        winner: R1
+      - inputs: *a7
+        winner: R1
+      - inputs: *a8
+        winner: R1
+      - inputs: *a9
+        winner: R1
+      - inputs: *a10
+        winner: R1
+      - inputs: *a11
+        winner: R1
+      - inputs: *a12
+        winner: R1
+  - rule_id: R3
+    obligation_id: W22-checkpoint_request_outcome-R3
+    wins:
+      - inputs: &a37
+          title: valid
+          project: found
+          board_state: archived
+          revision: found
+          revision_currency: current
+        expected:
+          outcome: rejected_archived
+      - inputs: &a38
+          title: valid
+          project: found
+          board_state: archived
+          revision: found
+          revision_currency: not_current
+        expected:
+          outcome: rejected_archived
+      - inputs: &a25
+          title: valid
+          project: found
+          board_state: archived
+          revision: not_found
+          revision_currency: current
+        expected:
+          outcome: rejected_archived
+      - inputs: &a26
+          title: valid
+          project: found
+          board_state: archived
+          revision: not_found
+          revision_currency: not_current
+        expected:
+          outcome: rejected_archived
+      - inputs: &a27
+          title: valid
+          project: found
+          board_state: archived
+          revision: other_board
+          revision_currency: current
+        expected:
+          outcome: rejected_archived
+      - inputs: &a28
+          title: valid
+          project: found
+          board_state: archived
+          revision: other_board
+          revision_currency: not_current
+        expected:
+          outcome: rejected_archived
+    shadowed:
+      - inputs: *a13
+        winner: R2
+      - inputs: *a14
+        winner: R2
+      - inputs: *a15
+        winner: R2
+      - inputs: *a16
+        winner: R2
+      - inputs: *a17
+        winner: R2
+      - inputs: *a18
+        winner: R2
+      - inputs: *a19
+        winner: R1
+      - inputs: *a20
+        winner: R1
+      - inputs: *a21
+        winner: R1
+      - inputs: *a22
+        winner: R1
+      - inputs: *a23
+        winner: R1
+      - inputs: *a24
+        winner: R1
+      - inputs: *a7
+        winner: R1
+      - inputs: *a8
+        winner: R1
+      - inputs: *a9
+        winner: R1
+      - inputs: *a10
+        winner: R1
+      - inputs: *a11
+        winner: R1
+      - inputs: *a12
+        winner: R1
+  - rule_id: R4
+    obligation_id: W22-checkpoint_request_outcome-R4
+    wins:
+      - inputs:
+          title: valid
+          project: found
+          board_state: active
+          revision: not_found
+          revision_currency: current
+        expected:
+          outcome: rejected_revision_not_found
+      - inputs:
+          title: valid
+          project: found
+          board_state: active
+          revision: not_found
+          revision_currency: not_current
+        expected:
+          outcome: rejected_revision_not_found
+      - inputs:
+          title: valid
+          project: found
+          board_state: active
+          revision: other_board
+          revision_currency: current
+        expected:
+          outcome: rejected_revision_not_found
+      - inputs:
+          title: valid
+          project: found
+          board_state: active
+          revision: other_board
+          revision_currency: not_current
+        expected:
+          outcome: rejected_revision_not_found
+    shadowed:
+      - inputs: *a25
+        winner: R3
+      - inputs: *a26
+        winner: R3
+      - inputs: *a27
+        winner: R3
+      - inputs: *a28
+        winner: R3
+      - inputs: *a29
+        winner: R2
+      - inputs: *a30
+        winner: R2
+      - inputs: *a31
+        winner: R2
+      - inputs: *a32
+        winner: R2
+      - inputs: *a15
+        winner: R2
+      - inputs: *a16
+        winner: R2
+      - inputs: *a17
+        winner: R2
+      - inputs: *a18
+        winner: R2
+      - inputs: *a33
+        winner: R1
+      - inputs: *a34
+        winner: R1
+      - inputs: *a35
+        winner: R1
+      - inputs: *a36
+        winner: R1
+      - inputs: *a21
+        winner: R1
+      - inputs: *a22
+        winner: R1
+      - inputs: *a23
+        winner: R1
+      - inputs: *a24
+        winner: R1
+      - inputs: *a3
+        winner: R1
+      - inputs: *a4
+        winner: R1
+      - inputs: *a5
+        winner: R1
+      - inputs: *a6
+        winner: R1
+      - inputs: *a9
+        winner: R1
+      - inputs: *a10
+        winner: R1
+      - inputs: *a11
+        winner: R1
+      - inputs: *a12
+        winner: R1
+  - rule_id: R5
+    obligation_id: W22-checkpoint_request_outcome-R5
+    wins:
+      - inputs:
+          title: valid
+          project: found
+          board_state: active
+          revision: found
+          revision_currency: current
+        expected:
+          outcome: saved
+      - inputs:
+          title: valid
+          project: found
+          board_state: active
+          revision: found
+          revision_currency: not_current
+        expected:
+          outcome: saved
+    shadowed:
+      - inputs: *a37
+        winner: R3
+      - inputs: *a38
+        winner: R3
+      - inputs: *a39
+        winner: R2
+      - inputs: *a40
+        winner: R2
+      - inputs: *a13
+        winner: R2
+      - inputs: *a14
+        winner: R2
+      - inputs: *a41
+        winner: R1
+      - inputs: *a42
+        winner: R1
+      - inputs: *a19
+        winner: R1
+      - inputs: *a20
+        winner: R1
+      - inputs: *a1
+        winner: R1
+      - inputs: *a2
+        winner: R1
+      - inputs: *a7
+        winner: R1
+      - inputs: *a8
+        winner: R1
+gaps: []
+overlaps:
+  - inputs: *a37
+    rules:
+      - R3
+      - R5
+    winner: R3
+  - inputs: *a38
+    rules:
+      - R3
+      - R5
+    winner: R3
+  - inputs: *a25
+    rules:
+      - R3
+      - R4
+    winner: R3
+  - inputs: *a26
+    rules:
+      - R3
+      - R4
+    winner: R3
+  - inputs: *a27
+    rules:
+      - R3
+      - R4
+    winner: R3
+  - inputs: *a28
+    rules:
+      - R3
+      - R4
+    winner: R3
+  - inputs: *a39
+    rules:
+      - R2
+      - R5
+    winner: R2
+  - inputs: *a40
+    rules:
+      - R2
+      - R5
+    winner: R2
+  - inputs: *a29
+    rules:
+      - R2
+      - R4
+    winner: R2
+  - inputs: *a30
+    rules:
+      - R2
+      - R4
+    winner: R2
+  - inputs: *a31
+    rules:
+      - R2
+      - R4
+    winner: R2
+  - inputs: *a32
+    rules:
+      - R2
+      - R4
+    winner: R2
+  - inputs: *a13
+    rules:
+      - R2
+      - R3
+      - R5
+    winner: R2
+  - inputs: *a14
+    rules:
+      - R2
+      - R3
+      - R5
+    winner: R2
+  - inputs: *a15
+    rules:
+      - R2
+      - R3
+      - R4
+    winner: R2
+  - inputs: *a16
+    rules:
+      - R2
+      - R3
+      - R4
+    winner: R2
+  - inputs: *a17
+    rules:
+      - R2
+      - R3
+      - R4
+    winner: R2
+  - inputs: *a18
+    rules:
+      - R2
+      - R3
+      - R4
+    winner: R2
+  - inputs: *a41
+    rules:
+      - R1
+      - R5
+    winner: R1
+  - inputs: *a42
+    rules:
+      - R1
+      - R5
+    winner: R1
+  - inputs: *a33
+    rules:
+      - R1
+      - R4
+    winner: R1
+  - inputs: *a34
+    rules:
+      - R1
+      - R4
+    winner: R1
+  - inputs: *a35
+    rules:
+      - R1
+      - R4
+    winner: R1
+  - inputs: *a36
+    rules:
+      - R1
+      - R4
+    winner: R1
+  - inputs: *a19
+    rules:
+      - R1
+      - R3
+      - R5
+    winner: R1
+  - inputs: *a20
+    rules:
+      - R1
+      - R3
+      - R5
+    winner: R1
+  - inputs: *a21
+    rules:
+      - R1
+      - R3
+      - R4
+    winner: R1
+  - inputs: *a22
+    rules:
+      - R1
+      - R3
+      - R4
+    winner: R1
+  - inputs: *a23
+    rules:
+      - R1
+      - R3
+      - R4
+    winner: R1
+  - inputs: *a24
+    rules:
+      - R1
+      - R3
+      - R4
+    winner: R1
+  - inputs: *a1
+    rules:
+      - R1
+      - R2
+      - R5
+    winner: R1
+  - inputs: *a2
+    rules:
+      - R1
+      - R2
+      - R5
+    winner: R1
+  - inputs: *a3
+    rules:
+      - R1
+      - R2
+      - R4
+    winner: R1
+  - inputs: *a4
+    rules:
+      - R1
+      - R2
+      - R4
+    winner: R1
+  - inputs: *a5
+    rules:
+      - R1
+      - R2
+      - R4
+    winner: R1
+  - inputs: *a6
+    rules:
+      - R1
+      - R2
+      - R4
+    winner: R1
+  - inputs: *a7
+    rules:
+      - R1
+      - R2
+      - R3
+      - R5
+    winner: R1
+  - inputs: *a8
+    rules:
+      - R1
+      - R2
+      - R3
+      - R5
+    winner: R1
+  - inputs: *a9
+    rules:
+      - R1
+      - R2
+      - R3
+      - R4
+    winner: R1
+  - inputs: *a10
+    rules:
+      - R1
+      - R2
+      - R3
+      - R4
+    winner: R1
+  - inputs: *a11
+    rules:
+      - R1
+      - R2
+      - R3
+      - R4
+    winner: R1
+  - inputs: *a12
+    rules:
+      - R1
+      - R2
+      - R3
+      - R4
+    winner: R1

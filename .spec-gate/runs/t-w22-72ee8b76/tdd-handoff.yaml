@@ -1,0 +1,868 @@
+schema_version: "1.1"
+run_id: t-w22-72ee8b76
+verdict: READY
+source:
+  baseline:
+    - path: docs/PRD.md
+      fingerprint: 9194c2af1e2024e9a8b9603694c81b01ca618e5303438a7350f15461d1b836ad
+    - path: docs/TECH_STACK.md
+      fingerprint: 3b623d55c2cc7964a0a4f6b5b04bbfbe7f722522372feb79a867e1987a3049ea
+  decision_records:
+    path: docs/decisions
+    fingerprint: f811c80300614c45d4fd3503af8fe60c97b4afdaa99e49820813e6df72a3079a
+  work_items_artifact: docs/work-items.yaml
+  work_items_fingerprint: f67e02aea231a40dc4266f45518e1bdd45a77a9d1f678e728433f2915bda4752
+  normalized_artifact: .spec-gate/runs/t-w22-72ee8b76/normalized-tasks.yaml
+source_tasks:
+  - task_id: W22
+    title: 체크포인트 저장과 재개
+    route: BOTH
+    acceptance_refs:
+      - A10
+accepted_specifications:
+  - task_id: W22
+    route: BOTH
+    path: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/task-W22.feature
+  - task_id: W22
+    route: BOTH
+    path: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/W22.decision.yaml
+  - task_id: W22
+    route: BOTH
+    path: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/W22.decision.vectors.yaml
+test_obligations:
+  - obligation_id: W22-file-menu-opens-sheet
+    task_id: W22
+    kind: scenario
+    description: "파일 메뉴 '체크포인트 저장…'이 \"체크포인트 저장\" 시트를 열고 부제(현재 구성 · #n · 기록 시각)·빈 제목 칸(안내·초점)·빈 메모 영역·안내·'취소'/'저장'(꺼짐)을 보이며 아무것도 저장하지 않는다"
+    source: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/task-W22.feature#파일 메뉴 '체크포인트 저장…'을 고르면 현재 revision을 고정한 저장 시트가 열린다
+  - obligation_id: W22-file-menu-placement
+    task_id: W22
+    kind: scenario
+    description: "'체크포인트 저장…'은 '상태 새로고침' 뒤 구분선 다음 단독 그룹, '이 구성으로 복원…' 앞이고 단축키가 없다"
+    source: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/task-W22.feature#파일 메뉴 '체크포인트 저장…'은 '상태 새로고침' 뒤 구분선 다음에 홀로 있고 '이 구성으로 복원…' 앞이며 단축키가 없다
+  - obligation_id: W22-toolbar-opens-sheet
+    task_id: W22
+    kind: scenario
+    description: 툴바 flag 버튼(도움말 '체크포인트 저장', 'Wing 추가' 오른쪽·이력 버튼 왼쪽)이 같은 시트를 연다
+    source: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/task-W22.feature#툴바의 깃발 버튼은 파일 메뉴와 같은 시트를 연다
+  - obligation_id: W22-entry-enablement
+    task_id: W22
+    kind: scenario
+    description: 파일 메뉴 항목과 툴바 버튼의 켜짐 조건 여덟 가지(현재/과거/비교 중/보관/Board 없음/현재 구성 읽기 실패/다른 시트/이 시트)
+    source: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/task-W22.feature#'체크포인트 저장…'과 툴바 버튼은 편집할 수 있는 현재 구성을 볼 때만 켜진다
+  - obligation_id: W22-open-read-failure
+    task_id: W22
+    kind: scenario
+    description: 시트를 열 때 현재 revision 정보를 읽지 못하면 시트를 열지 않고 안내하며 아무것도 바꾸지 않는다
+    source: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/task-W22.feature#시트를 열 때 현재 revision 정보를 읽지 못하면 시트를 열지 않고 알린다
+  - obligation_id: W22-blank-title-disables-save
+    task_id: W22
+    kind: scenario
+    description: 공백뿐인 제목이면 '저장'이 꺼지고 Return으로도 저장하지 않는다
+    source: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/task-W22.feature#제목이 공백뿐이면 '저장'이 꺼지고 Return으로도 저장하지 않는다
+  - obligation_id: W22-title-trimmed-notes-verbatim
+    task_id: W22
+    kind: scenario
+    description: 제목은 앞뒤 공백을 정리하고 진행 메모·다음 할 일은 줄바꿈까지 입력 그대로 저장한다
+    source: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/task-W22.feature#제목의 앞뒤 공백은 정리하고 진행 메모·다음 할 일은 줄바꿈까지 입력한 그대로 저장한다
+  - obligation_id: W22-optional-notes-empty
+    task_id: W22
+    kind: scenario
+    description: 진행 메모·다음 할 일이 비어 있어도 저장된다
+    source: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/task-W22.feature#진행 메모와 다음 할 일은 비워 두어도 저장된다
+  - obligation_id: W22-no-revision-while-typing
+    task_id: W22
+    kind: scenario
+    description: 입력 중에는 revision 수·현재 revision이 그대로이고 체크포인트도 아직 없다
+    source: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/task-W22.feature#입력 중에는 revision이 생기지 않고 체크포인트도 아직 없다
+    acceptance_refs:
+      - A10
+  - obligation_id: W22-cancel-discards-input
+    task_id: W22
+    kind: scenario
+    description: "'취소'는 아무것도 저장하지 않고 입력을 버리며 다시 열면 비어 있다"
+    source: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/task-W22.feature#'취소'하면 아무것도 저장하지 않고 입력을 버린다
+  - obligation_id: W22-sheet-keyboard-accessibility
+    task_id: W22
+    kind: scenario
+    description: 제목 칸 Return은 '저장', 메모 영역 Return은 줄바꿈, Esc는 '취소', VoiceOver 순서, 열린 동안 재진입 없음
+    source: ".spec-gate/runs/t-w22-72ee8b76/specs/revision-1/task-W22.feature#시트의 키보드와 접근성: 제목 칸의 Return은 '저장', 메모 칸의 Return은 줄바꿈, Esc는 '취소'다"
+  - obligation_id: W22-sheet-blocks-editing
+    task_id: W22
+    kind: scenario
+    description: 시트가 열린 동안 편집 메뉴·파일 메뉴의 구성 편집·Board 상태 변경 명령·'다시 선택…'과 ⌘N·Delete·드롭이 동작하지 않고, 열기·Finder·상태 새로고침·이력 보기는 그대로이며 닫으면 돌아온다
+    source: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/task-W22.feature#시트가 열린 동안 구성 편집과 Board 상태 변경 명령은 동작하지 않는다
+  - obligation_id: W22-single-save-while-saving
+    task_id: W22
+    kind: scenario
+    description: 저장 중에는 '저장'·'취소'가 꺼지고 체크포인트는 하나만 생긴다
+    source: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/task-W22.feature#저장 중에는 확정을 한 번만 받는다
+  - obligation_id: W22-save-attaches-to-fixed-revision
+    task_id: W22
+    kind: scenario
+    description: 확정 시 고정한 revision에 제목·메모·다음 할 일·주입 시계 시각의 체크포인트가 붙고 revision 수·현재 revision은 그대로이며 화면은 현재 구성에 머물고 이력 탭 맨 위에 행이 생긴다
+    source: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/task-W22.feature#'저장'을 확정하면 고정한 revision에 체크포인트가 붙고 revision은 늘지 않는다
+    acceptance_refs:
+      - A10
+  - obligation_id: W22-multiple-checkpoints-same-revision
+    task_id: W22
+    kind: scenario
+    description: 같은 revision에 체크포인트를 여러 개 저장할 수 있고 서로 다른 ID이며 최신이 위에 온다
+    source: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/task-W22.feature#같은 revision에 체크포인트를 여러 개 저장할 수 있고 최신이 위에 온다
+    acceptance_refs:
+      - A10
+  - obligation_id: W22-checkpoint-immutable-after-edit
+    task_id: W22
+    kind: scenario
+    description: 저장 뒤 구성이 바뀌어 새 revision이 생겨도 체크포인트는 원래 revision에 그대로 남는다
+    source: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/task-W22.feature#저장한 체크포인트는 그 뒤 구성이 바뀌어도 원래 revision에 그대로 남는다
+    acceptance_refs:
+      - A10
+  - obligation_id: W22-save-failure-keeps-input
+    task_id: W22
+    kind: scenario
+    description: 저장 실패 시 체크포인트가 생기지 않고 시트가 입력을 유지한 채 경고 기호와 문구를 보이며 재시도가 된다
+    source: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/task-W22.feature#저장이 실패하면 체크포인트가 생기지 않고 시트는 입력을 유지한 채 저장 실패를 알린다
+  - obligation_id: W22-save-no-file-access
+    task_id: W22
+    kind: scenario
+    description: 저장은 파일 시스템 접근·접근 정보 해석·연결 대상 열기를 하지 않고 원본 내용이 그대로다
+    source: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/task-W22.feature#체크포인트 저장은 연결 대상 파일·폴더를 읽거나 바꾸지 않는다
+  - obligation_id: W22-history-row-shape
+    task_id: W22
+    kind: scenario
+    description: "체크포인트 행은 flag.fill+제목, 아래 '체크포인트 · #n · 시각', VoiceOver 라벨, 식별자 checkpoint-row-<제목>"
+    source: ".spec-gate/runs/t-w22-72ee8b76/specs/revision-1/task-W22.feature#체크포인트 행은 깃발 기호와 제목, 아래 줄 '체크포인트 · #n · 시각'으로 보이고 VoiceOver가 한 요소로 읽는다"
+  - obligation_id: W22-history-row-order
+    task_id: W22
+    kind: scenario
+    description: 체크포인트 행은 저장 시각 자리에 끼어들고(어제 저장은 어제 구역, 오늘 저장은 오늘 구역) 날짜 구역은 행 자신의 시각을 따른다
+    source: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/task-W22.feature#체크포인트 행은 저장 시각 자리에 끼어들고 날짜 구역은 행 자신의 시각을 따른다
+  - obligation_id: W22-history-old-revision-new-checkpoint
+    task_id: W22
+    kind: scenario
+    description: 오래된 revision에 나중에 저장한 체크포인트는 자기 시각 자리(오늘 구역)에 오고 revision 행은 어제 구역에 남는다
+    source: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/task-W22.feature#오래된 revision에 나중에 저장한 체크포인트는 그 revision 행보다 위, 자기 시각 자리에 온다
+  - obligation_id: W22-history-no-count-on-revision-rows
+    task_id: W22
+    kind: scenario
+    description: revision 행에는 체크포인트 수(flag+숫자)를 표시하지 않는다
+    source: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/task-W22.feature#revision 행에는 체크포인트 수를 표시하지 않는다
+  - obligation_id: W22-history-paging-keeps-rows
+    task_id: W22
+    kind: scenario
+    description: 불러온 범위보다 오래된 체크포인트는 첫 묶음에서 맨 아래에 보이고, 마지막 행이 체크포인트 행이어도 다음 묶음을 불러오며, 불러온 뒤 체크포인트 행은 한 번만 자기 자리로 옮겨지고 revision 행이 모두 한 번씩 있다
+    source: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/task-W22.feature#더 오래된 묶음을 불러와도 체크포인트 행은 한 번만, 자기 자리에 남는다
+  - obligation_id: W22-history-updates-after-save
+    task_id: W22
+    kind: scenario
+    description: 이력 탭이 열린 채 저장하면 행이 더해지고 선택은 '현재 구성'에 남는다
+    source: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/task-W22.feature#이력 탭이 열린 채 체크포인트를 저장하면 행이 더해지고 선택은 '현재 구성'에 남는다
+  - obligation_id: W22-timeline-merge-pure
+    task_id: W22
+    kind: scenario
+    description: Domain 병합은 revision 행을 순번 역순 그대로 두고 체크포인트 행을 기록 시각이 저장 시각 이하인 첫 revision 행 앞(없으면 맨 아래)에 넣으며(같은 자리는 시각 역순·순번 역순·ID 순) 입력을 바꾸지 않고 결정적이다(빈 입력·시계 역행·동시각·연결 행 없는 체크포인트 포함)
+    source: ".spec-gate/runs/t-w22-72ee8b76/specs/revision-1/task-W22.feature#이력 행 병합은 순수 함수다: revision 행은 순번 역순 그대로, 체크포인트 행은 기록 시각이 저장 시각 이하인 첫 revision 행 앞"
+  - obligation_id: W22-select-shows-past-and-panel
+    task_id: W22
+    kind: scenario
+    description: 체크포인트 행을 고르면 연결 revision의 과거 구성(띠·읽기 전용)과 띠 아래 패널(제목·저장 시각·접기·메모 두 열·선택 가능 본문)이 보이고 행 선택이 바뀌며 '고른 항목' 카드가 유지된다
+    source: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/task-W22.feature#체크포인트 행을 고르면 연결된 revision의 과거 구성과 띠 아래 체크포인트 패널이 보인다
+    acceptance_refs:
+      - A10
+  - obligation_id: W22-select-current-revision-checkpoint
+    task_id: W22
+    kind: scenario
+    description: 현재 revision에 붙은 체크포인트도 과거 모드(띠·편집 꺼짐)와 패널로 보이고 '체크포인트 저장…'은 꺼진다
+    source: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/task-W22.feature#현재 revision에 붙은 체크포인트를 골라도 과거 구성 보기로 보이고 패널이 붙는다
+    acceptance_refs:
+      - A10
+  - obligation_id: W22-panel-omits-empty-columns
+    task_id: W22
+    kind: scenario
+    description: 패널은 비어 있는(공백뿐인) 열을 빼고 둘 다 비면 제목 줄만 보인다
+    source: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/task-W22.feature#패널은 비어 있는 열을 빼고, 둘 다 비면 제목 줄만 보인다
+  - obligation_id: W22-panel-collapse
+    task_id: W22
+    kind: scenario
+    description: 접기 버튼은 본문만 숨기는 화면 상태(저장·revision 없음)이고 다른 체크포인트를 고르면 펴지며 키보드로 누를 수 있다
+    source: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/task-W22.feature#패널 접기는 본문만 숨기는 화면 상태이고 다른 체크포인트를 고르면 펴진다
+  - obligation_id: W22-switch-to-revision-row
+    task_id: W22
+    kind: scenario
+    description: 체크포인트를 보다가 같은 revision 행을 고르면 패널만 사라지고 구성·띠는 그대로다
+    source: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/task-W22.feature#체크포인트를 보다가 같은 revision 행을 고르면 패널만 사라지고 구성은 그대로다
+  - obligation_id: W22-return-to-current
+    task_id: W22
+    kind: scenario
+    description: 띠 '현재로 돌아가기'와 '현재 구성' 행이 패널·띠를 없애고 현재 구성으로 돌린다
+    source: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/task-W22.feature#체크포인트를 보다가 현재로 돌아가면 패널과 띠가 사라진다
+  - obligation_id: W22-compare-with-current-hides-panel
+    task_id: W22
+    kind: scenario
+    description: 체크포인트를 보며 '현재와 비교'를 열면 패널이 보이지 않고 닫으면 선택·패널이 돌아오며, 비교 중 다른 체크포인트 행을 고르면 비교가 닫히고 그 구성과 패널이 보인다(0027)
+    source: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/task-W22.feature#체크포인트를 보며 '현재와 비교'를 열면 패널은 보이지 않고 닫으면 돌아온다
+  - obligation_id: W22-compare-record-menu
+    task_id: W22
+    kind: scenario
+    description: 체크포인트 행의 '이 기록과 비교'는 연결 revision 행과 같고 보고 있는 구성이 그 revision이면 꺼진다
+    source: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/task-W22.feature#체크포인트 행의 오른쪽 클릭 '이 기록과 비교'는 그 revision 행과 같다
+  - obligation_id: W22-restore-is-separate
+    task_id: W22
+    kind: scenario
+    description: 체크포인트 보기에서 복원은 띠의 별도 동작이고 복원 revision이 생겨도 체크포인트는 원래 revision에 남는다
+    source: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/task-W22.feature#체크포인트 보기에서 복원은 띠의 별도 동작이고 체크포인트는 그대로 남는다
+  - obligation_id: W22-unreadable-revision-notice
+    task_id: W22
+    kind: scenario
+    description: 연결 revision의 구성을 읽을 수 없으면 선택을 바꾸지 않고 안내하며 기록을 지우거나 고치지 않는다
+    source: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/task-W22.feature#체크포인트의 revision 구성을 읽을 수 없으면 선택을 바꾸지 않고 알린다
+  - obligation_id: W22-icon-view-same-panel
+    task_id: W22
+    kind: scenario
+    description: 아이콘 보기에서도 같은 띠·패널·읽기 전용 규칙이다
+    source: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/task-W22.feature#아이콘 보기에서도 체크포인트를 고르면 같은 띠와 패널이 보인다
+  - obligation_id: W22-weblink-from-revision
+    task_id: W22
+    kind: scenario
+    description: 체크포인트가 가리키는 웹 링크는 연결 revision의 URL로 보이고 레코드에 URL이 따로 없다(0002)
+    source: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/task-W22.feature#체크포인트가 가리키는 웹 링크는 그 revision의 구성으로 보인다
+  - obligation_id: W22-service-outcome-table
+    task_id: W22
+    kind: scenario
+    description: 서비스 판정은 결정표 checkpoint_request_outcome(FIRST)과 같고 saved일 때만 체크포인트가 하나 늘며 revision은 늘 그대로다
+    source: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/task-W22.feature#서비스는 저장 요청을 결정표 checkpoint_request_outcome으로 판정하고 첫 번째로 맞는 규칙의 outcome을 돌려준다
+  - obligation_id: W22-service-record-fields
+    task_id: W22
+    kind: scenario
+    description: 저장된 레코드는 고정 revision·정리한 제목·입력 그대로의 메모·주입 시계 시각·빈 첨부를 가지며 revision은 그대로이고 같은 요청을 다시 보내면 다른 ID의 두 번째가 생긴다
+    source: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/task-W22.feature#저장된 체크포인트 레코드는 고정한 revision, 정리한 제목, 입력 그대로의 메모, 주입 시계의 시각, 빈 첨부를 가진다
+    acceptance_refs:
+      - A10
+  - obligation_id: W22-service-atomic-commit
+    task_id: W22
+    kind: scenario
+    description: 저장 실패 주입 시 체크포인트가 남지 않고 revision 수·현재 revision이 그대로이며 복구 뒤 재시도가 된다
+    source: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/task-W22.feature#체크포인트는 한 저장 단위로 커밋되고 실패하면 아무것도 남지 않는다
+  - obligation_id: W22-service-rejects-foreign-revision
+    task_id: W22
+    kind: scenario
+    description: 없는 revision이나 다른 Board의 revision은 rejected_revision_not_found이고 어디에도 체크포인트가 없다
+    source: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/task-W22.feature#없는 revision이나 다른 Board의 revision에는 붙이지 않는다
+  - obligation_id: W22-service-rejects-archived
+    task_id: W22
+    kind: scenario
+    description: 보관된 Board는 rejected_archived이고 보관 해제 뒤에는 저장된다(0009)
+    source: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/task-W22.feature#보관된 Board에는 체크포인트를 저장하지 않는다
+  - obligation_id: W22-checkpoint_request_outcome-R1
+    task_id: W22
+    kind: decision-rule
+    description: 정리한 제목이 비면 다른 입력과 무관하게 rejected_blank_title
+    source: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/W22.decision.yaml#R1
+  - obligation_id: W22-checkpoint_request_outcome-R2
+    task_id: W22
+    kind: decision-rule
+    description: Board가 없으면 rejected_project_not_found
+    source: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/W22.decision.yaml#R2
+  - obligation_id: W22-checkpoint_request_outcome-R3
+    task_id: W22
+    kind: decision-rule
+    description: 보관된 Board면 rejected_archived(0009)
+    source: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/W22.decision.yaml#R3
+  - obligation_id: W22-checkpoint_request_outcome-R4
+    task_id: W22
+    kind: decision-rule
+    description: revision이 없거나 다른 Board면 rejected_revision_not_found
+    source: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/W22.decision.yaml#R4
+  - obligation_id: W22-checkpoint_request_outcome-R5
+    task_id: W22
+    kind: decision-rule
+    description: 그 Board의 revision이면 현재 여부와 무관하게 saved(체크포인트 하나, revision 불변)
+    source: .spec-gate/runs/t-w22-72ee8b76/specs/revision-1/W22.decision.yaml#R5
+acceptance_coverage:
+  A10:
+    - W22-no-revision-while-typing
+    - W22-save-attaches-to-fixed-revision
+    - W22-multiple-checkpoints-same-revision
+    - W22-checkpoint-immutable-after-edit
+    - W22-select-shows-past-and-panel
+    - W22-select-current-revision-checkpoint
+    - W22-service-record-fields
+decision_vectors:
+  - decision_id: checkpoint_request_outcome
+    rules:
+      - rule_id: R1
+        obligation_id: W22-checkpoint_request_outcome-R1
+        wins:
+          - inputs: &a41
+              title: blank
+              project: found
+              board_state: active
+              revision: found
+              revision_currency: current
+            expected:
+              outcome: rejected_blank_title
+          - inputs: &a42
+              title: blank
+              project: found
+              board_state: active
+              revision: found
+              revision_currency: not_current
+            expected:
+              outcome: rejected_blank_title
+          - inputs: &a33
+              title: blank
+              project: found
+              board_state: active
+              revision: not_found
+              revision_currency: current
+            expected:
+              outcome: rejected_blank_title
+          - inputs: &a34
+              title: blank
+              project: found
+              board_state: active
+              revision: not_found
+              revision_currency: not_current
+            expected:
+              outcome: rejected_blank_title
+          - inputs: &a35
+              title: blank
+              project: found
+              board_state: active
+              revision: other_board
+              revision_currency: current
+            expected:
+              outcome: rejected_blank_title
+          - inputs: &a36
+              title: blank
+              project: found
+              board_state: active
+              revision: other_board
+              revision_currency: not_current
+            expected:
+              outcome: rejected_blank_title
+          - inputs: &a19
+              title: blank
+              project: found
+              board_state: archived
+              revision: found
+              revision_currency: current
+            expected:
+              outcome: rejected_blank_title
+          - inputs: &a20
+              title: blank
+              project: found
+              board_state: archived
+              revision: found
+              revision_currency: not_current
+            expected:
+              outcome: rejected_blank_title
+          - inputs: &a21
+              title: blank
+              project: found
+              board_state: archived
+              revision: not_found
+              revision_currency: current
+            expected:
+              outcome: rejected_blank_title
+          - inputs: &a22
+              title: blank
+              project: found
+              board_state: archived
+              revision: not_found
+              revision_currency: not_current
+            expected:
+              outcome: rejected_blank_title
+          - inputs: &a23
+              title: blank
+              project: found
+              board_state: archived
+              revision: other_board
+              revision_currency: current
+            expected:
+              outcome: rejected_blank_title
+          - inputs: &a24
+              title: blank
+              project: found
+              board_state: archived
+              revision: other_board
+              revision_currency: not_current
+            expected:
+              outcome: rejected_blank_title
+          - inputs: &a1
+              title: blank
+              project: not_found
+              board_state: active
+              revision: found
+              revision_currency: current
+            expected:
+              outcome: rejected_blank_title
+          - inputs: &a2
+              title: blank
+              project: not_found
+              board_state: active
+              revision: found
+              revision_currency: not_current
+            expected:
+              outcome: rejected_blank_title
+          - inputs: &a3
+              title: blank
+              project: not_found
+              board_state: active
+              revision: not_found
+              revision_currency: current
+            expected:
+              outcome: rejected_blank_title
+          - inputs: &a4
+              title: blank
+              project: not_found
+              board_state: active
+              revision: not_found
+              revision_currency: not_current
+            expected:
+              outcome: rejected_blank_title
+          - inputs: &a5
+              title: blank
+              project: not_found
+              board_state: active
+              revision: other_board
+              revision_currency: current
+            expected:
+              outcome: rejected_blank_title
+          - inputs: &a6
+              title: blank
+              project: not_found
+              board_state: active
+              revision: other_board
+              revision_currency: not_current
+            expected:
+              outcome: rejected_blank_title
+          - inputs: &a7
+              title: blank
+              project: not_found
+              board_state: archived
+              revision: found
+              revision_currency: current
+            expected:
+              outcome: rejected_blank_title
+          - inputs: &a8
+              title: blank
+              project: not_found
+              board_state: archived
+              revision: found
+              revision_currency: not_current
+            expected:
+              outcome: rejected_blank_title
+          - inputs: &a9
+              title: blank
+              project: not_found
+              board_state: archived
+              revision: not_found
+              revision_currency: current
+            expected:
+              outcome: rejected_blank_title
+          - inputs: &a10
+              title: blank
+              project: not_found
+              board_state: archived
+              revision: not_found
+              revision_currency: not_current
+            expected:
+              outcome: rejected_blank_title
+          - inputs: &a11
+              title: blank
+              project: not_found
+              board_state: archived
+              revision: other_board
+              revision_currency: current
+            expected:
+              outcome: rejected_blank_title
+          - inputs: &a12
+              title: blank
+              project: not_found
+              board_state: archived
+              revision: other_board
+              revision_currency: not_current
+            expected:
+              outcome: rejected_blank_title
+        shadowed: []
+      - rule_id: R2
+        obligation_id: W22-checkpoint_request_outcome-R2
+        wins:
+          - inputs: &a39
+              title: valid
+              project: not_found
+              board_state: active
+              revision: found
+              revision_currency: current
+            expected:
+              outcome: rejected_project_not_found
+          - inputs: &a40
+              title: valid
+              project: not_found
+              board_state: active
+              revision: found
+              revision_currency: not_current
+            expected:
+              outcome: rejected_project_not_found
+          - inputs: &a29
+              title: valid
+              project: not_found
+              board_state: active
+              revision: not_found
+              revision_currency: current
+            expected:
+              outcome: rejected_project_not_found
+          - inputs: &a30
+              title: valid
+              project: not_found
+              board_state: active
+              revision: not_found
+              revision_currency: not_current
+            expected:
+              outcome: rejected_project_not_found
+          - inputs: &a31
+              title: valid
+              project: not_found
+              board_state: active
+              revision: other_board
+              revision_currency: current
+            expected:
+              outcome: rejected_project_not_found
+          - inputs: &a32
+              title: valid
+              project: not_found
+              board_state: active
+              revision: other_board
+              revision_currency: not_current
+            expected:
+              outcome: rejected_project_not_found
+          - inputs: &a13
+              title: valid
+              project: not_found
+              board_state: archived
+              revision: found
+              revision_currency: current
+            expected:
+              outcome: rejected_project_not_found
+          - inputs: &a14
+              title: valid
+              project: not_found
+              board_state: archived
+              revision: found
+              revision_currency: not_current
+            expected:
+              outcome: rejected_project_not_found
+          - inputs: &a15
+              title: valid
+              project: not_found
+              board_state: archived
+              revision: not_found
+              revision_currency: current
+            expected:
+              outcome: rejected_project_not_found
+          - inputs: &a16
+              title: valid
+              project: not_found
+              board_state: archived
+              revision: not_found
+              revision_currency: not_current
+            expected:
+              outcome: rejected_project_not_found
+          - inputs: &a17
+              title: valid
+              project: not_found
+              board_state: archived
+              revision: other_board
+              revision_currency: current
+            expected:
+              outcome: rejected_project_not_found
+          - inputs: &a18
+              title: valid
+              project: not_found
+              board_state: archived
+              revision: other_board
+              revision_currency: not_current
+            expected:
+              outcome: rejected_project_not_found
+        shadowed:
+          - inputs: *a1
+            winner: R1
+          - inputs: *a2
+            winner: R1
+          - inputs: *a3
+            winner: R1
+          - inputs: *a4
+            winner: R1
+          - inputs: *a5
+            winner: R1
+          - inputs: *a6
+            winner: R1
+          - inputs: *a7
+            winner: R1
+          - inputs: *a8
+            winner: R1
+          - inputs: *a9
+            winner: R1
+          - inputs: *a10
+            winner: R1
+          - inputs: *a11
+            winner: R1
+          - inputs: *a12
+            winner: R1
+      - rule_id: R3
+        obligation_id: W22-checkpoint_request_outcome-R3
+        wins:
+          - inputs: &a37
+              title: valid
+              project: found
+              board_state: archived
+              revision: found
+              revision_currency: current
+            expected:
+              outcome: rejected_archived
+          - inputs: &a38
+              title: valid
+              project: found
+              board_state: archived
+              revision: found
+              revision_currency: not_current
+            expected:
+              outcome: rejected_archived
+          - inputs: &a25
+              title: valid
+              project: found
+              board_state: archived
+              revision: not_found
+              revision_currency: current
+            expected:
+              outcome: rejected_archived
+          - inputs: &a26
+              title: valid
+              project: found
+              board_state: archived
+              revision: not_found
+              revision_currency: not_current
+            expected:
+              outcome: rejected_archived
+          - inputs: &a27
+              title: valid
+              project: found
+              board_state: archived
+              revision: other_board
+              revision_currency: current
+            expected:
+              outcome: rejected_archived
+          - inputs: &a28
+              title: valid
+              project: found
+              board_state: archived
+              revision: other_board
+              revision_currency: not_current
+            expected:
+              outcome: rejected_archived
+        shadowed:
+          - inputs: *a13
+            winner: R2
+          - inputs: *a14
+            winner: R2
+          - inputs: *a15
+            winner: R2
+          - inputs: *a16
+            winner: R2
+          - inputs: *a17
+            winner: R2
+          - inputs: *a18
+            winner: R2
+          - inputs: *a19
+            winner: R1
+          - inputs: *a20
+            winner: R1
+          - inputs: *a21
+            winner: R1
+          - inputs: *a22
+            winner: R1
+          - inputs: *a23
+            winner: R1
+          - inputs: *a24
+            winner: R1
+          - inputs: *a7
+            winner: R1
+          - inputs: *a8
+            winner: R1
+          - inputs: *a9
+            winner: R1
+          - inputs: *a10
+            winner: R1
+          - inputs: *a11
+            winner: R1
+          - inputs: *a12
+            winner: R1
+      - rule_id: R4
+        obligation_id: W22-checkpoint_request_outcome-R4
+        wins:
+          - inputs:
+              title: valid
+              project: found
+              board_state: active
+              revision: not_found
+              revision_currency: current
+            expected:
+              outcome: rejected_revision_not_found
+          - inputs:
+              title: valid
+              project: found
+              board_state: active
+              revision: not_found
+              revision_currency: not_current
+            expected:
+              outcome: rejected_revision_not_found
+          - inputs:
+              title: valid
+              project: found
+              board_state: active
+              revision: other_board
+              revision_currency: current
+            expected:
+              outcome: rejected_revision_not_found
+          - inputs:
+              title: valid
+              project: found
+              board_state: active
+              revision: other_board
+              revision_currency: not_current
+            expected:
+              outcome: rejected_revision_not_found
+        shadowed:
+          - inputs: *a25
+            winner: R3
+          - inputs: *a26
+            winner: R3
+          - inputs: *a27
+            winner: R3
+          - inputs: *a28
+            winner: R3
+          - inputs: *a29
+            winner: R2
+          - inputs: *a30
+            winner: R2
+          - inputs: *a31
+            winner: R2
+          - inputs: *a32
+            winner: R2
+          - inputs: *a15
+            winner: R2
+          - inputs: *a16
+            winner: R2
+          - inputs: *a17
+            winner: R2
+          - inputs: *a18
+            winner: R2
+          - inputs: *a33
+            winner: R1
+          - inputs: *a34
+            winner: R1
+          - inputs: *a35
+            winner: R1
+          - inputs: *a36
+            winner: R1
+          - inputs: *a21
+            winner: R1
+          - inputs: *a22
+            winner: R1
+          - inputs: *a23
+            winner: R1
+          - inputs: *a24
+            winner: R1
+          - inputs: *a3
+            winner: R1
+          - inputs: *a4
+            winner: R1
+          - inputs: *a5
+            winner: R1
+          - inputs: *a6
+            winner: R1
+          - inputs: *a9
+            winner: R1
+          - inputs: *a10
+            winner: R1
+          - inputs: *a11
+            winner: R1
+          - inputs: *a12
+            winner: R1
+      - rule_id: R5
+        obligation_id: W22-checkpoint_request_outcome-R5
+        wins:
+          - inputs:
+              title: valid
+              project: found
+              board_state: active
+              revision: found
+              revision_currency: current
+            expected:
+              outcome: saved
+          - inputs:
+              title: valid
+              project: found
+              board_state: active
+              revision: found
+              revision_currency: not_current
+            expected:
+              outcome: saved
+        shadowed:
+          - inputs: *a37
+            winner: R3
+          - inputs: *a38
+            winner: R3
+          - inputs: *a39
+            winner: R2
+          - inputs: *a40
+            winner: R2
+          - inputs: *a13
+            winner: R2
+          - inputs: *a14
+            winner: R2
+          - inputs: *a41
+            winner: R1
+          - inputs: *a42
+            winner: R1
+          - inputs: *a19
+            winner: R1
+          - inputs: *a20
+            winner: R1
+          - inputs: *a1
+            winner: R1
+          - inputs: *a2
+            winner: R1
+          - inputs: *a7
+            winner: R1
+          - inputs: *a8
+            winner: R1
+decision_log: null
+critic_report: .spec-gate/runs/t-w22-72ee8b76/critic-pass-2.yaml
+non_blocking_notes:
+  - finding_id: F-W22-12
+    task_id: W22
+    note: 가정은 체크포인트 목록 읽기 실패의 동작을 정했지만 시나리오·obligation이 없다. 가정은 인계 브리프에 실리지 않으므로 TDD는 이 실패 경로를 보지 못하고, Board 단위 체크포인트 조회(새 저장소 메서드)의 실패를 삼켜 체크포인트가 없는 것처럼 revision 행만 그리는 구현이 가능하다. 그 경우 저장된 체크포인트가 조용히 보이지 않게 된다. W17 선례와 같은 '불러오지 못함' 상태로 닫히는 명세 정밀도 문제이고 A10 경계는 바뀌지 않아 minor로 둔다.
+  - finding_id: F-W22-13
+    task_id: W22
+    note: 병합 규칙은 revision 기록 시각과 체크포인트 저장 시각의 대소로 자리를 정하는데, 세 UI 시나리오는 연결 revision의 기록 시각을 저장 시각보다 이르게 두는 전제를 적지 않았다. 예를 들어 :176에서 순번 5가 어제 오후 8시에 기록됐다면 규칙상 "어제 메모"는 순번 5 아래·순번 4 위에 오므로 기대 순서(:183)가 틀린다. 테스트 데이터를 그 전제대로 고르면 통과하므로 수용 경계는 바뀌지 않지만, UI 테스트 작성자가 시각을 임의로 고르면 규칙과 무관한 이유로 실패한다.
+  - finding_id: F-W22-14
+    task_id: W22
+    note: 단언 범위가 "시트가 열린 전체 기간"이라 사용자가 켜진 채인 '상태 새로고침'을 누르면 참이 아니게 된다. 테스트는 저장 흐름만 실행하므로 실제로는 문제가 없고 obligation description은 저장 동작으로 범위를 좁히고 있다. 구현 테스트는 저장 요청 전후의 어댑터 호출 기록으로 판정하면 된다.
+  - finding_id: F-W22-15
+    task_id: W22
+    note: '규칙이 하나로 통일됐다(revision 행 순번 역순 유지, 체크포인트는 기록 시각 ≤ 저장 시각인 첫 revision 행 앞, 없으면 맨 아래, 같은 자리는 시각 역순→순번 역순→ID 순). Examples 15행을 규칙으로 손으로 계산해 모두 일치함을 확인했다: 시계 역행 행(:236 "#2, #1", :237 "c2, c1, #2, #1", :238 "c1, c2, #2, #1"), 동시각 행(:228, :231, :232), 연결 revision이 불러와지지 않은 행(:233, :234), 빈 입력(:224, :235). W17 :216의 순번 유지 순서와도 충돌하지 않는다. 제목·가정·obligation·Feature 서술이 같은 문장이다.'
+  - finding_id: F-W22-16
+    task_id: W22
+    note: 1차 minor 다섯 건이 모두 요청한 위치에 반영됐고 obligation description과 가정이 함께 갱신됐다. 가정 :52의 요약과 실제 diff가 일치한다.
+  - finding_id: F-W22-17
+    task_id: W22
+    note: 결정표는 바뀌지 않았고 완전성·겹침·벡터·obligation 대응을 산출물로 다시 확인했다. 1차 F-W22-7의 판단(revision_currency는 읽지 않는 입력, 저장소 읽기 실패는 표 밖 오류)을 유지한다. A10은 obligation 일곱 개(입력 중 불변·고정 revision 저장·다중·불변·조회·현재 revision 체크포인트 조회·레코드 필드)로 증명되며 각각 위반 시 실패한다.
+  - finding_id: F-W22-18
+    task_id: W22
+    note: "인계의 non-blocking note로 넘길 항목: (1) 로그에 제목·메모·다음 할 일 원문 금지는 obligation이 아니라 구현 리뷰 항목, (2) 같은 제목 두 개를 UI 테스트가 구분해야 하면 ID 기반 식별자를 디자인 세션이 DESIGN 11장에서 정한다, (3) DESIGN 16.2 수정·결정 0037은 디자인 세션 몫이고 이 run의 결정 기록 fingerprint와 무관, (4) 앱 종료 시 미저장 입력 폐기는 초안 저장을 하지 않는다는 TECH_STACK 문장으로 닫히며 테스트 대상이 아니다."
+  - finding_id: F-W22-19
+    task_id: W22
+    note: 정책 질문으로 올릴 모호성을 찾지 못했다. 병합 순서는 PRD §6-D와 W17 선례로 닫힌 명세 정밀도 문제였고 revision 1에서 하나의 규칙으로 고정됐다. 현재 revision의 체크포인트를 과거 모드로 보는 것, 편집 차단 범위, 보관 거부, 비교 중 행 선택은 각각 디자인 확정 규칙·PRD §6-G·0009·0027이 정한다. 기준 문서·결정 기록과 모순되는 시나리오는 없다.

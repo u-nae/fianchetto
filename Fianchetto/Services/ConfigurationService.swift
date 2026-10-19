@@ -9,6 +9,8 @@ enum CommitRejection: Equatable, Sendable {
     case blankName
     /// 복원 대상 revision이 없거나 다른 Board의 것이다.
     case revisionNotFound
+    /// 체크포인트 제목이 비어 있다(W22).
+    case blankTitle
     case edit(EditRejection)
 }
 
@@ -16,6 +18,12 @@ enum ConfigurationCommitOutcome: Equatable, Sendable {
     /// 저장이 실제로 성공한 뒤에만 돌려준다.
     case committed(RevisionSummary, ConfigurationSnapshot)
     case unchanged
+    case rejected(CommitRejection)
+}
+
+/// 체크포인트 저장 결과(W22). saved는 저장이 실제로 성공한 뒤에만 돌려준다.
+enum CheckpointOutcome: Equatable, Sendable {
+    case saved(CheckpointRecord)
     case rejected(CommitRejection)
 }
 
@@ -135,6 +143,27 @@ struct ConfigurationService: Sendable {
         }
     }
 
+    /// 고정한 revision에 체크포인트를 붙인다(W22, 결정표 checkpoint_request_outcome). 판단과 커밋은 저장소 actor 안에서 한다.
+    func saveCheckpoint(
+        title: String, progressNote: String, nextSteps: String, on revisionID: UUID, in projectID: UUID
+    ) async throws(ConfigurationServiceError) -> CheckpointOutcome {
+        let now = self.now, makeID = self.makeID
+        let result: CheckpointResult<CommitRejection>
+        do {
+            result = try await store.saveCheckpoint(on: revisionID, of: projectID) { source in
+                Self.decideCheckpoint(
+                    title: title, progressNote: progressNote, nextSteps: nextSteps, source: source, now: now, makeID: makeID
+                )
+            }
+        } catch {
+            throw Self.map(error)
+        }
+        switch result {
+        case let .saved(record): return .saved(record)
+        case let .skipped(rejection): return .rejected(rejection)
+        }
+    }
+
     // MARK: 판단 (ProjectStore actor 안에서 실행)
 
     enum Decision: Sendable {
@@ -190,6 +219,29 @@ struct ConfigurationService: Sendable {
         )
         let first = RevisionAppend(id: revisionID, recordedAt: recordedAt, cause: .duplicated, snapshot: copy, references: [])
         return .create(project, first: first)
+    }
+
+    /// 순서(FIRST): 제목(순수 검사) → Board → 보관(0009) → revision(없음·다른 Board) → 저장. 현재 revision 여부는 읽지 않는다(PRD §6-G 고정한 revision).
+    /// 제목은 앞뒤 공백·줄바꿈을 정리하고, 메모·다음 할 일은 입력 그대로 둔다. 첨부는 비어 있다(W23).
+    static func decideCheckpoint(
+        title: String, progressNote: String, nextSteps: String, source: CheckpointSource, now: () -> Date, makeID: () -> UUID
+    ) -> CheckpointDecision<CommitRejection> {
+        let normalizedTitle: String
+        do {
+            normalizedTitle = try ProjectName.normalize(title)
+        } catch {
+            return .skip(.blankTitle)
+        }
+        guard case let .found(project, revision) = source else { return .skip(.projectNotFound) }
+        if project.archivedAt != nil { return .skip(.archived) }
+        switch revision {
+        case .notFound, .otherProject: return .skip(.revisionNotFound)
+        case let .found(summary):
+            return .save(CheckpointRecord(
+                id: makeID(), revisionID: summary.id, title: normalizedTitle, progressNote: progressNote,
+                nextSteps: nextSteps, createdAt: now(), attachments: []
+            ))
+        }
     }
 
     /// 거부 순서: project_not_found(저장소) → archived → access_mismatch → 현재 구성 읽기 → 편집 결과.

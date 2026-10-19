@@ -112,6 +112,9 @@ struct BoardBrowserView: View {
         .sheet(isPresented: Binding(get: { model.duplication != nil }, set: { if !$0 { model.cancelDuplicate() } })) {
             DuplicateSheet(model: model)
         }
+        .sheet(isPresented: Binding(get: { model.checkpointDraft != nil }, set: { if !$0 { model.cancelCheckpoint() } })) {
+            CheckpointSheet(model: model)
+        }
         .alert(
             notice.map(model.noticeTitle) ?? "",
             isPresented: Binding(get: { notice != nil }, set: { if !$0 { model.dismissLinkNotice() } }),
@@ -222,6 +225,9 @@ private struct ConfigurationTreeView: View {
             } else {
                 if model.isViewingPast {
                     PastConfigurationBanner(model: model)
+                    if let panel = model.checkpointPanel {
+                        CheckpointPanelView(model: model, panel: panel)
+                    }
                 }
                 content
             }
@@ -256,6 +262,11 @@ private struct ConfigurationTreeView: View {
                 Button { model.beginAddGroup() } label: { Label("Wing 추가", image: .fianchettoWing) }
                     .help("Wing 추가")
                     .disabled(!model.canAddToBoard)
+                // 체크포인트 저장(W22, DESIGN 16.6): 현재 구성 명령이라 추가 버튼 옆('Wing 추가' 오른쪽)에 둔다.
+                Button { Task { await model.beginCheckpoint() } } label: { Label("체크포인트 저장", systemImage: "flag") }
+                    .help("체크포인트 저장")
+                    .disabled(!model.canSaveCheckpoint)
+                    .accessibilityIdentifier("checkpoint-toolbar")
             }
         }
     }
